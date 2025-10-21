@@ -23,3 +23,12 @@ app.use("/api/auth", authRoutes)
 app.use("/api/customers", customerRoutes)
 app.use("/api/invoices", invoiceRoutes)
 app.use("/api/quotes", quoteRoutes)
+
+app.get("/", (req, res) => res.send({ status: "ok", message: "API is running" }))
+
+app.use(errorHandler)
+
+const PORT = process.env.PORT || 8888
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
+})
