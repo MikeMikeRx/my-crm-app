@@ -18,3 +18,8 @@ app.use(express.json())
 app.use(morgan("dev"))
 
 connectDB()
+
+app.use("/api/auth", authRoutes)
+app.use("/api/customers", customerRoutes)
+app.use("/api/invoices", invoiceRoutes)
+app.use("/api/quotes", quoteRoutes)
