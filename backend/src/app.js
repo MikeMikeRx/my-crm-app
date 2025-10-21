@@ -8,3 +8,7 @@ import customerRoutes from "./routes/customer"
 import invoiceRoutes from "./routes/invoice"
 import quoteRoutes from "./routes/quote"
 import errorHandler from "./middleware/errorHandler"
+
+dotenv.config()
+
+const app = express()
