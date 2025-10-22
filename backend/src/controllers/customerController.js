@@ -18,3 +18,23 @@ export const getCustomerById = async (req, res, next) => {
         next(err)
     }
 }
+
+export const createCustomer = async (req, res, next) => {
+    try {
+        const { name, email, phone, company, address } = req.body
+        if (!name) return res.status(400).json({ message: "Name is required" })
+
+        const newCustomer = await Customer.create({
+            user: req.user.id,
+            name,
+            email,
+            phone,
+            company,
+            address,
+        })
+
+        res.status(201).json(newCustomer)
+    } catch (err) {
+        next(err)
+    }
+}
