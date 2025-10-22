@@ -38,3 +38,17 @@ export const createCustomer = async (req, res, next) => {
         next(err)
     }
 }
+
+export const updateCustomer = async (req, res, next) => {
+    try {
+        const customer = await Customer.findOneAndUpdate(
+            {_id: req.params.id, user: req.user.id },
+            req.body,
+            { new: true, runValidators: true }
+        )
+        if (!customer) return res.status(404).json({ message: "Customer not found" })
+        res.json(customer)
+    } catch (err) {
+        next(err)
+    }
+}
