@@ -61,3 +61,12 @@ export const loginUser = async (req, res, next) => {
         next(err)
     }
 }
+
+export const getProfile = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user.id).select("-password")
+        res.json(user)
+    } catch (err) {
+        next(err)
+    }
+}
