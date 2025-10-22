@@ -52,3 +52,13 @@ export const updateCustomer = async (req, res, next) => {
         next(err)
     }
 }
+
+export const deleteCustomer = async (req, res, next) => {
+    try {
+        const customer = await Customer.findOneAndDelete({ _id: req.params.id, user: req.user.id })
+        if (!customer) return res.status(404).json({ message: "Customer not found" })
+        res.json({ message: "Customer deleted successfully"})
+    } catch (err) {
+        next(err)
+    }
+}
