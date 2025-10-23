@@ -45,3 +45,9 @@ const invoiceSchema = new mongoose.Schema(
     },
     { timestamps: true }
 )
+
+invoiceSchema.virtual("total").get(function () {
+    return this.items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0)
+})
+
+export default mongoose.model("Invoice", invoiceSchema)
