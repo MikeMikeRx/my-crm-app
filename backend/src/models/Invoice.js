@@ -14,7 +14,7 @@ const invoiceSchema = new mongoose.Schema(
         },
         invoiceNumber: {
             type: String,
-            required: [true, "Invoice number is requiered"],
+            required: [true, "Invoice number is required"],
             unique: true,
             trim: true,
         },
