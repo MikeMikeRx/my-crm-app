@@ -22,9 +22,10 @@ const paymentSchema = new mongoose.Schema(
             enum: ["cash", "credit_card", "bank_transfer"],
             default: "cash",
         },
-        date: {
+        paymentDate: {
             type: Date,
             required: [true, "Payment date is required"],
+            default: Date.now,
         },
         notes: {
             type: String,
