@@ -1,5 +1,5 @@
-import Payment from "../models/Payment"
-import Invoice from "../models/Invoice"
+import Payment from "../models/Payment.js"
+import Invoice from "../models/Invoice.js"
 
 export const getPayments = async (req, res, next) => {
     try {

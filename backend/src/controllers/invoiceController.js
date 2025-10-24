@@ -1,5 +1,5 @@
-import Invoice from "../models/Invoice"
-import Customer from "../models/Customer"
+import Invoice from "../models/Invoice.js"
+import Customer from "../models/Customer.js"
 
 export const getInvoices = async (req, res, next) => {
     try {

@@ -1,5 +1,5 @@
-import Quote from "../models/Quote"
-import Customer from "../models/Customer"
+import Quote from "../models/Quote.js"
+import Customer from "../models/Customer.js"
 
 export const getQuotes = async (req, res, next) => {
     try {

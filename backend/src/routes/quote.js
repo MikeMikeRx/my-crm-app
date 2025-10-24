@@ -1,12 +1,12 @@
 import express from "express"
-import { authMiddleware } from "../middleware/auth"
+import { authMiddleware } from "../middleware/auth.js"
 import {
     getQuotes,
     getQuoteById,
     createQuote,
     updateQuote,
     deleteQuote,
-} from "../controllers/quoteController"
+} from "../controllers/quoteController.js"
 
 const router = express.Router()
 
