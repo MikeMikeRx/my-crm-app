@@ -7,6 +7,7 @@ import authRoutes from "./routes/auth"
 import customerRoutes from "./routes/customer"
 import invoiceRoutes from "./routes/invoice"
 import quoteRoutes from "./routes/quote"
+import paymentRoutes from "./routes/payment"
 import errorHandler from "./middleware/errorHandler"
 
 dotenv.config()
@@ -23,6 +24,7 @@ app.use("/api/auth", authRoutes)
 app.use("/api/customers", customerRoutes)
 app.use("/api/invoices", invoiceRoutes)
 app.use("/api/quotes", quoteRoutes)
+app.use("/api/payments", paymentRoutes)
 
 app.get("/", (req, res) => res.send({ status: "ok", message: "API is running" }))
 
