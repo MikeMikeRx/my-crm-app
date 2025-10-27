@@ -19,8 +19,15 @@ export const registerUser = async (req, res, next) => {
 
         const user = await User.create({ name, email, password: hashedPassword })
 
+        const token = jwt.sign(
+            { id: user_.id, email: user.email },
+            process.env.JWTF_SECRET,
+            { expiresIn: "1d" }
+        )
+
         res.status(201).json({
             message: "User registered successfully",
+            token,
             user: { id: user._id, name: user.name, email: user.email },
         })
     } catch (err) {
