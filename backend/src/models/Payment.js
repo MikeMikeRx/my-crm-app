@@ -16,7 +16,7 @@ const paymentSchema = new mongoose.Schema(
             type: Number,
             required: [true, "Payment amount is required"],
         },
-        method: {
+        paymentMethod: {
             type: String,
             enum: ["cash", "card", "bank_transfer", "paypal"],
             required: [true, "Payment method is required"],
@@ -26,7 +26,7 @@ const paymentSchema = new mongoose.Schema(
             enum: ["pending", "completed", "failed"],
             default: "completed",
         },
-        date: {
+        paymentDate: {
             type: Date,
             required: [true, "Payment date is required"],
             default: Date.now,

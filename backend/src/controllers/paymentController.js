@@ -33,7 +33,14 @@ export const getPaymentById = async (req, res, next) => {
 
 export const createPayment = async (req, res, next) => {
     try {
-        const { invoice, amount, paymentDate, method, notes } = req.body
+        const { invoice, amount, paymentDate, paymentMethod, notes } = req.body
+
+        if (!invoice || amount == null || !paymentMethod) {
+            return res.status(400).json({ message: "Invoice, amount, and paymentMethod are required" })
+        }
+        if (Number(amount) <= 0) {
+            return res.status(400).json({ message: "Amount must be greater than 0" })
+        }
 
         const existingInvoice = await Invoice.findOne({ _id: invoice, user: req.user.id })
         if (!existingInvoice) return res.status(400).json({ message: "Invalid invoice ID" })
@@ -42,8 +49,8 @@ export const createPayment = async (req, res, next) => {
             user: req.user.id,
             invoice,
             amount,
+            paymentMethod,
             paymentDate,
-            method,
             notes,
         })
 
