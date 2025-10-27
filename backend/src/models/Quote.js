@@ -43,7 +43,7 @@ const quoteSchema = new mongoose.Schema(
             trim: true,
         },
     },
-    { timestamps: true }
+    { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 )
 
 quoteSchema.virtual("total").get(function () {
