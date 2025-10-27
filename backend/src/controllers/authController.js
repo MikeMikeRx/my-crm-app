@@ -20,8 +20,8 @@ export const registerUser = async (req, res, next) => {
         const user = await User.create({ name, email, password: hashedPassword })
 
         const token = jwt.sign(
-            { id: user_.id, email: user.email },
-            process.env.JWTF_SECRET,
+            { id: user._id, email: user.email },
+            process.env.JWT_SECRET,
             { expiresIn: "1d" }
         )
 
