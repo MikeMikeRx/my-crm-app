@@ -15,14 +15,18 @@ const paymentSchema = new mongoose.Schema(
         amount: {
             type: Number,
             required: [true, "Payment amount is required"],
-            min: 0,
         },
         method: {
             type: String,
-            enum: ["cash", "credit_card", "bank_transfer"],
-            default: "cash",
+            enum: ["cash", "card", "bank_transfer", "paypal"],
+            required: [true, "Payment method is required"],
         },
-        paymentDate: {
+        status: {
+            type: String,
+            enum: ["pending", "completed", "failed"],
+            default: "completed",
+        },
+        date: {
             type: Date,
             required: [true, "Payment date is required"],
             default: Date.now,
