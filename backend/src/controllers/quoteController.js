@@ -33,7 +33,7 @@ export const getQuoteById = async (req, res, next) => {
 
 export const createQuote = async (req, res, next) => {
     try {
-        const { customer, quoteNumber, issueDate, expiryDate, items, notes } = req.body
+        const { customer, quoteNumber, issueDate, expiryDate, items, globalTaxRate, notes } = req.body
 
         const existingCustomer = await Customer.findOne({ _id: customer, user: req.user.id })
         if (!existingCustomer) return res.status(400).json({ message: "Invalid customer ID" })
@@ -45,6 +45,7 @@ export const createQuote = async (req, res, next) => {
             issueDate,
             expiryDate,
             items,
+            globalTaxRate,
             notes,
         })
 
