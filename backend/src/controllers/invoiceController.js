@@ -34,7 +34,7 @@ export const getInvoiceById = async (req, res, next) => {
 
 export const createInvoice = async (req, res, next) => {
     try {
-        const { customer, invoiceNumber, issueDate, dueDate, items, notes } = req.body
+        const { customer, invoiceNumber, issueDate, dueDate, items, globalTaxRate, notes } = req.body
 
         const existingCustomer = await Customer.findOne({ _id: customer, user: req.user.id })
         if (!existingCustomer) return res.status(400).json({ message: "Invalid customer ID" })
@@ -46,6 +46,7 @@ export const createInvoice = async (req, res, next) => {
             issueDate,
             dueDate,
             items,
+            globalTaxRate,
             notes,
         })
 
