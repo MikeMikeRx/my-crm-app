@@ -6,7 +6,12 @@ export const getQuotes = async (req, res, next) => {
         const quotes = await Quote.find({ user: req.user.id })
             .populate("customer", "name email company")
             .sort({ createdAt: -1 })
-        res.json(quotes)
+        
+        const withTotals = quotes.map(q => ({
+            ...q.toObject(),
+            totals: q.totals
+        }))
+        res.json(withTotals)
     } catch (err) {
         next(err)
     }
@@ -17,7 +22,10 @@ export const getQuoteById = async (req, res, next) => {
         const quote = await Quote.findOne({ _id: req.params.id, user: req.user.id })
             .populate("customer", "name email company")
         if (!quote) return res.status(404).json({message: "Quote not found "})
-        res.json(quote)
+        res.json({
+            ...quote.toObject(),
+            totals: quote.totals
+        })
     } catch (err) {
         next(err)
     }
@@ -40,7 +48,10 @@ export const createQuote = async (req, res, next) => {
             notes,
         })
 
-        res.status(201).json(newQuote)
+        res.status(201).json({
+            ...newQuote.toObject(),
+            totals: newQuote.totals
+        })
     } catch (err) {
         next(err)
     }
@@ -54,7 +65,10 @@ export const updateQuote = async (req, res, next) => {
             { new: true, runValidators: true },
         )
         if (!quote) return res.status(404).json({ message: "Quote not found" })
-        res.json(quote)
+        res.json({
+            ...quote.toObject(),
+            totals: quote.totals
+        })
     } catch (err) {
         next(err)
     }
