@@ -6,7 +6,12 @@ export const getInvoices = async (req, res, next) => {
         const invoices = await Invoice.find({ user: req.user.id })
             .populate("customer", "name email company")
             .sort({ createdAt: -1 })
-        res.json(invoices)
+        
+        const withTotals = invoices.map(inv => ({
+            ...inv.toObject(),
+            totals: inv.totals
+        }))
+        res.json(withTotals)
     } catch (err) {
         next (err)
     }
@@ -17,7 +22,11 @@ export const getInvoiceById = async (req, res, next) => {
         const invoice = await Invoice.findOne({ _id: req.params.id, user: req.user.id })
             .populate("customer", "name email company")
         if (!invoice) return res.status(404).json({ message: "Invoice not found"})
-        res.json(invoice)
+        
+        res.json({
+            ...invoice.toObject(),
+            totals: invoice.totals
+        })
     } catch (err) {
         next(err)
     }
@@ -40,7 +49,10 @@ export const createInvoice = async (req, res, next) => {
             notes,
         })
 
-        res.status(201).json(newInvoice)
+        res.status(201).json({
+            ...newInvoice.toObject(),
+            totals: newInvoice.totals
+        })
     } catch (err) {
         next(err)
     }
@@ -54,7 +66,10 @@ export const updateInvoice = async (req, res, next) => {
             { new: true, runValidators: true }
         )
         if (!invoice) return res.status(404).json({ message: "Invoice not found" })
-        res.json(invoice)
+        res.json({
+            ...invoice.toObject(),
+            totals: invoice.totals
+        })
     } catch (err) {
         next(err)
     }
