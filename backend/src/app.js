@@ -1,6 +1,8 @@
 import express from "express"
 import dotenv from "dotenv"
 import cors from "cors"
+import helmet from "helmet"
+import compression from "compression"
 import morgan from "morgan"
 import { connectDB } from "./config/database.js"
 import authRoutes from "./routes/auth.js"
@@ -11,9 +13,10 @@ import paymentRoutes from "./routes/payment.js"
 import errorHandler from "./middleware/errorHandler.js"
 
 dotenv.config()
-
 const app = express()
 
+app.use(helmet())
+app.use(compression())
 app.use(cors())
 app.use(express.json())
 app.use(morgan("dev"))
