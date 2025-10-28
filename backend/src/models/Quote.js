@@ -31,8 +31,12 @@ const quoteSchema = new mongoose.Schema(
                 description: { type: String, required: true },
                 quantity: { type: Number, required: true, min: 1 },
                 unitPrice: { type: Number, required: true, min: 0 },
+                taxRate: { type: Number, default: 20 },
             },
         ],
+
+        globalTaxRate: { type: Number, default: null},
+
         status: {
             type: String,
             enum: ["draft", "sent", "accepted", "declined", "expired"],
@@ -46,8 +50,21 @@ const quoteSchema = new mongoose.Schema(
     { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 )
 
-quoteSchema.virtual("total").get(function () {
-    return this.items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0)
+quoteSchema.virtual("totals").get(function () {
+    const items = this.items || []
+    const useGlobal = this.globalTaxRate !==null
+    const subtotal = items.reduce((sum,i) => sum + i.quantity * i.unitPrice, 0)
+
+    const tax = items.reduce((sum,i) => {
+        const rate = useGlobal ? this.globalTaxRate : (i.taxRate || 0)
+        return sum + (i.quantity * i.unitPrice * rate) / 100
+    }, 0)
+
+    return {
+        subtotal,
+        tax,
+        total: subtotal + tax
+    }
 })
 
 export default mongoose.model("Quote", quoteSchema)
