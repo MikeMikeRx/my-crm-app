@@ -1,7 +1,12 @@
 import xss from "xss-clean"
-import mongoSanitize from "express-mongo-sanitize"
+import sanitize from "mongo-sanitize"
 
 export const sanitizeMiddleware = (app) => {
-    app.use(mongoSanitize())
     app.use(xss())
+    app.use((req, res, next) => {
+        if (req.body) req.body = sanitize(req.body)
+        if (req.params) req.params = sanitize(req.params)
+        if (req.query) req.query = sanitize(req.query)
+        next()
+    })
 }
