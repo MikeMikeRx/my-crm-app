@@ -12,6 +12,7 @@ import quoteRoutes from "./routes/quote.js"
 import paymentRoutes from "./routes/payment.js"
 import errorHandler from "./middleware/errorHandler.js"
 import { globalRateLimiter } from "./middleware/rateLimiter.js"
+import { sanitizeMiddleware } from "./middleware/sanitizer.js"
 
 dotenv.config()
 const app = express()
@@ -25,6 +26,7 @@ app.use(helmet({
 }))
 app.use(compression())
 app.use(cors())
+sanitizeMiddleware(app)
 app.use(express.json())
 app.use(morgan("dev"))
 
