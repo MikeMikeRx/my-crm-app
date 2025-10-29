@@ -16,7 +16,13 @@ import { globalRateLimiter } from "./middleware/rateLimiter.js"
 dotenv.config()
 const app = express()
 
-app.use(helmet())
+app.use(helmet({
+    contentSecurityPolicy: false, // disabled for backend/frontend testing
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    referrerPolicy: { policy: "no-referrer" },
+    frameguard: { action: "deny" },
+}))
 app.use(compression())
 app.use(cors())
 app.use(express.json())
