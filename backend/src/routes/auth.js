@@ -2,12 +2,14 @@ import express from "express"
 import { body } from "express-validator"
 import { registerUser, loginUser, getProfile } from "../controllers/authController.js"
 import { authMiddleware } from "../middleware/auth.js"
+import { authRateLimiter } from "../middleware/rateLimiter.js"
 import { validateRequest } from "../middleware/validator.js"
 
 const router = express.Router()
 
 router.post(
     "/register",
+    authRateLimiter,
     [
         body("name")
             .trim()
@@ -32,6 +34,7 @@ router.post(
 
 router.post(
     "/login",
+    authRateLimiter,
     [
         body("email")
             .trim()

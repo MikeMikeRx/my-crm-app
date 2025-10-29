@@ -11,6 +11,7 @@ import invoiceRoutes from "./routes/invoice.js"
 import quoteRoutes from "./routes/quote.js"
 import paymentRoutes from "./routes/payment.js"
 import errorHandler from "./middleware/errorHandler.js"
+import { globalRateLimiter } from "./middleware/rateLimiter.js"
 
 dotenv.config()
 const app = express()
@@ -20,6 +21,8 @@ app.use(compression())
 app.use(cors())
 app.use(express.json())
 app.use(morgan("dev"))
+
+app.use(globalRateLimiter)
 
 connectDB()
 
@@ -35,5 +38,5 @@ app.use(errorHandler)
 
 const PORT = process.env.PORT || 8888
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
+    console.log(`✅ Server running on port ${PORT}`)
 })
