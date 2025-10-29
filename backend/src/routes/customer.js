@@ -13,21 +13,43 @@ import {
 const router = express.Router()
 
 router.use(authMiddleware)
+   
+const customerValidationRules = [
+    body("name")
+        .trim()
+        .escape()
+        .notEmpty()
+        .withMessage("Customer name is required"),
 
-router.post(
-    "/",
-    [
-        body("name").notEmpty().withMessage("Customer name is required"),
-        body("email").optional().isEmail().withMessage("Invalid email format"),
-        body("phone").optional().isString(),
-    ],
-    validateRequest,
-    createCustomer
-)
+    body("email")
+        .optional()
+        .trim()
+        .normalizeEmail()
+        .isEmail()
+        .withMessage("Invalid email format"),
 
+    body("phone")
+        .optional()
+        .trim()
+        .escape()
+        .isString()
+        .withMessage("Phone must be a valid string"),
+
+    body("company")
+        .optional()
+        .trim()
+        .escape(),
+
+    body("address")
+        .optional()
+        .trim()
+        .escape()
+]
+
+router.post("/", customerValidationRules, validateRequest, createCustomer)
 router.get("/", getCustomers)
 router.get("/:id", getCustomerById)
-router.put("/:id", updateCustomer)
+router.put("/:id", customerValidationRules, validateRequest, updateCustomer)
 router.delete("/:id", deleteCustomer)
 
 export default router
