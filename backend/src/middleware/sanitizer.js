@@ -2,35 +2,24 @@ import mongoSanitize from "mongo-sanitize"
 import sanitizeHtml from "sanitize-html"
 
 export const sanitizeMiddleware = (app) => {
-    const deepSanitizeHtml = (obj) => {
-        if (obj === null || typeof obj !== "object") return obj
+    const cleanObject = (obj) => {
+        if (!obj || typeof obj !== "object") return
 
         for (const key in obj) {
-            if (!Object.prototype.hasOwnProperty.call(obj, key)) continue
-            const value = obj[key]
-
-            if (typeof value === "string") {
-                obj[key] = sanitizeHtml(value, {
-                    allowedTags: [],
-                    allowedAttributes: {},
-                })
-            } else if (typeof value === "object") {
-                deepSanitizeHtml(value)
+            if (typeof obj[key] === "string") {
+                obj[key] = sanitizeHtml(obj[key], { allowedTags: [], allowedAttributes: {} })
+                obj[key] = mongoSanitize(obj[key])
+            } else if (typeof obj[key] === "object") {
+                cleanObject(obj[key])
             }
         }
-        return obj
     }
 
     app.use((req, res, next) => {
         try {
-            if (req.body) req.body = mongoSanitize(req.body)
-            if (req.query) req.query = mongoSanitize(req.query)
-            if (req.params) req.params = mongoSanitize(req.params)
-
-            deepSanitizeHtml(req.body)
-            deepSanitizeHtml(req.query)
-            deepSanitizeHtml(req.params)
-
+            if (req.body) cleanObject(req.body)
+            if (req.params) cleanObject(req.params)
+            if (req.query) cleanObject(req.query)
             next()
         } catch (err) {
             console.error("❌ Sanitization error:", err)
