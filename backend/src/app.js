@@ -14,6 +14,12 @@ import { sanitizeMiddleware } from "./middleware/sanitizer.js"
 
 const app = express()
 
+// CORS Configuration
+const allowedOrigins = [
+    "http://localhost:5173", // Vite dev server
+    // "https://my-production-domain.com"
+]
+
 // Security & Middleware
 app.use(helmet({
     contentSecurityPolicy: false, // disabled for backend/frontend testing
@@ -23,7 +29,15 @@ app.use(helmet({
     frameguard: { action: "deny" },
 }))
 app.use(compression())
-app.use(cors())
+app.use(cors({
+    origin: function (origin, callback) {
+        if (!origin) return callback(null, true) // Allow Postman/cURL
+        if (allowedOrigins.includes(origin)) return callback(null, true)
+        return callback(new Error("Not allowed by CORS"))
+    },
+    credentials: true, // Alow cookies / auth headers
+    optionsSuccessStatus: 200 // Avoid issues with legacy browsers
+}))
 app.use(express.json())
 sanitizeMiddleware(app)
 app.use(morgan("dev"))
