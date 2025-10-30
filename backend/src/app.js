@@ -2,6 +2,7 @@ import express from "express"
 import cors from "cors"
 import helmet from "helmet"
 import compression from "compression"
+import mongoose from "mongoose"
 import morgan from "morgan"
 import authRoutes from "./routes/auth.js"
 import customerRoutes from "./routes/customer.js"
@@ -51,7 +52,17 @@ app.use("/api/quotes", quoteRoutes)
 app.use("/api/payments", paymentRoutes)
 
 // Health Check
-app.get("/", (req, res) => res.send({ status: "ok", message: "API is running" }))
+app.get("/health", async (req, res) => {
+    const dbState = mongoose.connection.readyState
+    const states = ["disconnected", "connected", "connecting", "disconnecting"]
+
+    res.status(200).json({
+        status: "ok",
+        uptime: process.uptime(),
+        db: states[dbState] || "unknown",
+        timestap: new Date().toISOString(),
+    })
+})
 
 // Global Error Handler
 app.use(errorHandler)
