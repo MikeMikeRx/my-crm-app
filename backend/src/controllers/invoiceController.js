@@ -1,8 +1,8 @@
 import Invoice from "../models/Invoice.js"
 import Customer from "../models/Customer.js"
+import { asyncHandler } from "../utils/asyncHandler.js"
 
-export const getInvoices = async (req, res, next) => {
-    try {
+export const getInvoices = asyncHandler(async (req, res, next) => {
         const invoices = await Invoice.find({ user: req.user.id })
             .populate("customer", "name email company")
             .sort({ createdAt: -1 })
@@ -12,13 +12,9 @@ export const getInvoices = async (req, res, next) => {
             totals: inv.totals
         }))
         res.json(withTotals)
-    } catch (err) {
-        next (err)
-    }
-}
+})
 
-export const getInvoiceById = async (req, res, next) => {
-    try {
+export const getInvoiceById = asyncHandler(async (req, res, next) => {
         const invoice = await Invoice.findOne({ _id: req.params.id, user: req.user.id })
             .populate("customer", "name email company")
         if (!invoice) return res.status(404).json({ message: "Invoice not found"})
@@ -27,13 +23,9 @@ export const getInvoiceById = async (req, res, next) => {
             ...invoice.toObject(),
             totals: invoice.totals
         })
-    } catch (err) {
-        next(err)
-    }
-}
+})
 
-export const createInvoice = async (req, res, next) => {
-    try {
+export const createInvoice = asyncHandler(async (req, res, next) => {
         const { customer, invoiceNumber, issueDate, dueDate, items, globalTaxRate, notes } = req.body
 
         const existingCustomer = await Customer.findOne({ _id: customer, user: req.user.id })
@@ -54,13 +46,9 @@ export const createInvoice = async (req, res, next) => {
             ...newInvoice.toObject(),
             totals: newInvoice.totals
         })
-    } catch (err) {
-        next(err)
-    }
-}
+})
 
-export const updateInvoice = async (req, res, next) => {
-    try {
+export const updateInvoice = asyncHandler(async (req, res, next) => {
         const invoice = await Invoice.findOneAndUpdate(
             { _id: req.params.id, user: req.user.id },
             req.body,
@@ -71,17 +59,10 @@ export const updateInvoice = async (req, res, next) => {
             ...invoice.toObject(),
             totals: invoice.totals
         })
-    } catch (err) {
-        next(err)
-    }
-}
+})
 
-export const deleteInvoice = async (req, res, next) => {
-    try {
+export const deleteInvoice = asyncHandler(async (req, res, next) => {
         const invoice = await Invoice.findOneAndDelete({ _id: req.params.id, user: req.user.id })
         if (!invoice) return res.status(404).json({ message: "Invoice not found" })
         res.json({ message: "Invoice deleted successfully" })
-    } catch (err) {
-        next(err)
-    }
-}
+})

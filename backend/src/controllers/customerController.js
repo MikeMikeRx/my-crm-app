@@ -1,26 +1,18 @@
 import Customer from "../models/Customer.js"
+import { asyncHandler } from "../utils/asyncHandler.js"
 
-export const getCustomers = async (req, res, next) => {
-    try {
+export const getCustomers = asyncHandler(async (req, res, next) => {
         const customers = await Customer.find({ user: req.user.id }).sort({ createdAt: -1 })
         res.json(customers)
-    } catch (err) {
-        next(err)
-    }
-}
+})
 
-export const getCustomerById = async (req, res, next) => {
-    try {
+export const getCustomerById = asyncHandler(async (req, res, next) => {
         const customer = await Customer.findOne({ _id: req.params.id, user: req.user.id })
         if (!customer) return res.status(404).json({ message: "Customer not found" })
         res.json(customer)
-    } catch (err) {
-        next(err)
-    }
-}
+})
 
-export const createCustomer = async (req, res, next) => {
-    try {
+export const createCustomer = asyncHandler(async (req, res, next) => {
         const { name, email, phone, company, address } = req.body
         if (!name) return res.status(400).json({ message: "Name is required" })
 
@@ -34,12 +26,9 @@ export const createCustomer = async (req, res, next) => {
         })
 
         res.status(201).json(newCustomer)
-    } catch (err) {
-        next(err)
-    }
-}
+})
 
-export const updateCustomer = async (req, res, next) => {
+export const updateCustomer = asyncHandler(async (req, res, next) => {
     try {
         const customer = await Customer.findOneAndUpdate(
             {_id: req.params.id, user: req.user.id },
@@ -51,9 +40,9 @@ export const updateCustomer = async (req, res, next) => {
     } catch (err) {
         next(err)
     }
-}
+})
 
-export const deleteCustomer = async (req, res, next) => {
+export const deleteCustomer = asyncHandler(async (req, res, next) => {
     try {
         const customer = await Customer.findOneAndDelete({ _id: req.params.id, user: req.user.id })
         if (!customer) return res.status(404).json({ message: "Customer not found" })
@@ -61,4 +50,4 @@ export const deleteCustomer = async (req, res, next) => {
     } catch (err) {
         next(err)
     }
-}
+})

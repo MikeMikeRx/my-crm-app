@@ -1,8 +1,8 @@
 import Payment from "../models/Payment.js"
 import Invoice from "../models/Invoice.js"
+import { asyncHandler } from "../utils/asyncHandler.js"
 
-export const getPayments = async (req, res, next) => {
-    try {
+export const getPayments = asyncHandler(async (req, res, next) => {
         const payments = await Payment.find({ user: req.user.id })
             .populate({
                 path: "invoice",
@@ -11,13 +11,9 @@ export const getPayments = async (req, res, next) => {
             })
             .sort({ paymentDate: -1 })
         res.json(payments)
-    } catch (err) {
-        next(err)
-    }
-}
+})
 
-export const getPaymentById = async (req, res, next) => {
-    try {
+export const getPaymentById = asyncHandler(async (req, res, next) => {
         const payment = await Payment.findOne({_id: req.params.id, user: req.user.id })
             .populate({
                 path: "invoice",
@@ -26,13 +22,9 @@ export const getPaymentById = async (req, res, next) => {
             })
         if (!payment) return res.status(404).json({ message: "Payment not found" })
         res.json(payment)
-    } catch (err) {
-        next(err)
-    }
-}
+})
 
-export const createPayment = async (req, res, next) => {
-    try {
+export const createPayment = asyncHandler(async (req, res, next) => {
         const { invoice, amount, paymentDate, paymentMethod, notes } = req.body
 
         if (!invoice || amount == null || !paymentMethod) {
@@ -67,17 +59,10 @@ export const createPayment = async (req, res, next) => {
         }
 
         res.status(201).json(payment)
-    } catch (err) {
-        next(err)
-    }
-}
+})
 
-export const deletePayment = async (req, res, next) => {
-    try {
+export const deletePayment = asyncHandler(async (req, res, next) => {
         const payment = await Payment.findOneAndDelete({ _id: req.params.id, user: req.user.id })
         if (!payment) return res.status(404).json({ message: "Payment not found" })
         res.json({ message: "Payment deleted successfully" })
-    } catch(err) {
-        next(err)
-    }
-}
+})

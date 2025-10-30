@@ -1,8 +1,9 @@
 import Quote from "../models/Quote.js"
 import Customer from "../models/Customer.js"
+import { asyncHandler } from "../utils/asyncHandler.js"
 
-export const getQuotes = async (req, res, next) => {
-    try {
+export const getQuotes = asyncHandler(async (req, res, next) => {
+
         const quotes = await Quote.find({ user: req.user.id })
             .populate("customer", "name email company")
             .sort({ createdAt: -1 })
@@ -12,13 +13,9 @@ export const getQuotes = async (req, res, next) => {
             totals: q.totals
         }))
         res.json(withTotals)
-    } catch (err) {
-        next(err)
-    }
-}
+})
 
-export const getQuoteById = async (req, res, next) => {
-    try {
+export const getQuoteById = asyncHandler(async (req, res, next) => {
         const quote = await Quote.findOne({ _id: req.params.id, user: req.user.id })
             .populate("customer", "name email company")
         if (!quote) return res.status(404).json({message: "Quote not found "})
@@ -26,13 +23,9 @@ export const getQuoteById = async (req, res, next) => {
             ...quote.toObject(),
             totals: quote.totals
         })
-    } catch (err) {
-        next(err)
-    }
-}
+})
 
-export const createQuote = async (req, res, next) => {
-    try {
+export const createQuote = asyncHandler(async (req, res, next) => {
         const { customer, quoteNumber, issueDate, expiryDate, items, globalTaxRate, notes } = req.body
 
         const existingCustomer = await Customer.findOne({ _id: customer, user: req.user.id })
@@ -53,13 +46,9 @@ export const createQuote = async (req, res, next) => {
             ...newQuote.toObject(),
             totals: newQuote.totals
         })
-    } catch (err) {
-        next(err)
-    }
-}
+})
 
-export const updateQuote = async (req, res, next) => {
-    try {
+export const updateQuote = asyncHandler(async (req, res, next) => {
         const quote = await Quote.findOneAndUpdate(
             { _id: req.params.id, user: req.user.id },
             req.body,
@@ -70,17 +59,10 @@ export const updateQuote = async (req, res, next) => {
             ...quote.toObject(),
             totals: quote.totals
         })
-    } catch (err) {
-        next(err)
-    }
-}
+})
 
-export const deleteQuote = async (req, res, next) => {
-    try {
+export const deleteQuote = asyncHandler(async (req, res, next) => {
         const quote = await Quote.findOneAndDelete({ _id: req.params.id, user: req.user.id })
         if (!quote) return res.status(404).json({ message: "Quote not found" })
         res.json({ message: "Quote deleted successfully" })
-    } catch (err) {
-        next(err)
-    }
-}
+})

@@ -1,9 +1,9 @@
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import User from "../models/User.js"
+import { asyncHandler } from "../utils/asyncHandler.js"
 
-export const registerUser = async (req, res, next) => {
-    try {
+export const registerUser = asyncHandler(async (req, res, next) => {
         const { name, email, password } = req.body
 
         if (!name || !email || !password) {
@@ -30,13 +30,9 @@ export const registerUser = async (req, res, next) => {
             token,
             user: { id: user._id, name: user.name, email: user.email },
         })
-    } catch (err) {
-        next (err)
-    }
-}
+})
 
-export const loginUser = async (req, res, next) => {
-    try {
+export const loginUser = asyncHandler(async (req, res, next) => {
         const { email, password } = req.body
 
         if (!email || !password) {
@@ -64,13 +60,9 @@ export const loginUser = async (req, res, next) => {
             token,
             user: { id: user._id, name: user.name, email: user.email },
         })
-    } catch (err) {
-        next(err)
-    }
-}
+})
 
-export const getProfile = async (req, res, next) => {
-    try {
+export const getProfile = asyncHandler(async (req, res, next) => {
         const user = await User.findById(req.user.id).select("-password")
 
         if (!user) {
@@ -78,7 +70,4 @@ export const getProfile = async (req, res, next) => {
         }
         
         res.json(user)
-    } catch (err) {
-        next(err)
-    }
-}
+})
