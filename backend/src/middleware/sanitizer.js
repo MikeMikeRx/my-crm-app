@@ -1,29 +1,40 @@
-import sanitize from "mongo-sanitize"
+import mongoSanitize from "mongo-sanitize"
 import sanitizeHtml from "sanitize-html"
 
-export const sanitizeMiddleware = (app) => {        
-    const sanitizeObject = (obj) => {
-        if(typeof obj !== "object" || obj === null) {
-            return res.status(400).json({ message: "Invalid company value"})
-        }
+export const sanitizeMiddleware = (app) => {
+    const deepSanitizeHtml = (obj) => {
+        if (obj === null || typeof obj !== "object") return obj
 
         for (const key in obj) {
-            if (typeof obj[key] === "object") {
-                sanitizeObject(obj[key])
-            } else if (typeof obj[key] === "string") {
-                obj[key] = sanitizeHtml(obj[key], {
+            if (!Object.prototype.hasOwnProperty.call(obj, key)) continue
+            const value = obj[key]
+
+            if (typeof value === "string") {
+                obj[key] = sanitizeHtml(value, {
                     allowedTags: [],
                     allowedAttributes: {},
                 })
-                obj[key] = sanitize(obj[key])
+            } else if (typeof value === "object") {
+                deepSanitizeHtml(value)
             }
         }
+        return obj
     }
 
-    app.use((req, res, next) => {        
-        if (req.body) sanitizeObject(req.body)
-        if (req.params) sanitizeObject(req.params)
-        if (req.query) sanitizeObject(req.query)
-        next()
+    app.use((req, res, next) => {
+        try {
+            if (req.body) req.body = mongoSanitize(req.body)
+            if (req.query) req.query = mongoSanitize(req.query)
+            if (req.params) req.params = mongoSanitize(req.params)
+
+            deepSanitizeHtml(req.body)
+            deepSanitizeHtml(req.query)
+            deepSanitizeHtml(req.params)
+
+            next()
+        } catch (err) {
+            console.error("❌ Sanitization error:", err)
+            res.status(400).json({ message: "Invalid input detected" })
+        }
     })
 }

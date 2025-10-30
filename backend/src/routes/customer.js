@@ -38,12 +38,16 @@ const customerValidationRules = [
     body("company")
         .optional()
         .trim()
-        .escape(),
+        .escape()
+        .isString()
+        .withMessage("Company must be a string"),
 
     body("address")
         .optional()
         .trim()
         .escape()
+        .isString()
+        .withMessage("Address must be a string")
 ]
 
 router.post("/", customerValidationRules, validateRequest, createCustomer)
