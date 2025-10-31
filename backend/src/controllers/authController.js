@@ -17,7 +17,12 @@ export const registerUser = asyncHandler(async (req, res, next) => {
 
         const hashedPassword = await bcrypt.hash(password, 10)
 
-        const user = await User.create({ name, email, password: hashedPassword })
+        const user = await User.create({
+            name,
+            email,
+            password: hashedPassword,
+            role: role === "admin" ? "admin" : "user", 
+        })
 
         const token = jwt.sign(
             { id: user._id, email: user.email },

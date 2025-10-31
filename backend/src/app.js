@@ -5,6 +5,7 @@ import compression from "compression"
 import mongoose from "mongoose"
 import morgan from "morgan"
 import authRoutes from "./routes/auth.js"
+import adminRoutes from "./routes/admin.js"
 import customerRoutes from "./routes/customer.js"
 import invoiceRoutes from "./routes/invoice.js"
 import quoteRoutes from "./routes/quote.js"
@@ -46,6 +47,7 @@ app.use(globalRateLimiter)
 
 // Routes
 app.use("/api/auth", authRoutes)
+app.use("/api/admin", adminRoutes)
 app.use("/api/customers", customerRoutes)
 app.use("/api/invoices", invoiceRoutes)
 app.use("/api/quotes", quoteRoutes)
