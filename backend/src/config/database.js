@@ -1,14 +1,23 @@
 import mongoose from "mongoose"
 
 export const connectDB = async () => {
-    try {
-        await mongoose.connect(process.env.DATABASE, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        })
-        console.log("✅ MongoDB connected")        
-    } catch (err) {
-        console.error("❌ MongoDB connection error:", err.message)
-        process.exit(1)
+    const connect = async () => {
+        try {
+            await mongoose.connect(process.env.DATABASE, {
+                serverSelectionTimeoutMS: 5000,
+            })
+            console.log("✅ MongoDB connected")
+        } catch (err) {
+            console.error("❌ MongoDB connection error:", err.message)
+
+            setTimeout(connect, 5000)
+        }
     }
+
+    mongoose.connection.on("disconnected", () => {
+        console.warn("⚠️ MongoDB disconnected. Attempting to reconnect...")
+        setTimeout(connect, 5000)
+    })
+
+    await connect()
 }
