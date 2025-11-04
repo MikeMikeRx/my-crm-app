@@ -40,6 +40,16 @@ export interface Quote {
     updatedAt?: string;
 }
 
+export interface QuoteCreate {
+    customer: ID;
+    quoteNumber: string;
+    issueDate: string;
+    expiryDate?: string;
+    items: LineItem[];
+    globalTaxRate?: number;
+    notes?: string;
+}
+
 export type QuoteUpdate = Partial<Pick<Quote, "status" | "items" | "globalTaxRate" | "notes" | "expiryDate">>;
 
 export type InvoiceStatus = "unpaid" | "paid" | "overdue" | "void";
