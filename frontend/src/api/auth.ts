@@ -29,6 +29,6 @@ export async function register(payload: RegisterRequest): Promise<LoginResponse>
 }
 
 export async function getProfile(): Promise<LoginResponse["user"]> {
-    const { data } = await api.post<LoginResponse["user"]>("/auth/profile");
+    const { data } = await api.get<LoginResponse["user"]>("/auth/profile");
     return data;
 }
