@@ -31,7 +31,7 @@ export default function AppLayout(){
 
             <Layout>
                 <Header className="flex justify-end items-center bg-white shadow-sm px-6">
-                    <button onClick={logout} className="flex-items-center gap-2 text-red-600 hover:text-red-800">
+                    <button onClick={logout} className="flex items-center gap-2 text-red-600 hover:text-red-800">
                         <LogoutOutlined /> Logout
                     </button>
                 </Header>
