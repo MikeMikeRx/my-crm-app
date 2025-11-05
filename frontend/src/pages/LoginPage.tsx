@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Card, Form, Input, Typography, message } from "antd";
+import { Button, Card, Form, Input, message } from "antd";
 import { useAuthStore } from "@/context/authStore";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
