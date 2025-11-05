@@ -6,6 +6,12 @@ import { useAuthStore } from "./context/authStore.ts";
 import "antd/dist/reset.css";
 import "@/index.css";
 
+//Testing -----------------------------------
+if (import.meta.env.DEV) {
+  (window as any).useAuthStore = useAuthStore;
+}
+//-------------------------------------------
+
 function Bootsrap() {
   const fetchProfile = useAuthStore((s) => s.fetchProfile);
   React.useEffect(() => { fetchProfile(); }, [fetchProfile]);
