@@ -6,7 +6,6 @@ import {
     getPayments,
     getPaymentById,
     createPayment,
-    deletePayment,
 } from "../controllers/paymentController.js"
 
 const router = express.Router()
@@ -48,6 +47,5 @@ const paymentValidationRules = [
 router.post("/", paymentValidationRules, validateRequest, createPayment)
 router.get("/", getPayments)
 router.get("/:id", getPaymentById)
-router.delete("/:id", deletePayment)
 
 export default router
