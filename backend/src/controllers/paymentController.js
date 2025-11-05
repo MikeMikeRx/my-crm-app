@@ -60,9 +60,3 @@ export const createPayment = asyncHandler(async (req, res, next) => {
 
         res.status(201).json(payment)
 })
-
-export const deletePayment = asyncHandler(async (req, res, next) => {
-        const payment = await Payment.findOneAndDelete({ _id: req.params.id, user: req.user.id })
-        if (!payment) return res.status(404).json({ message: "Payment not found" })
-        res.json({ message: "Payment deleted successfully" })
-})
