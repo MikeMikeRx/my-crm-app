@@ -58,7 +58,7 @@ export default function CustomerFormModal({ open, onClose, onSuccess, editing }:
             title={editing ? "Edit Customer" : "New Customer"}
             onCancel={onClose}
             footer={null}
-            destroyOnClose
+            destroyOnHidden
         >
             <Form layout="vertical" onFinish={handleSubmit(submit)}>
                 {(["name", "email", "phone", "company", "address"] as const).map((field) => (
