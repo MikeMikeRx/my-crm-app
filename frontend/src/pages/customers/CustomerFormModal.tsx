@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Modal, Form, Input, Button, message } from "antd";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
@@ -28,6 +29,10 @@ export default function CustomerFormModal({ open, onClose, onSuccess, editing }:
         resolver: zodResolver(schema),
         defaultValues: editing || { name: "", email: "", phone: "", company: "", address: ""},
     });
+
+    useEffect(() => {
+        reset(editing || { name: "", email: "", phone: "", company: "", address: ""})
+    }, [editing, reset])
 
     const submit = async (values: FormValues) => {
         try {
