@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Card, Form, Input, message } from "antd";
@@ -15,8 +15,8 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function LoginPage () {
-    const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
-        resolver: zodResolver(schema),
+    const { control, handleSubmit, formState: { errors } } = useForm<FormValues>({
+        resolver: zodResolver(schema), defaultValues: { email: "", password: ""},
     });
 
     const navigate = useNavigate();
@@ -47,15 +47,27 @@ export default function LoginPage () {
                         validateStatus={errors.email ? "error" : ""}
                         help={errors.email?.message}
                     >
-                        <Input {...register("email")} placeholder="you@example.com" />
+                        <Controller
+                            name="email"
+                            control={control}
+                            render={({ field }) => (
+                                <Input { ...field } placeholder="you@example.com" />
+                            )}
+                        />   
                     </Form.Item>
 
                     <Form.Item
-                            label="Password"
-                            validateStatus={errors.password ? "error" : ""}
-                            help={errors.password?.message}
-                        >
-                        <Input.Password {...register("password")} placeholder="••••••••" />
+                        label="Password"
+                        validateStatus={errors.password ? "error" : ""}
+                        help={errors.password?.message}
+                    >
+                        <Controller
+                            name="password"
+                            control={control}
+                            render={({ field }) => (
+                                <Input.Password { ...field } placeholder="••••••••" />
+                            )}
+                        />
                     </Form.Item>
 
                     <Button type="primary" htmlType="submit" block loading={loading} disabled={loading}>
