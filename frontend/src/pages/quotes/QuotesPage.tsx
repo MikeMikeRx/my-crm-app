@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import dayjs from "dayjs"
 import { Table, Button, Space, Popconfirm, Tag, message } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { listQuotes, deleteQuote } from "@/api/quotes";
-import type { Quote } from "@/types/entities";
+import type { Quote, LineItem } from "@/types/entities";
 import QuoteFormModal from "./QuoteFormModal";
 
 export default function QuotesPage() {
@@ -31,12 +32,40 @@ export default function QuotesPage() {
         load();
     };
 
+    const calcTotal = (items: LineItem[] = [], globalTaxRate?: number) => {
+        return items.reduce((sum, i) => {
+            const qty = Number(i.quantity) || 0;
+            const price = Number(i.unitPrice) || 0;
+            const line = qty * price;
+            const taxPct = (i.taxRate ?? globalTaxRate ?? 0) /100;
+            return sum + line * (1 + taxPct);
+        }, 0);
+    };
+
+    const fmtMoney = (v: unknown) =>
+        isFinite(Number(v)) ? Number(v).toFixed(2) : "0.00";
+
     const columns: ColumnsType<Quote> = [
         { title: "Quote #", dataIndex: "quoteNumber" },
         { title: "Customer", dataIndex: "customer" },
-        { title: "Issue", dataIndex: "issueDate" },
-        { title: "Expiry", dataIndex: "expiryDate" },
-        { title: "Total", dataIndex: "total" },
+        { 
+            title: "Issue Date",
+            dataIndex: "issueDate",
+            render: (v) => (v ? dayjs(v).format("YYYY-MM-DD") : "-"),
+        },
+        { 
+            title: "Expiry Date",
+            dataIndex: "expiryDate",
+            render: (v) => (v ? dayjs(v).format("YYYY-MM-DD") : "-"),
+        },
+        { 
+            title: "Total",
+            render: (_, record) => {
+                const total = record.total ?? calcTotal(record.items, record.globalTaxRate);
+                return `$${fmtMoney(total)}`;
+            },
+
+        },
         {
             title: "Status",
             dataIndex: "status",

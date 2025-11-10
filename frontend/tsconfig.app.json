@@ -16,10 +16,6 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    //Module Interop
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
@@ -31,7 +27,7 @@
     "baseUrl": "./src",
     "paths": {
       "@/*": ["./*"]
-    },
+    }
     
   },
   "include": ["src"]
