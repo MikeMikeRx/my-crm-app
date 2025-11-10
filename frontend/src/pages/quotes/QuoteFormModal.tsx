@@ -38,29 +38,31 @@ interface Props {
 export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Props) {
     const { control, handleSubmit, reset, formState: { errors }, watch } = useForm<FormValues>({
         resolver: zodResolver(schema),
-        defaultValues: editing || {
-            customer: "",
-            quoteNumber: "",
-            issueDate: dayjs().format("YYYY-MM-DD"),
-            expiryDate: "",
-            globalTaxRate: 0,
-            notes: "",
-            items: [{ description: "", quantity: 1, unitPrice: 0, taxRate: 0 }],
-        },
-    });
+        defaultValues: editing
+            ? {...editing,
+            customer:
+            typeof editing.customer === "object" && editing.customer !== null
+                    ? (editing.customer as { _id: string })._id
+                    : (editing.customer as string) || "",
+                issueDate: editing.issueDate,
+                expiryDate: editing.expiryDate,
+            } : { customer: "", quoteNumber: "", issueDate: "", expiryDate: "", items: [], notes: ""}
+            });
 
     const { fields, append, remove } = useFieldArray({ control, name: "items" });
 
     useEffect(() => {
-        reset(editing || {
-            customer: "",
-            quoteNumber: "",
-            issueDate: dayjs().format("YYYY-MM-DD"),
-            expiryDate: "",
-            globalTaxRate: 0,
-            notes: "",
-            items: [{ description: "", quantity: 1, unitPrice: 0, taxRate: 0 }],
-        });
+        const normalized = editing
+        ? {
+            ...editing,
+            customer:
+                typeof editing.customer === "object" && editing.customer !== null
+                    ? (editing.customer as { _id: string })._id
+                    : (editing.customer as string) || "",
+            issueDate: editing.issueDate,
+            expiryDate: editing.expiryDate,
+        }
+        : { customer: "", quoteNumber: "", issueDate: "", expiryDate: "", items: [], notes: ""};reset(normalized);
     }, [editing, reset]);
 
     const submit = async (values: FormValues) => {
@@ -101,12 +103,23 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
                 </Form.Item>
 
                 <Space className="w-full mb-4" size="middle">
-                    <Controller name="issueDate" control={control} render={({ field }) =>
-                        <DatePicker {...field} value={dayjs(field.value)} onChange={d => field.onChange(d?.format("YYYY-MM-DD"))} />}
+                    <Controller name="issueDate" control={control} render={({ field }) => (
+                        <DatePicker
+                            {...field}
+                            value={field.value ? dayjs(field.value) : null}
+                            onChange={(d) => field.onChange(d ? d.toISOString() : "")}
+                            />
+                        )}
                     />
-                    <Controller name="expiryDate" control={control} render={({ field }) => 
-                        <DatePicker {...field} value={field.value ? dayjs(field.value) : undefined}
-                            onChange={d => field.onChange(d?.format("YYYY-MM-DD"))} />} />
+
+                    <Controller name="expiryDate" control={control} render={({ field }) => (
+                        <DatePicker
+                            {...field}
+                            value={field.value ? dayjs(field.value) : null}
+                            onChange={(d) => field.onChange(d ? d.toISOString() : "")}
+                            />
+                        )}
+                    />
                 </Space>
 
                 <h3 className="font-semibold mb-2">Items</h3>
