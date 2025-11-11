@@ -9,32 +9,54 @@ import { listQuotes, getQuote } from "@/api/quotes";
 import type { Invoice, InvoiceCreate, Quote, LineItem } from "@/types/entities";
 import { getApiError } from "@/api/client";
 
+/* ----------------------- Schema Definition ----------------------- */
+
+// Validation rules using Zod for type-safe form checking
 const itemSchema = z.object({
     description: z.string().min(1),
     quantity: z.number().min(1),
-    unitPrice: z.number().min(0).max(100).optional(),
+    unitPrice: z.number().min(0),
     taxRate: z.number().min(0).max(100).optional(),
 });
 
 const schema = z.object({
     customer: z.string().min(1, "Customer ID required"),
     invoiceNumber: z.string().min(1, "Invoice number required"),
-    issueDate: z.string().min(1),
-    dueDate: z.string().min(1),
+    issueDate: z.any(),
+    dueDate: z.any(),
     items: z.array(itemSchema).min(1, "Add at least one item"),
     notes: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
 
+/* ----------------------- Component Props ----------------------- */
 interface Props {
     open: boolean;
     onClose: () => void;
     onSuccess: () => void;
     editing: Invoice | null;
 }
+/* ----------------------- Ivoice form Component ----------------------- */
+export default function InvoiceFormModal({
+    open,
+    onClose,
+    onSuccess,
+    editing
+}: Props) {
+    
+    // Generate unique invoice number
+    const genInvoiceNumber = () => 
+         `INV-${dayjs().format("YYYYMMDD")}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-export default function InvoiceFormModal({ open, onClose, onSuccess, editing }: Props) {
+    // Handle invalid Zod validation
+    const onInvalid = (errs: any) => {
+        const first = Object.values(errs)[0] as any;
+        message.error(first?.message || "Please fix form errors");
+        console.log("Form errors:", errs);
+    };
+
+/* ---------------------- React Hook Form setup ------------------ */
     const { control, handleSubmit, reset, watch, formState: { errors } } = useForm<FormValues>({
         resolver: zodResolver(schema),
         defaultValues: editing
@@ -47,23 +69,24 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing }: 
         }
         : {
             customer: "",
-            invoiceNumber: "",
+            invoiceNumber: genInvoiceNumber(),
             issueDate: dayjs().format("YYYY-MM-DD"),
             dueDate: dayjs().add(14, "day").format("YYYY-MM-DD"),
             items: [],
             notes: "",
         },
     });
-
+    
     const { fields, append, remove } = useFieldArray({ control, name: "items" });
-
     const items = watch("items");
-
+    
+    // Live total calculation
     const total = useMemo(() => 
         items.reduce((sum, i) =>
             sum + (i.quantity || 0) * (i.unitPrice || 0) * (1 + (i.taxRate || 0) /100),
         0), [items]);
 
+    // Edit mode setup
     useEffect(() => {
         if (editing) {
             reset({
@@ -90,7 +113,7 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing }: 
                     typeof quote.customer === "object" && quote.customer !== null
                     ? (quote.customer as { _id: string })._id
                     : (quote.customer as string) || "",
-                invoiceNumber: "",
+                invoiceNumber: genInvoiceNumber(),
                 issueDate: dayjs().format("YYYY-MM-DD"),
                 dueDate: dayjs().add(14, "day").format("YYYY-MM-DD"),
                 items: quote.items as LineItem[],
@@ -101,13 +124,14 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing }: 
             message.error("Failed to load quote");
         }
     };
-
+    
+    /* ------------------- Submit handler ---------------------- */
     const submit = async (values: FormValues) => {
         try {
             const payload: InvoiceCreate = {
                 ...values,
                 issueDate: dayjs(values.issueDate).format("YYYY-MM-DD"),
-                dueDate: dayjs(values.dueDate).format("YYYY-MM_DD"),
+                dueDate: dayjs(values.dueDate).format("YYYY-MM-DD"),
             };
             if (editing) {
                 await updateInvoice(editing._id, payload);
@@ -123,7 +147,8 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing }: 
             message.error(msg);
         }
     };
-
+    
+    /* ----------------------- JSX ----------------------- */
     return (
         <Modal
             open={open}
@@ -133,7 +158,7 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing }: 
             destroyOnHidden
             width={800}
         >
-            <Form layout="vertical" onFinish={handleSubmit(submit)}>
+            <form onSubmit={handleSubmit(submit, onInvalid)} className="flex flex-col gap-4">
                 {!editing && (
                     <Form.Item label="Import from Quote">
                         <Select
@@ -151,12 +176,16 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing }: 
                     <Controller name="customer" control={control} render={({ field }) => <Input {...field} />} />
                 </Form.Item>
 
+                <Form.Item label="Invoice Number" validateStatus={errors.invoiceNumber ? "error" : ""} help={errors.invoiceNumber?.message}>
+                    <Controller name="invoiceNumber" control={control} render={({ field }) => <Input { ...field } />} />
+                </Form.Item>
+
                 <Space className="w-full mb-4" size="large">
                     <Controller name="issueDate" control={control} render={({ field }) =>
-                        <DatePicker {...field} value={field.value ? dayjs(field.value) : null } onChange={d => field.onChange(d?.format("YYYY-MM-DD"))} />
+                        <DatePicker {...field} value={field.value ? dayjs(field.value) : null } onChange={(d) => field.onChange(d?.format("YYYY-MM-DD"))} />
                     } />
                     <Controller name="dueDate" control={control} render={({ field }) =>
-                        <DatePicker {...field} value={field.value ? dayjs(field.value) : null } onChange={d => field.onChange(d?.format("YYYY-MM-DD"))} />
+                        <DatePicker {...field} value={field.value ? dayjs(field.value) : null } onChange={(d) => field.onChange(d?.format("YYYY-MM-DD"))} />
                     } />                    
                 </Space>
 
@@ -191,7 +220,7 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing }: 
                 <Button type="primary" htmlType="submit" block>
                     {editing ? "Update Invoice" : "Create Invoice"}
                 </Button>
-            </Form>
+            </form>
         </Modal>
     )
 }
