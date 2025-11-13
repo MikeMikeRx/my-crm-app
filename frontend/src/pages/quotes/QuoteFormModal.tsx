@@ -1,14 +1,29 @@
-import { Modal, Form, Input, InputNumber, Button, DatePicker, Space, message } from "antd";
+import { useState, useEffect } from "react";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import dayjs from "dayjs";
+import { listCustomers } from "@/api/customers";
 import { createQuote, updateQuote } from "@/api/quotes";
-import type { Quote, QuoteCreate } from "@/types/entities";
+import type { Customer, Quote, QuoteCreate } from "@/types/entities";
 import { getApiError } from "@/api/client";
-import { useEffect } from "react";
+import {
+    Modal,
+    Form,
+    Input,
+    InputNumber,
+    Button,
+    DatePicker,
+    Space,
+    message,
+    Select,
+    Table,
+    Card,
+    Typography
+} from "antd";
 
+/* ----------------------- Schema Definition ----------------------- */
 const itemSchema = z.object({
     description: z.string().min(1, "Description required"),
     quantity: z.number().min(1),
@@ -35,7 +50,18 @@ interface Props {
     editing: Quote | null;
 }
 
+const { Text } = Typography;
+
+/* ----------------------- Quote Form Modal ----------------------- */
 export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Props) {
+    const [customers, setCustomers] = useState<Customer[]>([])
+
+    useEffect(() => {
+        listCustomers()
+            .then(setCustomers)
+            .catch(() => message.error("Failed to load customers"))
+    }, [])
+
     const { control, handleSubmit, reset, formState: { errors }, watch } = useForm<FormValues>({
         resolver: zodResolver(schema),
         defaultValues: editing
@@ -62,8 +88,12 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
             issueDate: editing.issueDate,
             expiryDate: editing.expiryDate,
         }
-        : { customer: "", quoteNumber: "", issueDate: "", expiryDate: "", items: [], notes: ""};reset(normalized);
+        : { customer: "", quoteNumber: "", issueDate: "", expiryDate: "", items: [{ description: "", quantity: 1, unitPrice: 0, taxRate: 0 }], notes: ""};reset(normalized);
     }, [editing, reset]);
+
+    const items = watch("items");
+
+    const total = items.reduce((sum, i) => sum + i.quantity * i.unitPrice * (1 + (i.taxRate || 0) /100), 0);
 
     const submit = async (values: FormValues) => {
         try {
@@ -87,22 +117,132 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
         }
     };
 
-    const items = watch("items");
+    /* --------------------------- AntD Table Columns --------------------------- */
+    const columns = [
+        {
+            title: "Description",
+            dataIndex: "description",
+            width: 130,
+            render: (_: any, __: any, idx: number) => (
+                <Controller
+                    name={`items.${idx}.description`}
+                    control={control}
+                    render={({ field }) =>
+                        <Input 
+                            value={field.value ?? ""}
+                            placeholder="Description"
+                            onChange={(e) => field.onChange(e.target.value)}
+                        />
+                    }
+                />
+            ),
+        },
+        {
+            title: "Qty",
+            dataIndex: "quantity",
+            width: 100,
+            render: (_: any, __: any, idx: number) => (
+                <Controller
+                    name={`items.${idx}.quantity`}
+                    control={control}
+                    render={({ field }) => 
+                        <InputNumber
+                            value={field.value ?? 0}
+                            min={1} onChange={(v) =>field.onChange(v)}
+                        />
+                    }
+                />
+            ),
+        },
+        {
+            title: "Price",
+            dataIndex: "unitPrice",
+            width: 100,
+            render: (_: any, __: any, idx: number) => (
+                <Controller
+                    name={`items.${idx}.unitPrice`}
+                    control={control}
+                    render={({ field }) =>
+                        <InputNumber value={field.value ?? 0} min={0} onChange={(v) => field.onChange(v)} />
+                    }
+                />
+            ),
+        },
+        {
+            title: "Tax %",
+            dataIndex: "taxRate",
+            width: 100,
+            render: (_: any, __: any, idx: number) => (
+                <Controller
+                    name={`items.${idx}.taxRate`}
+                    control={control}
+                    render={({ field }) =>
+                        <InputNumber
+                        value={field.value ?? 0}
+                        min={0} max={100}
+                        onChange={(v) => field.onChange(v)}
+                        />
+                    }
+                />
+            ),
+        },
+        {
+            title: "",
+            width: 50,
+            render: (_: any, __: any, idx: number) => (
+                <Button
+                    icon={<DeleteOutlined />}
+                    onClick={() => remove(idx)}
+                />
+            ),
+        },
+    ];
 
-    const total = items.reduce((sum, i) => sum + i.quantity * i.unitPrice * (1 + (i.taxRate || 0) /100), 0);
-
+    /* --------------------------------------- JSX -------------------------------------------------- */
     return (
+        // --------------------------- Modal Form -------------------------------------------------------
         <Modal open={open} title={editing ? "Edit Quote" : "New Quote"} onCancel={onClose} footer={null} destroyOnHidden>
             <Form layout="vertical" onFinish={handleSubmit(submit)}>
-                <Form.Item label="Customer ID" validateStatus={errors.customer ? "error" : ""} help={errors.customer?.message}>
-                    <Controller name="customer" control={control} render={({ field}) => <Input {...field} />} />
+                {/* Customer */}
+                <Form.Item
+                    label={<span style={{ fontWeight: 450 }}>Customer</span>}
+                    validateStatus={errors.customer ? "error" : ""}
+                    help={errors.customer?.message}
+                >
+                    <Controller name="customer" control={control} render={({ field }) => (
+                        <Select
+                            {...field}
+                            placeholder="Select customer"
+                            options={customers.map((c) => ({
+                                label: `${c.company} (${c.name})`,
+                                value: c._id,
+                            }))}
+                        />
+                    )}/>
                 </Form.Item>
 
-                <Form.Item label="Quote Number" validateStatus={errors.quoteNumber ? "error" : ""} help={errors.quoteNumber?.message}>
-                    <Controller name="quoteNumber" control={control} render={({ field }) => <Input {...field} />} />
+                {/* Quote Number*/}
+                <Form.Item
+                    label={<span style={{ fontWeight: 450 }}>Quote Number</span>}
+                    validateStatus={errors.quoteNumber ? "error" : ""}
+                    help={errors.quoteNumber?.message}
+                >
+                    <Controller
+                        name="quoteNumber"
+                        control={control}
+                        render={({ field }) => <Input {...field}/>
+                        }
+                    />
                 </Form.Item>
+                
+                {/* Issue/Expire Dates */}
+                <Space className="w-full mb-4" size="middle" align="start">
 
-                <Space className="w-full mb-4" size="middle">
+                    <Form.Item
+                        label={<span style={{ fontWeight: 450 }}>Issue Date</span>}
+                        validateStatus={errors.issueDate ? "error" : ""}
+                        help={typeof errors.issueDate?.message === "string" ? errors.issueDate.message : ""}
+                    >
                     <Controller name="issueDate" control={control} render={({ field }) => (
                         <DatePicker
                             {...field}
@@ -111,41 +251,64 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
                             />
                         )}
                     />
+                    </Form.Item>
 
-                    <Controller name="expiryDate" control={control} render={({ field }) => (
-                        <DatePicker
-                            {...field}
-                            value={field.value ? dayjs(field.value) : null}
-                            onChange={(d) => field.onChange(d ? d.toISOString() : "")}
-                            />
-                        )}
-                    />
+                    <Form.Item
+                        label={<span style={{ fontWeight: 450 }}>Expiry Date</span>}
+                        validateStatus={errors.expiryDate ? "error" : ""}
+                        help={typeof errors.expiryDate?.message === "string" ? errors.expiryDate.message : ""}
+                    >
+                        <Controller name="expiryDate" control={control} render={({ field }) => (
+                            <DatePicker
+                                {...field}
+                                value={field.value ? dayjs(field.value) : null}
+                                onChange={(d) => field.onChange(d ? d.toISOString() : "")}
+                                />
+                            )}
+                        />
+                    </Form.Item>
+
                 </Space>
 
+                {/* Add Item */}
                 <h3 className="font-semibold mb-2">Items</h3>
-                {fields.map((field, idx) => (
-                    <Space key={field.id} align="baseline" className="flex mb-2">
-                        <Controller name={`items.${idx}.description`} control={control}
-                            render={({ field }) => <Input {...field} placeholder="Description" />} />
-                        <Controller name={`items.${idx}.quantity`} control={control}
-                            render={({ field }) => <InputNumber {...field} min={1} placeholder="Qty" />}/>
-                        <Controller name={`items.${idx}.unitPrice`} control={control}
-                            render={({ field }) => <InputNumber {...field} min={0} placeholder="Unit Price" />} />
-                        <Controller name={`items.${idx}.taxRate`} control={control}
-                            render={({ field }) => <InputNumber {...field} min={0} max={100} placeholder="Tax %" />} />
-                        <Button icon={<DeleteOutlined />} onClick={() => remove(idx)} />
-                    </Space>
-                ))}
-                <Button icon={<PlusOutlined />} type="dashed" onClick={() => append({ description: "", quantity: 1, unitPrice: 0, taxRate: 0})}>
+                <Table
+                    columns={columns}
+                    dataSource={fields}
+                    pagination={false}
+                    rowKey="id"
+                    size="small"
+                    tableLayout="fixed"
+                    style={{ tableLayout: "fixed" }}
+                />
+                <Button
+                    icon={<PlusOutlined />}
+                    type="dashed" onClick={() => append({ description: "", quantity: 1, unitPrice: 0, taxRate: 0})}
+                >
                     Add Item
                 </Button>
+                
+                {/* Total price + Tax */}
+                <Form.Item noStyle>
+                    <Card
+                        size="small"
+                        style={{
+                            marginTop: 20,
+                            padding: 12,
+                            background: "#fafafa",
+                            textAlign: "right"
+                        }}
+                    >
+                        <Text strong style={{ fontSize: 18 }}>Total: ${total.toFixed(2)}</Text>
+                    </Card>
+                </Form.Item>
 
-                <div className="mt-4 font-semibold">Total: {total.toFixed(2)}</div>
-
+                {/* Notes */}
                 <Form.Item label="Notes">
                     <Controller name="notes" control={control} render={({ field }) => <Input.TextArea {...field} rows={3} />} />
                 </Form.Item>
 
+                {/* Create/Update Button */}
                 <Button type="primary" htmlType="submit" block>
                     {editing ? "Update" : "Create"}
                 </Button>
