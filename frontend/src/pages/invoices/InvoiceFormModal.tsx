@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import dayjs from "dayjs";
-import { Modal, Form, Input, InputNumber, DatePicker, Button, Space, message, Select } from "antd";
+import { Modal, Form, Input, InputNumber, DatePicker, Button, Space, message, Select, Table, Card, Typography } from "antd";
+import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,6 +30,8 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
+const { Text } = Typography;
+
 /* ----------------------- Component Props ----------------------- */
 interface Props {
     open: boolean;
@@ -37,23 +40,11 @@ interface Props {
     editing: Invoice | null;
 }
 /* ----------------------- Ivoice form Component ----------------------- */
-export default function InvoiceFormModal({
-    open,
-    onClose,
-    onSuccess,
-    editing
-}: Props) {
+export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: Props) {
     
     // Generate unique invoice number
     const genInvoiceNumber = () => 
          `INV-${dayjs().format("YYYYMMDD")}-${Math.floor(1000 + Math.random() * 9000)}`;
-
-    // Handle invalid Zod validation
-    const onInvalid = (errs: any) => {
-        const first = Object.values(errs)[0] as any;
-        message.error(first?.message || "Please fix form errors");
-        console.log("Form errors:", errs);
-    };
 
     /* ---------------------- React Hook Form setup ------------------ */
     const { control, handleSubmit, reset, watch, formState: { errors } } = useForm<FormValues>({
@@ -163,6 +154,87 @@ export default function InvoiceFormModal({
             message.error(msg);
         }
     };
+
+    /* --------------------------- AntD Table Columns --------------------------- */
+    const columns = [
+        {
+            title: "Description",
+            dataIndex: "description",
+            width: 130,
+            render: (_: any, __: any, idx: number) => (
+                <Controller
+                    name={`items.${idx}.description`}
+                    control={control}
+                    render={({ field }) =>
+                        <Input 
+                            value={field.value ?? ""}
+                            placeholder="Description"
+                            onChange={(e) => field.onChange(e.target.value)}
+                        />
+                    }
+                />
+            ),
+        },
+        {
+            title: "Qty",
+            dataIndex: "quantity",
+            width: 100,
+            render: (_: any, __: any, idx: number) => (
+                <Controller
+                    name={`items.${idx}.quantity`}
+                    control={control}
+                    render={({ field }) => 
+                        <InputNumber
+                            value={field.value ?? 0}
+                            min={1} onChange={(v) =>field.onChange(v)}
+                        />
+                    }
+                />
+            ),
+        },
+        {
+            title: "Price",
+            dataIndex: "unitPrice",
+            width: 100,
+            render: (_: any, __: any, idx: number) => (
+                <Controller
+                    name={`items.${idx}.unitPrice`}
+                    control={control}
+                    render={({ field }) =>
+                        <InputNumber value={field.value ?? 0} min={0} onChange={(v) => field.onChange(v)} />
+                    }
+                />
+            ),
+        },
+        {
+            title: "Tax %",
+            dataIndex: "taxRate",
+            width: 100,
+            render: (_: any, __: any, idx: number) => (
+                <Controller
+                    name={`items.${idx}.taxRate`}
+                    control={control}
+                    render={({ field }) =>
+                        <InputNumber
+                        value={field.value ?? 0}
+                        min={0} max={100}
+                        onChange={(v) => field.onChange(v)}
+                        />
+                    }
+                />
+            ),
+        },
+        {
+            title: "",
+            width: 50,
+            render: (_: any, __: any, idx: number) => (
+                <Button
+                    icon={<DeleteOutlined />}
+                    onClick={() => remove(idx)}
+                />
+            ),
+        },
+    ];
     
     /* ----------------------- JSX ----------------------- */
     return (
@@ -172,71 +244,115 @@ export default function InvoiceFormModal({
             onCancel={onClose}
             footer={null}
             destroyOnHidden
-            width={800}
         >
-            <form onSubmit={handleSubmit(submit, onInvalid)} className="flex flex-col gap-4">
-                {!editing && (
-                    <Form.Item label="Quote Number">
-                        <Select
-                            placeholder="Select a quote"
-                            onChange={handleQuoteSelect}
-                            options={quotes.map((q) => ({
-                                label: `${q.quoteNumber} - ${dayjs(q.issueDate).format("YYYY-MM-DD")}`,
-                                value: q._id,
-                            }))}
-                        />
-                    </Form.Item>
-                )}
+            <Form layout="vertical" onFinish={handleSubmit(submit)}>
 
-                <Form.Item label="Customer">
-                    <Input value={customerName} disabled />
+                {/* Quote Number */}
+                <Form.Item label="Quote Number">
+                    <Select
+                        placeholder="Select a quote"
+                        onChange={handleQuoteSelect}
+                        options={quotes.map((q) => ({
+                            label: `${q.quoteNumber} - ${dayjs(q.issueDate).format("YYYY-MM-DD")}`,
+                            value: q._id,
+                        }))}
+                    />
                 </Form.Item>
 
+                {/* Customer (disabled, auto-filled) */}
+                <Form.Item label="Customer">
+                    <Input value={customerName} readOnly />
+                </Form.Item>
+
+                {/* Invoice Number */}
                 <Form.Item label="Invoice Number" validateStatus={errors.invoiceNumber ? "error" : ""} help={errors.invoiceNumber?.message}>
                     <Controller name="invoiceNumber" control={control} render={({ field }) => <Input { ...field } />} />
                 </Form.Item>
 
-                <Space className="w-full mb-4" size="large">
-                    <Controller name="issueDate" control={control} render={({ field }) =>
-                        <DatePicker {...field} value={field.value ? dayjs(field.value) : null } onChange={(d) => field.onChange(d?.format("YYYY-MM-DD"))} />
-                    } />
-                    <Controller name="dueDate" control={control} render={({ field }) =>
-                        <DatePicker {...field} value={field.value ? dayjs(field.value) : null } onChange={(d) => field.onChange(d?.format("YYYY-MM-DD"))} />
-                    } />                    
+                {/* Issue/ Due Date */}
+                <Space className="w-full mb-4" size="middle" align="start">
+
+                    <Form.Item
+                        label={<span style={{ fontWeight: 450 }}>Issue Date</span>}
+                        validateStatus={errors.issueDate ? "error" : ""}
+                        help={typeof errors.issueDate?.message === "string" ? errors.issueDate.message : ""}
+                        >
+                            <Controller name="issueDate" control={control} render={({ field }) =>
+                                <DatePicker {...field} value={field.value ? dayjs(field.value) : null } onChange={(d) => field.onChange(d?.format("YYYY-MM-DD"))} />
+                            } />
+                    </Form.Item>
+
+                    <Form.Item
+                        label={<span style={{ fontWeight: 450 }}>Due Date</span>}
+                        validateStatus={errors.dueDate ? "error" : ""}
+                        help={typeof errors.dueDate?.message === "string" ? errors.dueDate.message : ""}
+                        >
+                            <Controller name="dueDate" control={control} render={({ field }) =>
+                                <DatePicker
+                                    {...field}
+                                    value={field.value ? dayjs(field.value) : null } onChange={(d) =>
+                                        field.onChange(d?.format("YYYY-MM-DD"))
+                                    }
+                                />
+                            }/>
+                    </Form.Item>
+
                 </Space>
 
+                {/* Items */}
                 <h3 className="font-semibold mb-2">Items</h3>
-                {fields.map((f, idx) => (
-                    <Space key={f.id} align="baseline" className="flex mb-2">
-                        <Controller name={`items.${idx}.description`} control={control} render={({ field }) =>
-                            <Input {...field} placeholder="Description" />
-                        } />
-                        <Controller name={`items.${idx}.quantity`} control={control} render={({ field }) =>
-                            <InputNumber {...field} min={1} placeholder="Qty" />
-                        } />
-                        <Controller name={`items.${idx}.unitPrice`} control={control} render={({ field }) =>
-                            <InputNumber {...field} min={0} placeholder="Unit Price" />
-                        } />
-                        <Controller name={`items.${idx}.taxRate`} control={control} render={({ field }) =>
-                            <InputNumber {...field} min={0} max={100} placeholder="Tax %" />
-                        } />
-                        <Button danger onClick={() => remove(idx)}>X</Button>
-                    </Space>
-                ))}
-                <Button type="dashed" onClick={() => append({ description: "", quantity: 1, unitPrice: 0, taxRate: 0 })}>
-                    + Add Item
+
+                <Table
+                    columns={columns}
+                    dataSource={fields}
+                    pagination={false}
+                    rowKey="id"
+                    size="small"
+                    tableLayout="fixed"
+                    style={{ tableLayout: "fixed" }}
+                />
+
+                <Button
+                    icon={<PlusOutlined />}
+                    type="dashed" onClick={() =>
+                        append({ description: "", quantity: 1, unitPrice: 0, taxRate: 0 })
+                        }
+                    >
+                    Add Item
                 </Button>
 
-                <div className="mt-4 font-semibold text-right">Total: ${total.toFixed(2)}</div>
-
-                <Form.Item label="Notes">
-                    <Controller name="notes" control={control} render={({ field }) => <Input.TextArea {...field} rows={3} />} />
+                {/* Total */}
+                <Form.Item noStyle>
+                    <Card
+                        size="small"
+                        style={{
+                            marginTop: 20,
+                            padding: 12,
+                            background: "#fafafa",
+                            textAlign: "right",
+                        }}
+                    >
+                        <Text strong style={{ fontSize: 18 }}>
+                            Total: ${total.toFixed(2)}
+                        </Text>
+                    </Card>
                 </Form.Item>
 
+                {/* Notes */}
+                <Form.Item label="Notes">
+                    <Controller
+                        name="notes"
+                        control={control}
+                        render={({ field }) =>
+                            <Input.TextArea {...field} rows={3} />}
+                    />
+                </Form.Item>
+
+                {/* Submit */}
                 <Button type="primary" htmlType="submit" block>
                     {editing ? "Update Invoice" : "Create Invoice"}
                 </Button>
-            </form>
+            </Form>
         </Modal>
-    )
+    );
 }
