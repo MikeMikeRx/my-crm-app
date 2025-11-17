@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import dayjs from "dayjs";
 import { listCustomers } from "@/api/customers";
-import { createQuote, updateQuote } from "@/api/quotes";
+import { createQuote, listQuotes, updateQuote } from "@/api/quotes";
 import type { Customer, Quote, QuoteCreate } from "@/types/entities";
 import { getApiError } from "@/api/client";
 import {
@@ -52,44 +52,94 @@ interface Props {
 
 const { Text } = Typography;
 
-/* ----------------------- Quote Form Modal ----------------------- */
+/* ------------------------------- Quote Form Component ------------------------------- */
 export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Props) {
-    const [customers, setCustomers] = useState<Customer[]>([])
+    const [customers, setCustomers] = useState<Customer[]>([]);
+    const [quotes, setQuotes] = useState<Quote[]>([]);
 
+    // Fetch data
     useEffect(() => {
         listCustomers()
             .then(setCustomers)
-            .catch(() => message.error("Failed to load customers"))
+            .catch(() => message.error("Failed to load customers"));
     }, [])
 
+    useEffect(() => {
+        if(!open || editing) return;
+        
+        listQuotes()
+            .then(setQuotes)
+            .catch(() => message.error("Failed to load quotes"));
+    },[open,editing]);
+
+    // Pre-set Quote Number
+    const getNextQuoteNumber = () => {
+        const year = dayjs().year();
+    
+        const currentYearQuotes = quotes.filter(q =>
+            q.quoteNumber?.startsWith(`Q-${year}`)
+        );
+
+        if(currentYearQuotes.length === 0) {
+            return `Q-${year}-1001`;
+        }
+
+        const numbers = currentYearQuotes
+            .map(q => Number(q.quoteNumber.split("-")[2]))
+            .filter(n => !isNaN(n));
+
+        const next = Math.max(...numbers) + 1;
+        return `Q-${year}-${String(next).padStart(4, "0")}`;
+    }
+
+    const nextQuoteNumber = useMemo(() => {
+        if (!quotes.length) return "";
+        return getNextQuoteNumber();
+    }, [quotes.length]);
+    
+/* ------------------------------ React Hook Form setup ------------------------------------*/
     const { control, handleSubmit, reset, formState: { errors }, watch } = useForm<FormValues>({
         resolver: zodResolver(schema),
         defaultValues: editing
-            ? {...editing,
-            customer:
-            typeof editing.customer === "object" && editing.customer !== null
-                    ? (editing.customer as { _id: string })._id
-                    : (editing.customer as string) || "",
-                issueDate: editing.issueDate,
-                expiryDate: editing.expiryDate,
-            } : { customer: "", quoteNumber: "", issueDate: "", expiryDate: "", items: [], notes: ""}
-            });
+            ? {
+                ...editing,
+                customer:
+                typeof editing.customer === "object" && editing.customer !== null
+                        ? (editing.customer as { _id: string })._id
+                        : (editing.customer as string) || "",
+                    issueDate: editing.issueDate,
+                    expiryDate: editing.expiryDate,
+                } : { customer: "", quoteNumber: "", issueDate: "", expiryDate: "", items: [], notes: ""}
+                });
 
     const { fields, append, remove } = useFieldArray({ control, name: "items" });
 
     useEffect(() => {
-        const normalized = editing
-        ? {
-            ...editing,
-            customer:
-                typeof editing.customer === "object" && editing.customer !== null
-                    ? (editing.customer as { _id: string })._id
-                    : (editing.customer as string) || "",
-            issueDate: editing.issueDate,
-            expiryDate: editing.expiryDate,
+        if(!open) return;
+
+        if(editing) {
+            reset({
+                ...editing,
+                customer:
+                    typeof editing.customer === "object" && editing.customer !== null
+                        ? (editing.customer as { _id: string })._id
+                        : (editing.customer as string) || "",
+                issueDate: editing.issueDate,
+                expiryDate: editing.expiryDate,
+            });
+            return;
         }
-        : { customer: "", quoteNumber: "", issueDate: "", expiryDate: "", items: [{ description: "", quantity: 1, unitPrice: 0, taxRate: 0 }], notes: ""};reset(normalized);
-    }, [editing, reset]);
+
+        if (!quotes.length) return;
+
+        reset({
+            customer: "",
+            quoteNumber: nextQuoteNumber,
+            issueDate: dayjs().format("YYYY-MM-DD"),
+            expiryDate: dayjs().add(1, 'year').format("YYYY-MM-DD"),
+            items: [{ description: "",quantity: 1,unitPrice: 0, taxRate: 20 }], notes: "",
+        });
+    }, [open, editing, quotes.length, reset]);
 
     const items = watch("items");
 
@@ -200,8 +250,7 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
 
     /* --------------------------------------- JSX -------------------------------------------------- */
     return (
-        // --------------------------- Modal Form -------------------------------------------------------
-        <Modal open={open} title={editing ? "Edit Quote" : "New Quote"} onCancel={onClose} footer={null} destroyOnHidden>
+        <Modal open={open} title={editing ? "Edit Quote" : "New Quote"} onCancel={onClose} footer={null} destroyOnHidden width={720}>
             <Form layout="vertical" onFinish={handleSubmit(submit)}>
                 {/* Customer */}
                 <Form.Item
@@ -283,7 +332,7 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
                 />
                 <Button
                     icon={<PlusOutlined />}
-                    type="dashed" onClick={() => append({ description: "", quantity: 1, unitPrice: 0, taxRate: 0})}
+                    type="dashed" onClick={() => append({ description: "", quantity: 1, unitPrice: 0, taxRate: 20})}
                 >
                     Add Item
                 </Button>
