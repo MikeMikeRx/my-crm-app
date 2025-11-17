@@ -160,7 +160,7 @@ export default function InvoiceFormModal({
         >
             <form onSubmit={handleSubmit(submit, onInvalid)} className="flex flex-col gap-4">
                 {!editing && (
-                    <Form.Item label="Import from Quote">
+                    <Form.Item label="Quote Number">
                         <Select
                             placeholder="Select a quote"
                             onChange={handleQuoteSelect}

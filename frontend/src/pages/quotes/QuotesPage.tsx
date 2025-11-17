@@ -47,7 +47,13 @@ export default function QuotesPage() {
 
     const columns: ColumnsType<Quote> = [
         { title: "Quote #", dataIndex: "quoteNumber" },
-        { title: "Customer", dataIndex: "customer" },
+        {   title: "Customer",
+            dataIndex: "customer",
+            render: (customer) => {
+                if (!customer) return "-";
+                return customer.company || customer.name || "-";
+            }
+        },
         { 
             title: "Issue Date",
             dataIndex: "issueDate",

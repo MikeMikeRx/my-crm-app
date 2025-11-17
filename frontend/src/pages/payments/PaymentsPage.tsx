@@ -30,12 +30,23 @@ export default function PaymentsPage() {
 
     // -----------------Table Columns -----------------
     const columns: ColumnsType<Payment> = [
-        { title: "Invoice #",
+        {   title: "Invoice #",
             dataIndex: "invoice",
             render: (v) =>
                 typeof v === "object" && v !== null
                     ? v.invoiceNumber
                     : String(v),
+        },
+        {   title: "Customer",
+            render: (_, record) => {
+                const invoice = record.invoice;
+                if (typeof invoice === "string") return "-";
+
+                const customer = invoice.customer;
+                if(!customer) return "-";
+                
+                return customer.company ?? customer.name ?? "-";
+            }
         },
         { 
             title: "Amount",

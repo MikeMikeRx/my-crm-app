@@ -46,7 +46,15 @@ export const createPayment = asyncHandler(async (req, res, next) => {
             notes,
         })
 
-        const payments = await Payment.find({ invoice })
+        const payments = await Payment.find()
+            .populate({
+                path: "invoice",
+                populate: {
+                    path: "customer",
+                    model: "Customer"
+                }
+            });
+            
         const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0)
         const invoiceTotal = existingInvoice.items.reduce(
             (sum, i) => sum + i.quantity * i.unitPrice,

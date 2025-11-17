@@ -40,7 +40,13 @@ export default function InvoicesPage() {
 
     const columns: ColumnsType<Invoice> = [
         { title: "Invoice #", dataIndex: "invoiceNumber" },
-        { title: "Customer", dataIndex: "customer" },
+        {   title: "Customer",
+            dataIndex: "customer",
+            render: (customer) => {
+                if (!customer) return "-";
+                return customer.company || customer.name || "-";
+            }
+        },
         { 
             title: "Issue Date",
             dataIndex: "issueDate",

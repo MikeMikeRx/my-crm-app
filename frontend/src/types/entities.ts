@@ -88,7 +88,7 @@ export type PaymentStatus = "completed" | "failed" | "pending";
 export interface Payment {
     _id: ID;
     user?: ID;
-    invoice: ID;
+    invoice: ID | (Invoice & { customer? : Customer });
     amount: number;
     paymentMethod: PaymentMethod;
     paymentDate?: string; // YYYY-MM-DD
