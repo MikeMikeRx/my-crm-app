@@ -4,7 +4,14 @@ import { Table, Button, message, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { listPayments } from "@/api/payments";
 import type { Payment } from "@/types/entities";
-import PaymentFormModal from "./PaymentFormModal"
+import PaymentFormModal from "./PaymentFormModal";
+
+const METHOD_LABELS: Record<string, string> = {
+    bank_transfer: "Bank Transfer",
+    card: "Card",
+    cash: "Cash",
+    paypal:"PayPal",
+}
 
 export default function PaymentsPage() {
     const [data, setData] = useState<Payment[]>([]);
@@ -44,7 +51,7 @@ export default function PaymentsPage() {
 
                 const customer = invoice.customer;
                 if(!customer) return "-";
-                
+
                 return customer.company ?? customer.name ?? "-";
             }
         },
@@ -56,7 +63,7 @@ export default function PaymentsPage() {
         {
             title: "Method",
             dataIndex: "paymentMethod",
-            render: (v) => v.replace("-", " "),
+            render: (v) => METHOD_LABELS[v] ?? v,
         },
         {
             title: "Date",
