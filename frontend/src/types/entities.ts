@@ -27,7 +27,7 @@ export type QuoteStatus = "draft" | "approved" | "rejected" | "sent";
 export interface Quote {
     _id: ID;
     user: ID;
-    customer: ID;
+    customer: ID | Customer;
     quoteNumber: string;
     issueDate: string; // YYYY-MM-DD
     expiryDate?: string; // YYYY-MM-DD
@@ -56,7 +56,7 @@ export type InvoiceStatus = "unpaid" | "paid" | "overdue" | "void";
 export interface Invoice {
     _id: ID;
     user?: ID;
-    customer: ID;
+    customer: ID | Customer;
     invoiceNumber: string;
     issueDate: string; // YYYY-MM-DD
     dueDate: string; // YYYY-MM-DD

@@ -11,7 +11,6 @@ import { getApiError } from "@/api/client";
 
 /* ----------------------- Schema Definition ----------------------- */
 
-// Validation rules using Zod for type-safe form checking
 const itemSchema = z.object({
     description: z.string().min(1),
     quantity: z.number().min(1),
@@ -56,7 +55,7 @@ export default function InvoiceFormModal({
         console.log("Form errors:", errs);
     };
 
-/* ---------------------- React Hook Form setup ------------------ */
+    /* ---------------------- React Hook Form setup ------------------ */
     const { control, handleSubmit, reset, watch, formState: { errors } } = useForm<FormValues>({
         resolver: zodResolver(schema),
         defaultValues: editing
@@ -124,6 +123,23 @@ export default function InvoiceFormModal({
             message.error("Failed to load quote");
         }
     };
+
+    // --------------------- Customer Auto-fill ----------------------------------
+    const customerName = useMemo(() => {
+        if (editing && typeof editing.customer === "object") {
+            return editing.customer.company ?? editing.customer.name ?? "";
+        }
+
+        const customerId = watch("customer");
+        const quote = quotes.find(
+            q => q.customer && typeof q.customer === "object" && q.customer._id === customerId);
+        
+        if(quote && typeof quote.customer ==="object") {
+            return quote.customer.company ?? quote.customer.name ?? "";
+        }
+
+        return "";
+    }, [editing, watch("customer"), quotes]);
     
     /* ------------------- Submit handler ---------------------- */
     const submit = async (values: FormValues) => {
@@ -172,8 +188,8 @@ export default function InvoiceFormModal({
                     </Form.Item>
                 )}
 
-                <Form.Item label="Customer ID" validateStatus={errors.customer ? "error" : ""} help={errors.customer?.message}>
-                    <Controller name="customer" control={control} render={({ field }) => <Input {...field} />} />
+                <Form.Item label="Customer">
+                    <Input value={customerName} disabled />
                 </Form.Item>
 
                 <Form.Item label="Invoice Number" validateStatus={errors.invoiceNumber ? "error" : ""} help={errors.invoiceNumber?.message}>
