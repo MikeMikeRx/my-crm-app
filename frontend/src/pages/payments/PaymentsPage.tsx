@@ -47,10 +47,11 @@ export default function PaymentsPage() {
         {   title: "Customer",
             render: (_, record) => {
                 const invoice = record.invoice;
-                if (typeof invoice === "string") return "-";
+
+                if (!invoice || typeof invoice === "string") return "-";
 
                 const customer = invoice.customer;
-                if(!customer) return "-";
+                if(!customer || typeof customer === "string") return "-";
 
                 return customer.company ?? customer.name ?? "-";
             }
