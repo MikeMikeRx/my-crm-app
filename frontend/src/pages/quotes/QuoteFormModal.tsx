@@ -74,26 +74,30 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
 
     // Pre-set Quote Number
     const getNextQuoteNumber = () => {
-        const year = dayjs().year();
-    
-        const currentYearQuotes = quotes.filter(q =>
-            q.quoteNumber?.startsWith(`Q-${year}`)
+        const today = dayjs().format("YYYYMMDD");
+        
+        // Find quotes for today
+        const todayQuotes = quotes.filter(q =>
+            q.quoteNumber?.startsWith(`Q-${today}`)
         );
-
-        if(currentYearQuotes.length === 0) {
-            return `Q-${year}-1001`;
+        
+        // First Quote
+        if(todayQuotes.length === 0) {
+            return `Q-${today}-1001`;
         }
 
-        const numbers = currentYearQuotes
+        const numbers = todayQuotes
             .map(q => Number(q.quoteNumber.split("-")[2]))
             .filter(n => !isNaN(n));
 
         const next = Math.max(...numbers) + 1;
-        return `Q-${year}-${String(next).padStart(4, "0")}`;
+        return `Q-${today}-${String(next).padStart(4, "0")}`;
     }
 
     const nextQuoteNumber = useMemo(() => {
-        if (!quotes.length) return "";
+        if (!quotes.length) {
+            return `Q-${dayjs().format("YYYYMMDD")}-1001`;
+        };
         return getNextQuoteNumber();
     }, [quotes.length]);
     
@@ -129,8 +133,6 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
             });
             return;
         }
-
-        if (!quotes.length) return;
 
         reset({
             customer: "",
