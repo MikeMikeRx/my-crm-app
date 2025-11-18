@@ -23,7 +23,7 @@ export interface LineItem {
     taxRate?: number; // (0-100%)
 }
 
-export type QuoteStatus = "draft" | "approved" | "rejected" | "sent";
+export type QuoteStatus = "draft" | "sent" | "accepted" | "declined" | "expired" | "converted";
 export interface Quote {
     _id: ID;
     user: ID;
