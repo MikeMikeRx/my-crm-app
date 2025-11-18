@@ -32,6 +32,12 @@ type FormValues = z.infer<typeof schema>;
 
 const { Text } = Typography;
 
+// Extract the quote suffix
+const exractQuoteSuffix = (quoteNumber: string) => {
+    const parts = quoteNumber.split("-");
+    return parts[2] || Math.floor(1000 + Math.random() * 9000).toString();
+};
+
 /* ----------------------- Component Props ----------------------- */
 interface Props {
     open: boolean;
@@ -39,12 +45,15 @@ interface Props {
     onSuccess: () => void;
     editing: Invoice | null;
 }
-/* ----------------------- Ivoice form Component ----------------------- */
+/* ----------------------- Ivoice Form Component ----------------------- */
 export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: Props) {
     
-    // Generate unique invoice number
-    const genInvoiceNumber = () => 
-         `INV-${dayjs().format("YYYYMMDD")}-${Math.floor(1000 + Math.random() * 9000)}`;
+    // Generate invoice number with quote number suffix
+    const genInvoiceNumber = (suffix?: string) => {
+        const today = dayjs().format("YYYYMMDD");
+        const code = suffix ?? "XXXX";
+        return `INV-${today}-${code}`;
+    };
 
     /* ---------------------- React Hook Form setup ------------------ */
     const { control, handleSubmit, reset, watch, formState: { errors } } = useForm<FormValues>({
@@ -98,12 +107,13 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
     const handleQuoteSelect = async (quoteId: string) => {
         try {
             const quote = await getQuote(quoteId);
+            const suffix = exractQuoteSuffix(quote.quoteNumber);
             reset({
                 customer:
                     typeof quote.customer === "object" && quote.customer !== null
                     ? (quote.customer as { _id: string })._id
                     : (quote.customer as string) || "",
-                invoiceNumber: genInvoiceNumber(),
+                invoiceNumber: genInvoiceNumber(suffix),
                 issueDate: dayjs().format("YYYY-MM-DD"),
                 dueDate: dayjs().add(14, "day").format("YYYY-MM-DD"),
                 items: quote.items as LineItem[],
