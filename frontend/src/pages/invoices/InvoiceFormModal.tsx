@@ -263,7 +263,11 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
                         placeholder="Select a quote"
                         onChange={handleQuoteSelect}
                         options={quotes.map((q) => ({
-                            label: `${q.quoteNumber} - ${dayjs(q.issueDate).format("YYYY-MM-DD")}`,
+                            label: `${q.quoteNumber} - ${
+                                typeof q.customer === "object"
+                                ? (q.customer.company || q.customer.name)
+                                : ""
+                            }`,
                             value: q._id,
                         }))}
                     />
