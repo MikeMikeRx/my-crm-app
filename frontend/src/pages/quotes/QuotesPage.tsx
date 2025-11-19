@@ -3,7 +3,7 @@ import dayjs from "dayjs"
 import { Table, Button, Space, Popconfirm, Tag, message } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { listQuotes, deleteQuote } from "@/api/quotes";
-import type { Quote, LineItem } from "@/types/entities";
+import type { Quote, LineItem, QuoteStatus } from "@/types/entities";
 import QuoteFormModal from "./QuoteFormModal";
 
 export default function QuotesPage() {
@@ -67,7 +67,7 @@ export default function QuotesPage() {
         { 
             title: "Total",
             render: (_, record) => {
-                const total = record.total ?? calcTotal(record.items, record.globalTaxRate);
+                const total = record.total ?? calcTotal(record.items);
                 return `$${fmtMoney(total)}`;
             },
 
@@ -75,7 +75,18 @@ export default function QuotesPage() {
         {
             title: "Status",
             dataIndex: "status",
-            render: (s) => <Tag color={s === "approved" ? "green" : "blue"}>{s}</Tag>,
+            render: (s: QuoteStatus) => {
+                const colors: Record<QuoteStatus, string> = {
+                    draft:"blue",
+                    sent: "orange",
+                    accepted: "green",
+                    declined: "red",
+                    expired: "black",
+                    converted: "purple",
+                };
+
+                return<Tag color={colors[s]}>{s}</Tag>
+            },
         },
         {
             title: "Actions",

@@ -23,7 +23,9 @@ export interface LineItem {
     taxRate?: number; // (0-100%)
 }
 
-export type QuoteStatus = "draft" | "sent" | "accepted" | "declined" | "expired" | "converted";
+export type QuoteStatusUserSettable = "draft" | "sent" | "accepted" | "declined";
+export type QuoteStatus = QuoteStatusUserSettable | "expired" | "converted";
+
 export interface Quote {
     _id: ID;
     user: ID;
@@ -32,7 +34,6 @@ export interface Quote {
     issueDate: string; // YYYY-MM-DD
     expiryDate?: string; // YYYY-MM-DD
     items: LineItem[];
-    globalTaxRate?: number;
     total: number;
     status: QuoteStatus;
     notes?: string;
@@ -45,12 +46,12 @@ export interface QuoteCreate {
     quoteNumber: string;
     issueDate: string;
     expiryDate?: string;
+    status: QuoteStatus;
     items: LineItem[];
-    globalTaxRate?: number;
     notes?: string;
 }
 
-export type QuoteUpdate = Partial<Pick<Quote, "status" | "items" | "globalTaxRate" | "notes" | "expiryDate">>;
+export type QuoteUpdate = Partial<Pick<Quote, "customer" | "quoteNumber" | "status" | "items" | "notes" | "issueDate" | "expiryDate">>;
 
 export type InvoiceStatus = "unpaid" | "paid" | "overdue" | "void";
 export interface Invoice {
@@ -76,7 +77,6 @@ export interface InvoiceCreate {
     issueDate: string;
     dueDate: string;
     items: LineItem[];
-    globalTaxRate?: number;
     notes?: string;
 }
 

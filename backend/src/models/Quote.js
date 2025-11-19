@@ -39,8 +39,6 @@ const quoteSchema = new mongoose.Schema(
             },
         ],
 
-        globalTaxRate: { type: Number, default: null},
-
         status: {
             type: String,
             enum: ["draft", "sent", "accepted", "declined", "expired", "converted"],

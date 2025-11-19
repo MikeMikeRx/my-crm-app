@@ -38,7 +38,6 @@ const invoiceSchema = new mongoose.Schema(
                 },
             },
         ],
-        globalTaxRate: { type: Number, default: null },
 
         status: {
             type: String,

@@ -34,7 +34,8 @@ const quoteValidationRules = [
         .withMessage("Invalid issue date format (expected YYYY-MM-DD"),
 
     body("expiryDate")
-        .notEmpty()
+        // .notEmpty()
+        .exists({ checkFalsy: true })
         .withMessage("Expiry date is required")
         .isISO8601()
         .withMessage("Invalid expiry date format (expected YYYY-MM-DD"),
@@ -67,11 +68,10 @@ const quoteValidationRules = [
         .custom(value => value >= 0 && value <= 100)
         .withMessage("Tax rate must be between 0 and 100"),
 
-    body("globalTaxRate")
+    body("status")
         .optional()
-        .isNumeric()
-        .custom(value => value >= 0 && value <= 100)
-        .withMessage("Tax rate must be between 0 and 100"),
+        .isIn(["draft", "sent", "accepted", "declined", "expired", "converted"])
+        .withMessage("Invalid status"),
 
     body("notes")
         .optional()

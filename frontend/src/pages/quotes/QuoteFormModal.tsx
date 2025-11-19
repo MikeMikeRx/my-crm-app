@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import dayjs from "dayjs";
 import { listCustomers } from "@/api/customers";
 import { createQuote, listQuotes, updateQuote } from "@/api/quotes";
-import type { Customer, Quote, QuoteCreate } from "@/types/entities";
+import type { Customer, Quote, QuoteCreate, QuoteUpdate } from "@/types/entities";
 import { getApiError } from "@/api/client";
 import {
     Modal,
@@ -34,10 +34,10 @@ const itemSchema = z.object({
 const schema = z.object({
     customer: z.string().min(1, "Customer ID required"),
     quoteNumber: z.string().min(1, "Quote number required"),
-    issueDate: z.any(),
-    expiryDate: z.any().optional(),
-    globalTaxRate: z.number().optional(),
+    issueDate: z.string().min(1, "Issue date required"),
+    expiryDate: z.string().min(1, "Expiry date required"),
     notes: z.string().optional(),
+    status: z.enum(["draft", "sent", "accepted", "declined"]),
     items: z.array(itemSchema).min(1, "At least one item required"),
 });
 
@@ -72,7 +72,7 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
             .catch(() => message.error("Failed to load quotes"));
     },[open,editing]);
 
-    // Pre-set Quote Number
+    // --- Pre-set Quote Number ---
     const getNextQuoteNumber = () => {
         const today = dayjs().format("YYYYMMDD");
         
@@ -106,30 +106,46 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
         resolver: zodResolver(schema),
         defaultValues: editing
             ? {
-                ...editing,
                 customer:
-                typeof editing.customer === "object" && editing.customer !== null
+                    typeof editing.customer === "object" && editing.customer !== null
                         ? (editing.customer as { _id: string })._id
                         : (editing.customer as string) || "",
-                    issueDate: editing.issueDate,
-                    expiryDate: editing.expiryDate,
-                } : { customer: "", quoteNumber: "", issueDate: "", expiryDate: "", items: [], notes: ""}
-                });
+                quoteNumber: editing.quoteNumber,
+                issueDate: editing.issueDate,
+                expiryDate: editing.expiryDate,
+                status:
+                    editing.status ==="expired" || editing.status ==="converted"
+                    ? "draft"
+                    : editing.status,
+                items: editing.items,
+                notes: editing.notes ?? "",
+            } 
+            : { customer: "", quoteNumber: "", issueDate: "", expiryDate: "", status: "draft" ,items: [], notes: ""},
+    });
 
     const { fields, append, remove } = useFieldArray({ control, name: "items" });
 
+    // --- Editing ---
     useEffect(() => {
         if(!open) return;
 
         if(editing) {
             reset({
-                ...editing,
                 customer:
                     typeof editing.customer === "object" && editing.customer !== null
                         ? (editing.customer as { _id: string })._id
                         : (editing.customer as string) || "",
-                issueDate: editing.issueDate,
-                expiryDate: editing.expiryDate,
+                quoteNumber: editing.quoteNumber,
+                issueDate: dayjs(editing.issueDate).format("YYYY-MM-DD"),
+                expiryDate: editing.expiryDate
+                    ? dayjs(editing.expiryDate).format("YYYY-MM-DD")
+                    : "",
+                status:
+                    editing.status === "expired" || editing.status === "converted"
+                       ? "draft"
+                       : editing.status,
+                items: editing.items,
+                notes: editing.notes ?? "",
             });
             return;
         }
@@ -139,33 +155,46 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
             quoteNumber: nextQuoteNumber,
             issueDate: dayjs().format("YYYY-MM-DD"),
             expiryDate: dayjs().add(1, 'year').format("YYYY-MM-DD"),
-            items: [{ description: "",quantity: 1,unitPrice: 0, taxRate: 20 }], notes: "",
+            status: "draft",
+            items: [{ description: "", quantity: 1,unitPrice: 0, taxRate: 20 }],
+            notes: "",
         });
-    }, [open, editing, quotes.length, reset]);
+    }, [open, editing, nextQuoteNumber, reset]);
 
     const items = watch("items");
 
     const total = items.reduce((sum, i) => sum + i.quantity * i.unitPrice * (1 + (i.taxRate || 0) /100), 0);
 
+    // ---- Submit handler ---
     const submit = async (values: FormValues) => {
         try {
-            const payload: QuoteCreate = {
-                ...values,
-                issueDate: dayjs(values.issueDate).format("YYYY-MM-DD"),
-                expiryDate: values.expiryDate ? dayjs(values.expiryDate).format("YYYY-MM-DD") : undefined,
+            const payload: QuoteUpdate | QuoteCreate = {
+                customer: values.customer,
+                quoteNumber: values.quoteNumber,
+                items: values.items,
+                issueDate: values.issueDate, 
+                expiryDate: values.expiryDate,                
+                status: values.status,
+                notes: values.notes,
             };
+
             if (editing) {
-                await updateQuote(editing._id, payload);
+                // --- UPDATE ---
+                await updateQuote(editing._id, payload as QuoteUpdate);
                 message.success("Quote updated");
             } else {
-                await createQuote(payload);
+                // --- CREATE ---
+                await createQuote(payload as QuoteCreate);
                 message.success("Quote created");
             }
+            
             onSuccess();
-            onClose();
+            onClose(); 
+
         } catch (e) {
             const { message: msg } = getApiError(e);
             message.error(msg);
+            console.log("Submit error", e);
         }
     };
 
@@ -253,7 +282,16 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
     /* --------------------------------------- JSX -------------------------------------------------- */
     return (
         <Modal open={open} title={editing ? "Edit Quote" : "New Quote"} onCancel={onClose} footer={null} destroyOnHidden width={720}>
-            <Form layout="vertical" onFinish={handleSubmit(submit)}>
+            <Form
+                layout="vertical"
+                onFinish={handleSubmit(
+                    submit,
+                    (errors) => {
+                        console.log("ZOD ERROS >>>", errors);
+                        message.error("Fix validation errors");
+                    }
+                )}
+            >
                 {/* Customer */}
                 <Form.Item
                     label={<span style={{ fontWeight: 450 }}>Customer</span>}
@@ -338,6 +376,25 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
                 >
                     Add Item
                 </Button>
+
+                {/* Status Change */}
+                <Form.Item label="Status">
+                    <Controller
+                        name="status"
+                        control={control}
+                        render={({ field }) => (
+                            <Select
+                                {...field}
+                                options={[
+                                    { label: "Draft", value: "draft" },
+                                    { label: "Sent", value: "sent" },
+                                    { label: "Accepted", value: "accepted" },
+                                    { label: "Declined", value: "declined" },
+                                ]}
+                            />
+                        )}
+                    /> 
+                </Form.Item>
                 
                 {/* Total price + Tax */}
                 <Form.Item noStyle>
