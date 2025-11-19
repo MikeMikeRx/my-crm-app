@@ -41,8 +41,8 @@ const invoiceSchema = new mongoose.Schema(
 
         status: {
             type: String,
-            enum: ["draft", "sent", "paid", "overdue"],
-            default: "draft"
+            enum: ["unpaid", "paid", "overdue"],
+            default: "unpaid"
         },
         notes: {
             type: String,
@@ -53,23 +53,19 @@ const invoiceSchema = new mongoose.Schema(
 )
 
 invoiceSchema.virtual("totals").get(function () {
-    const items = this.items || []
-    const useGlobal = this.globalTaxRate !== null
+    const items = this.items || [];
 
-    const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0)
+    const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
 
-    const tax = items.reduce((sum, i) => {
-        const rate = useGlobal ? this.globalTaxRate : (i.taxRate || 0)
-        return sum + (i.quantity * i.unitPrice * rate) / 100
-    }, 0)
+    const tax = items.reduce((sum, i) => sum + (i.quantity * i.unitPrice * (i.taxRate || 0)) / 100, 0);
 
-    const round = (num) => Math.round(num * 100) / 100
+    const round = (num) => Math.round(num * 100) / 100;
     
     return {
         subtotal: round(subtotal),
         tax: round(tax),
         total: round(subtotal + tax),
-    }
-})
+    };
+});
 
 export default mongoose.model("Invoice", invoiceSchema)

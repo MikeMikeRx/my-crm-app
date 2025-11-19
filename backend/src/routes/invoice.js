@@ -67,12 +67,6 @@ const invoiceValidationRules = [
         .custom(value => value >= 0 && value <= 100)
         .withMessage("Tax rate must be between 0 and 100"),
 
-    body("globalTaxRate")
-        .optional()
-        .isNumeric()
-        .custom(value => value >= 0 && value <= 100)
-        .withMessage("Tax rate must be between 0 and 100"),
-
     body("notes")
         .optional()
         .trim()

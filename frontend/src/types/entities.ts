@@ -53,7 +53,7 @@ export interface QuoteCreate {
 
 export type QuoteUpdate = Partial<Pick<Quote, "customer" | "quoteNumber" | "status" | "items" | "notes" | "issueDate" | "expiryDate">>;
 
-export type InvoiceStatus = "unpaid" | "paid" | "overdue" | "void";
+export type InvoiceStatus = "unpaid" | "paid" | "overdue";
 export interface Invoice {
     _id: ID;
     user?: ID;
