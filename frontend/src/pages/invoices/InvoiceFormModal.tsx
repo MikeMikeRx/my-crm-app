@@ -21,6 +21,7 @@ const itemSchema = z.object({
 
 const schema = z.object({
     customer: z.string().min(1, "Customer ID required"),
+    quote: z.string().optional(),
     invoiceNumber: z.string().min(1, "Invoice number required"),
     issueDate: z.any(),
     dueDate: z.any(),
@@ -65,6 +66,10 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
                 typeof editing.customer === "object" && editing.customer !== null
                     ? (editing.customer as { _id: string })._id
                     : (editing.customer as string) || "",
+            quote:
+                typeof editing.quote === "object"
+                    ? editing.quote?._id
+                    : editing.quote ?? undefined,
         }
         : {
             customer: "",
@@ -73,6 +78,7 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
             dueDate: dayjs().add(14, "day").format("YYYY-MM-DD"),
             items: [],
             notes: "",
+            quote: undefined,
         },
     });
     
@@ -94,6 +100,10 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
                     typeof editing.customer === "object" && editing.customer !== null
                         ? (editing.customer as { _id: string })._id
                         : (editing.customer as string) || "",
+                quote:
+                    typeof editing.quote ==="object"
+                        ? editing.quote._id
+                        : editing.quote ?? undefined,
             });
         }
     }, [editing, reset])
@@ -118,6 +128,7 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
                 dueDate: dayjs().add(14, "day").format("YYYY-MM-DD"),
                 items: quote.items as LineItem[],
                 notes: quote.notes || "",
+                quote: quoteId,
             });
             message.success("Quote data imported");
         } catch {

@@ -12,6 +12,11 @@ const invoiceSchema = new mongoose.Schema(
             ref: "Customer",
             required: true,
         },
+        quote: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Quote",
+            required: false,
+        },
         invoiceNumber: {
             type: String,
             required: [true, "Invoice number is required"],
@@ -38,7 +43,6 @@ const invoiceSchema = new mongoose.Schema(
                 },
             },
         ],
-
         status: {
             type: String,
             enum: ["unpaid", "paid", "overdue"],

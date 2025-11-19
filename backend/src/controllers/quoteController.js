@@ -2,6 +2,7 @@ import Quote from "../models/Quote.js"
 import Customer from "../models/Customer.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 
+// Get All Quotes
 export const getQuotes = asyncHandler(async (req, res, next) => {
 
         const quotes = await Quote.find({ user: req.user.id })
@@ -15,6 +16,7 @@ export const getQuotes = asyncHandler(async (req, res, next) => {
         res.json(withTotals)
 })
 
+// Get Single Quote by ID
 export const getQuoteById = asyncHandler(async (req, res, next) => {
         const quote = await Quote.findOne({ _id: req.params.id, user: req.user.id })
             .populate("customer", "name email company")
@@ -25,6 +27,7 @@ export const getQuoteById = asyncHandler(async (req, res, next) => {
         })
 })
 
+// Create Quote
 export const createQuote = asyncHandler(async (req, res, next) => {
         const { customer, quoteNumber, issueDate, expiryDate, items, notes } = req.body
 
@@ -47,6 +50,7 @@ export const createQuote = asyncHandler(async (req, res, next) => {
         })
 })
 
+// Update Quote
 export const updateQuote = asyncHandler(async (req, res, next) => {
         const quote = await Quote.findOneAndUpdate(
             { _id: req.params.id, user: req.user.id },
@@ -60,6 +64,7 @@ export const updateQuote = asyncHandler(async (req, res, next) => {
         })
 })
 
+// Delete Quote
 export const deleteQuote = asyncHandler(async (req, res, next) => {
         const quote = await Quote.findOneAndDelete({ _id: req.params.id, user: req.user.id })
         if (!quote) return res.status(404).json({ message: "Quote not found" })

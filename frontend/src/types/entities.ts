@@ -70,6 +70,7 @@ export interface Invoice {
     notes?: string;
     createdAt?: string;
     updatedAt?: string;
+    quote?: string | Quote;
 }
 
 export interface InvoiceCreate {
@@ -79,6 +80,7 @@ export interface InvoiceCreate {
     dueDate: string;
     items: LineItem[];
     notes?: string;
+    quote?: string;
 }
 
 export type InvoiceUpdate = Partial<Pick<Invoice, "items" | "notes" | "dueDate">>;

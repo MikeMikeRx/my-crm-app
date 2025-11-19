@@ -1,5 +1,6 @@
 import Invoice from "../models/Invoice.js";
 import Customer from "../models/Customer.js";
+import Quote from "../models/Quote.js";
 import dayjs from "dayjs";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
@@ -48,7 +49,7 @@ export const getInvoiceById = asyncHandler(async (req, res, next) => {
 
 // Create Invoice
 export const createInvoice = asyncHandler(async (req, res, next) => {
-    const { customer, invoiceNumber, issueDate, dueDate, items, notes } = req.body;
+    const { customer, quote, invoiceNumber, issueDate, dueDate, items, notes } = req.body;
 
     const existingCustomer = await Customer.findOne({ _id: customer, user: req.user.id });
     if (!existingCustomer) return res.status(400).json({ message: "Invalid customer ID" });
@@ -62,7 +63,16 @@ export const createInvoice = asyncHandler(async (req, res, next) => {
         items,
         status: "unpaid",
         notes,
+        quote: quote || undefined,
     });
+
+    // Turns status of Quote to "converted" after Invoice creating
+    if (quote) {
+        await Quote.findOneAndUpdate(
+            { _id: quote, user: req.user.id },
+            { status: "converted" }
+        );
+    }
 
     res.status(201).json({
         ...newInvoice.toObject(),

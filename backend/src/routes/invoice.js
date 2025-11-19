@@ -21,6 +21,11 @@ const invoiceValidationRules = [
         .notEmpty()
         .withMessage("Customer ID is required"),
 
+    body("quote")
+        .optional()
+        .isString()
+        .withMessage("Quote ID must be a string"),
+
     body("invoiceNumber")
         .trim()
         .escape()
