@@ -1,9 +1,9 @@
 import { useEffect,useState } from "react";
 import dayjs from "dayjs";
-import { Table, Button, Space, message, Select } from "antd";
+import { Table, Button, Space, Tag, message } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { listInvoices, updateInvoice } from "@/api/invoices";
-import type { Invoice, LineItem } from "@/types/entities";
+import { listInvoices } from "@/api/invoices";
+import type { Invoice, InvoiceStatus, LineItem } from "@/types/entities";
 import InvoiceFormModal from "./InvoiceFormModal"
 
 
@@ -72,27 +72,15 @@ export default function InvoicesPage() {
         {
             title: "Status",
             dataIndex: "status",
-            render: (v, record) => (
-                <Select
-                    size="small"
-                    style={{ width: 120 }}
-                    value={v}
-                    onChange={async (newStatus) => {
-                        setLoading(true);
-                        try {
-                            await updateInvoice(record._id, { status: newStatus });
-                            message.success(`Invoice marked ${newStatus}`);
-                            load();
-                        } catch {
-                            message.error("Failed to update status");
-                        } finally { setLoading(false) };
-                    }}
-                    options={[
-                        { label: "Unpaid", value: "unpaid" },
-                        { label: "Paid", value: "paid" },
-                    ]}
-                />
-            ),
+            render: (s: InvoiceStatus) => {
+                const colors: Record<InvoiceStatus, string> = {
+                    unpaid: "blue",
+                    paid: "green",
+                    overdue: "red",
+                };
+
+                return <Tag color={colors[s]}>{s}</Tag>;
+            },
         },
         {
             title: "Actions",

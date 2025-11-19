@@ -54,6 +54,7 @@ export interface QuoteCreate {
 export type QuoteUpdate = Partial<Pick<Quote, "customer" | "quoteNumber" | "status" | "items" | "notes" | "issueDate" | "expiryDate">>;
 
 export type InvoiceStatus = "unpaid" | "paid" | "overdue";
+
 export interface Invoice {
     _id: ID;
     user?: ID;
@@ -80,7 +81,7 @@ export interface InvoiceCreate {
     notes?: string;
 }
 
-export type InvoiceUpdate = Partial<Pick<Invoice, "status" | "items" | "notes" | "dueDate">>;
+export type InvoiceUpdate = Partial<Pick<Invoice, "items" | "notes" | "dueDate">>;
 
 export type PaymentMethod = "bank_transfer" | "card" | "cash" | "paypal";
 export type PaymentStatus = "completed" | "failed" | "pending";
