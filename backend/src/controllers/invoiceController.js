@@ -4,7 +4,7 @@ import Quote from "../models/Quote.js";
 import dayjs from "dayjs";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
-// Get All Invoices
+// ------ Get All Invoices ------
 export const getInvoices = asyncHandler(async (req, res, next) => {
     const invoices = await Invoice.find({ user: req.user.id })
         .populate("customer", "name email company")
@@ -27,7 +27,7 @@ export const getInvoices = asyncHandler(async (req, res, next) => {
     res.json(withOverdue)
 });
 
-// Get Single Invoice By ID
+// ------ Get Single Invoice By ID ------
 export const getInvoiceById = asyncHandler(async (req, res, next) => {
     const invoice = await Invoice.findOne({ _id: req.params.id, user: req.user.id })
         .populate("customer", "name email company");
@@ -42,17 +42,50 @@ export const getInvoiceById = asyncHandler(async (req, res, next) => {
     };
     
     res.json({
-        ...invoice.toObject(),
+        ...obj,
         totals: invoice.totals
     });
 });
 
-// Create Invoice
+// ------ Create Invoice ------
 export const createInvoice = asyncHandler(async (req, res, next) => {
     const { customer, quote, invoiceNumber, issueDate, dueDate, items, notes } = req.body;
 
+    // Customer validation
     const existingCustomer = await Customer.findOne({ _id: customer, user: req.user.id });
     if (!existingCustomer) return res.status(400).json({ message: "Invalid customer ID" });
+
+    // Quote validation 
+    let quoteDoc = null;
+
+    if (quote) {
+        quoteDoc = await Quote.findOne({ _id: quote, user: req.user.id });
+
+        if (!quoteDoc) {
+            return res.status(400).json({ message: "Invalid quote ID" });
+        }
+
+        // Block declined
+        if (quoteDoc.status === "declined") {
+            return res.status(400).json({
+                message: "Cannot create invoice from a declined quote"
+            });
+        }
+
+        // Block expired
+        if (quoteDoc.status === "expired") {
+            return res.status(400).json({
+                message: "Cannot create invoice from a expired quote"
+            });
+        }
+
+        // Block converted
+        if (quoteDoc.status === "converted") {
+            return res.status(400).json({
+                message: "This quote has already been converted to an invoice"
+            });
+        }
+    };
     
     const newInvoice = await Invoice.create({
         user: req.user.id,
@@ -80,7 +113,7 @@ export const createInvoice = asyncHandler(async (req, res, next) => {
     });
 });
 
-// Update Invoice
+// ------ Update Invoice ------
 export const updateInvoice = asyncHandler(async (req, res) => {
     const incoming = req.body;
 
@@ -104,7 +137,7 @@ export const updateInvoice = asyncHandler(async (req, res) => {
     });
 });
 
-// Delete Invoice - X not used 
+// ------ Delete Invoice - X not used  ------
 export const deleteInvoice = asyncHandler(async (req, res, next) => {
         const invoice = await Invoice.findOneAndDelete({ _id: req.params.id, user: req.user.id })
         if (!invoice) return res.status(404).json({ message: "Invoice not found" })

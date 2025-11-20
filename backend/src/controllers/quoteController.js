@@ -1,33 +1,63 @@
 import Quote from "../models/Quote.js"
 import Customer from "../models/Customer.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
+import dayjs from "dayjs"
 
-// Get All Quotes
+// ------ Get All Quotes ------
 export const getQuotes = asyncHandler(async (req, res, next) => {
 
-        const quotes = await Quote.find({ user: req.user.id })
-            .populate("customer", "name email company")
-            .sort({ createdAt: -1 })
-        
-        const withTotals = quotes.map(q => ({
-            ...q.toObject(),
-            totals: q.totals
-        }))
-        res.json(withTotals)
-})
+    const quotes = await Quote.find({ user: req.user.id })
+        .populate("customer", "name email company")
+        .sort({ createdAt: -1 })
+    
+    const withTotals = quotes.map(q => {
+        const obj = q.toObject();
 
-// Get Single Quote by ID
+        // Auto-expire if past expiryDate & not already converted/declined
+        if (
+            obj.status !== "converted" &&
+            obj.status !== "declined" &&
+            obj.expiryDate &&
+            dayjs(obj.expiryDate).isBefore(dayjs(), "day")
+        ) {
+            obj.status = "expired";
+        }
+
+        return{
+            ...obj,
+            totals: q.totals                
+        };
+    });
+    res.json(withTotals)
+});
+
+// ------ Get Single Quote by ID ------
 export const getQuoteById = asyncHandler(async (req, res, next) => {
-        const quote = await Quote.findOne({ _id: req.params.id, user: req.user.id })
-            .populate("customer", "name email company")
-        if (!quote) return res.status(404).json({message: "Quote not found "})
-        res.json({
-            ...quote.toObject(),
-            totals: quote.totals
-        })
-})
 
-// Create Quote
+    const quote = await Quote.findOne({ _id: req.params.id, user: req.user.id })
+        .populate("customer", "name email company");
+
+    if (!quote) return res.status(404).json({message: "Quote not found "});
+
+    const obj = quote.toObject();
+
+    // Auto-expire
+    if (
+        obj.status !== "converted" &&
+        obj.status !== "declined" &&
+        obj.expiryDate && 
+        dayjs(obj.expiryDate).isBefore(dayjs(), "day")
+    ) {
+        obj.status = "expired";
+    }
+
+    res.json({
+        ...obj,
+        totals: quote.totals
+    });
+});
+
+// ------ Create Quote ------
 export const createQuote = asyncHandler(async (req, res, next) => {
         const { customer, quoteNumber, issueDate, expiryDate, items, notes } = req.body
 
@@ -50,7 +80,7 @@ export const createQuote = asyncHandler(async (req, res, next) => {
         })
 })
 
-// Update Quote
+// ------ Update Quote ------
 export const updateQuote = asyncHandler(async (req, res, next) => {
         const quote = await Quote.findOneAndUpdate(
             { _id: req.params.id, user: req.user.id },
@@ -64,7 +94,7 @@ export const updateQuote = asyncHandler(async (req, res, next) => {
         })
 })
 
-// Delete Quote
+// ------ Delete Quote ------
 export const deleteQuote = asyncHandler(async (req, res, next) => {
         const quote = await Quote.findOneAndDelete({ _id: req.params.id, user: req.user.id })
         if (!quote) return res.status(404).json({ message: "Quote not found" })

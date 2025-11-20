@@ -115,6 +115,20 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
     }, []);
 
     const handleQuoteSelect = async (quoteId: string) => {
+        const q = quotes.find(x => x._id === quoteId);
+
+        // Local validation before calling API
+        if (!q) {
+            message.error("Quote not found");
+            return;
+        }
+        // Block declined + expired
+        if (q.status === "declined" || q.status === "expired") {
+            message.error("You cannot create an invoice from this quote");
+            return;
+        }
+
+        // Backend fetch + import
         try {
             const quote = await getQuote(quoteId);
             const suffix = exractQuoteSuffix(quote.quoteNumber);
@@ -273,14 +287,25 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
                     <Select
                         placeholder="Select a quote"
                         onChange={handleQuoteSelect}
-                        options={quotes.map((q) => ({
-                            label: `${q.quoteNumber} - ${
-                                typeof q.customer === "object"
-                                ? (q.customer.company || q.customer.name)
-                                : ""
-                            }`,
-                            value: q._id,
-                        }))}
+                        options={quotes
+                            .filter(q => q.status !== "converted")
+                            .map((q) => {
+                                const statusLabel =
+                                    q.status === "declined"
+                                        ? "(declined)"
+                                        : q.status === "expired"
+                                        ? "(expired)"
+                                        : "";
+                                return {
+                                    label: `${q.quoteNumber} ${
+                                        typeof q.customer === "object"
+                                        ? (q.customer.company || q.customer.name)
+                                        : ""
+                                    } ${statusLabel}`,
+                                    value: q._id,
+                                    disabled: q.status === "declined" || q.status === "expired",
+                                };
+                        })}
                     />
                 </Form.Item>
 
