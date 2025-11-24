@@ -110,6 +110,7 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
         <Modal open={open} title="New Payment" onCancel={onClose} footer={null} destroyOnHidden>
             <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4">
 
+                {/* Invoice number */}
                 <Form.Item label="Invoice" validateStatus={errors.invoice ? "error" : ""}>
                     <Controller name="invoice" control={control} render={({ field }) => (
                         <Select {...field} placeholder="Select invoice"
@@ -122,7 +123,10 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
                             }))}
                             onChange={async (invId) => {
                                 field.onChange(invId);
+                                // Load all payments
                                 const all = await listPayments();
+
+                                // Sum all payments linked to this invoice
                                 const paid = all
                                     .filter(p => p.invoice === invId || 
                                         (p.invoice
@@ -131,10 +135,16 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
                                         )
                                     )
                                     .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+
+                                // Look up selected invoice and extract full invoice total
                                 const invoiceObj = invoices.find(i => i._id === invId);
                                 const invoiceTotal = invoiceObj?.totals?.total || 0;
+
+                                // Compute remaining balance to be paid
                                 const remainingBalance = invoiceTotal - paid;
                                 setRemaining(remainingBalance);
+
+                                // Auto-fill amount with the remaining balance
                                 reset((prev) => ({
                                     ...prev,
                                     amount: Number(remainingBalance.toFixed(2)),
@@ -144,6 +154,7 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
                     )}/>
                 </Form.Item>
 
+                {/* Payment number */}
                 <Form.Item
                     label="Payment number"
                     validateStatus={errors.paymentId ? "error" : ""}
@@ -158,6 +169,7 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
                     />
                 </Form.Item>
 
+                {/* Amount */}
                 <Form.Item
                     label={remaining != null
                         ? `Amount (Remaining: $${formatAmount(remaining)})`
@@ -169,6 +181,7 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
                     <Controller name="amount" control={control} render={({ field }) => <InputNumber {...field} min={0} className="w-full" />} />
                 </Form.Item>
 
+                {/* Payment method */}
                 <Form.Item label="Method" validateStatus={errors.paymentMethod ? "error" : ""} help={errors.paymentMethod?.message}>
                     <Controller name="paymentMethod" control={control} render={({ field }) => (
                         <Select {...field} placeholder="Select method"
@@ -181,16 +194,19 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
                     )}/>
                 </Form.Item>
 
+                {/* Date */}
                 <Form.Item label="Payment Date">
                     <Controller name="paymentDate" control={control} render={({ field }) => (
                         <DatePicker {...field} value={dayjs(field.value)} onChange={(d) => field.onChange(d?.format("YYYY-MM-DD"))}/>
                     )}/>
                 </Form.Item>
 
+                {/* Notes */}
                 <Form.Item label="Notes">
                     <Controller name="notes" control={control} render={({ field }) => <Input.TextArea {...field} rows={3} />} />
                 </Form.Item>
 
+                {/* Submit */}
                 <Button type="primary" htmlType="submit" block>
                     Add Payment
                 </Button>
