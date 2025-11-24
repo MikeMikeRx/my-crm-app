@@ -37,6 +37,10 @@ export default function PaymentsPage() {
 
     // -----------------Table Columns -----------------
     const columns: ColumnsType<Payment> = [
+        {
+            title: "Payments #",
+            dataIndex: "paymentId"
+        },        
         {   title: "Invoice #",
             dataIndex: "invoice",
             render: (v) =>

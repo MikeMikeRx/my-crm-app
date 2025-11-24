@@ -29,7 +29,7 @@ export const getPaymentById = asyncHandler(async (req, res, next) => {
 
 // ------ Create Payment ------
 export const createPayment = asyncHandler(async (req, res, next) => {
-        const { invoice, amount, paymentDate, paymentMethod, notes } = req.body
+        const { paymentId, invoice, amount, paymentDate, paymentMethod, notes } = req.body
 
         if (!invoice || amount == null || !paymentMethod) {
             return res.status(400).json({ message: "Invoice, amount, and paymentMethod are required" })
@@ -43,6 +43,7 @@ export const createPayment = asyncHandler(async (req, res, next) => {
 
         const payment = await Payment.create({
             user: req.user.id,
+            paymentId,
             invoice,
             amount,
             paymentMethod,

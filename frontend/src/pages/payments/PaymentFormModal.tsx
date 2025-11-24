@@ -4,13 +4,14 @@ import { Modal, Form, Input, InputNumber, DatePicker, Button, Select, message } 
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createPayment } from "@/api/payments";
+import { createPayment, listPayments } from "@/api/payments";
 import { listInvoices } from "@/api/invoices";
 import type { PaymentCreate, Invoice } from "@/types/entities";
 import { getApiError } from "@/api/client";
 
 /* ----------------------- Schema Definition ----------------------- */
 const schema = z.object({
+    paymentId: z.string().min(1, "Payment number required"),
     invoice: z.string().min(1, "Invoice required"),
     amount: z.number().min(0.01, "Amount required"),
     paymentMethod: z.enum(["bank_transfer", "card", "cash", "paypal"]),
@@ -26,11 +27,35 @@ interface Props {
     onSuccess: () => void;
 }
 
-// -------------- Component -------------------------
+// -------------- Payment Form Component -------------------------
 export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
+    const [paymentsToday, setPaymentsToday] = useState(0);
+    
+    // Count today's payments
+    useEffect(() => {
+        if (!open) return;
+
+        listPayments().then((all) => {
+            const today = dayjs().format("YYYY-MM-DD");
+            const count = all.filter(
+                p => p.paymentDate && dayjs(p.paymentDate).format("YYYY-MM-DD") === today
+            ).length;
+            setPaymentsToday(count);
+        });
+    }, [open]);
+
+    // Generate unique payment ID
+    const genPaymentId = (countForToday: number) => {
+        const today = dayjs().format("YYYYMMDD");
+        const next = String(countForToday + 1).padStart(3, "0");
+        return `PAY-${today}-${next}`
+    }
+
+    /* ---------------------- React Hook Form setup ------------------ */
     const { control, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
         resolver: zodResolver(schema),
         defaultValues: {
+            paymentId: genPaymentId(paymentsToday),
             invoice: "",
             amount: 0,
             paymentMethod: undefined,
@@ -39,13 +64,28 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
         },
     });
 
+    // Reset form when modal opens or count changes
+    useEffect(() => {
+        if (!open) return;
+
+        reset({
+            paymentId: genPaymentId(paymentsToday),
+            invoice: "",
+            amount: 0,
+            paymentMethod: undefined,
+            paymentDate: dayjs().format("YYYY-MM-DD"),
+            notes: "",
+        });
+    }, [paymentsToday, open, reset]);
+
+    /* -------------- Submit handler ----------- */
     const submit = async (values: FormValues) => {
         try {
             const payload: PaymentCreate = {
                 ...values,
                 paymentMethod: values.paymentMethod as PaymentCreate["paymentMethod"],
                 paymentDate: dayjs(values.paymentDate).format("YYYY-MM-DD"),
-            };
+            };           
             await createPayment(payload);
             message.success("Payment created");
             onSuccess();
@@ -76,6 +116,20 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
                                 value: inv._id,
                             }))} />
                     )}/>
+                </Form.Item>
+
+                <Form.Item
+                    label="Payment number"
+                    validateStatus={errors.paymentId ? "error" : ""}
+                    help={errors.paymentId?.message}
+                >
+                    <Controller
+                        name="paymentId"
+                        control={control}
+                        render={({ field }) => (
+                            <Input {...field} readOnly />
+                        )}
+                    />
                 </Form.Item>
 
                 <Form.Item label="Amount" validateStatus={errors.amount ? "error" : ""} help={errors.amount?.message}>

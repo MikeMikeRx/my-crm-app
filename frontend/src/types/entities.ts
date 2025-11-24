@@ -102,6 +102,7 @@ export interface Payment {
 }
 
 export interface PaymentCreate {
+    paymentId: string;
     invoice: ID;
     amount: number;
     paymentMethod: PaymentMethod;
