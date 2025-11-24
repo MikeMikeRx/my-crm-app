@@ -8,6 +8,7 @@ import { listCustomers } from "@/api/customers";
 import { createQuote, listQuotes, updateQuote } from "@/api/quotes";
 import type { Customer, Quote, QuoteCreate, QuoteUpdate } from "@/types/entities";
 import { getApiError } from "@/api/client";
+import { formatAmount } from "@/utils/numberFormat";
 import {
     Modal,
     Form,
@@ -407,7 +408,7 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
                             textAlign: "right"
                         }}
                     >
-                        <Text strong style={{ fontSize: 18 }}>Total: ${total.toFixed(2)}</Text>
+                        <Text strong style={{ fontSize: 18 }}>Total: ${formatAmount(total)}</Text>
                     </Card>
                 </Form.Item>
 

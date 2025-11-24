@@ -5,6 +5,7 @@ import type { ColumnsType } from "antd/es/table";
 import { listPayments } from "@/api/payments";
 import type { Payment } from "@/types/entities";
 import PaymentFormModal from "./PaymentFormModal";
+import { formatAmount } from "@/utils/numberFormat";
 
 const METHOD_LABELS: Record<string, string> = {
     bank_transfer: "Bank Transfer",
@@ -63,7 +64,7 @@ export default function PaymentsPage() {
         { 
             title: "Amount",
             dataIndex: "amount",
-            render: (v) => `$${Number(v).toFixed(2)}`,
+            render: (v) => `$${formatAmount(v)}`,
         },
         {
             title: "Method",

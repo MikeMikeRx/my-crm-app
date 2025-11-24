@@ -8,6 +8,7 @@ import { createPayment, listPayments } from "@/api/payments";
 import { listInvoices } from "@/api/invoices";
 import type { PaymentCreate, Invoice } from "@/types/entities";
 import { getApiError } from "@/api/client";
+import { formatAmount } from "@/utils/numberFormat";
 
 /* ----------------------- Schema Definition ----------------------- */
 const schema = z.object({
@@ -159,7 +160,7 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
 
                 <Form.Item
                     label={remaining != null
-                        ? `Amount (Remaining: $${remaining.toFixed(2)})`
+                        ? `Amount (Remaining: $${formatAmount(remaining)})`
                         : "Amount"
                     }
                     validateStatus={errors.amount ? "error" : ""}

@@ -9,6 +9,7 @@ import { createInvoice, updateInvoice } from "@/api/invoices";
 import { listQuotes, getQuote } from "@/api/quotes";
 import type { Invoice, InvoiceCreate, Quote, LineItem } from "@/types/entities";
 import { getApiError } from "@/api/client";
+import { formatAmount } from "@/utils/numberFormat";
 
 /* ----------------------- Schema Definition ----------------------- */
 
@@ -383,7 +384,7 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
                         }}
                     >
                         <Text strong style={{ fontSize: 18 }}>
-                            Total: ${total.toFixed(2)}
+                            Total: ${formatAmount(total)}
                         </Text>
                     </Card>
                 </Form.Item>

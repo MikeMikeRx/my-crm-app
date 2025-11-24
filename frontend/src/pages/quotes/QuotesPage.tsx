@@ -5,6 +5,7 @@ import type { ColumnsType } from "antd/es/table";
 import { listQuotes, deleteQuote } from "@/api/quotes";
 import type { Quote, LineItem, QuoteStatus } from "@/types/entities";
 import QuoteFormModal from "./QuoteFormModal";
+import { formatAmount } from "@/utils/numberFormat";
 
 export default function QuotesPage() {
     const [data, setData] = useState<Quote[]>([]);
@@ -42,9 +43,6 @@ export default function QuotesPage() {
         }, 0);
     };
 
-    const fmtMoney = (v: unknown) =>
-        isFinite(Number(v)) ? Number(v).toFixed(2) : "0.00";
-
     const columns: ColumnsType<Quote> = [
         { title: "Quote #", dataIndex: "quoteNumber" },
         {   title: "Customer",
@@ -68,7 +66,7 @@ export default function QuotesPage() {
             title: "Total",
             render: (_, record) => {
                 const total = record.total ?? calcTotal(record.items);
-                return `$${fmtMoney(total)}`;
+                return `$${formatAmount(total)}`;
             },
 
         },

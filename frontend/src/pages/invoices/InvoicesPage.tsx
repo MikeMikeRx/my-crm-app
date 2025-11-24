@@ -5,6 +5,7 @@ import type { ColumnsType } from "antd/es/table";
 import { listInvoices } from "@/api/invoices";
 import type { Invoice, InvoiceStatus, LineItem } from "@/types/entities";
 import InvoiceFormModal from "./InvoiceFormModal"
+import { formatAmount } from "@/utils/numberFormat";
 
 
 export default function InvoicesPage() {
@@ -59,15 +60,15 @@ export default function InvoicesPage() {
         },
         {
             title: "Subtotal",
-            render: (_, r) => `$${calcTotals(r.items).subtotal.toFixed(2)}`,
+            render: (_, r) => `$${formatAmount(calcTotals(r.items).subtotal)}`,
         },
         {
             title: "Tax",
-            render: (_, r) => `$${calcTotals(r.items).taxTotal.toFixed(2)}`,
+            render: (_, r) => `$${formatAmount(calcTotals(r.items).subtotal)}`,
         },
         {
             title: "Total",
-            render: (_, r) => `$${calcTotals(r.items).total.toFixed(2)}`,
+            render: (_, r) => `$${formatAmount(calcTotals(r.items).subtotal)}`,
         },
         {
             title: "Status",
