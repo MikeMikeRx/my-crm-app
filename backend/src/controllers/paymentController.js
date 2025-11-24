@@ -1,7 +1,9 @@
 import Payment from "../models/Payment.js"
 import Invoice from "../models/Invoice.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
+import dayjs from "dayjs"
 
+// ------ Get All Payments ------
 export const getPayments = asyncHandler(async (req, res, next) => {
         const payments = await Payment.find({ user: req.user.id })
             .populate({
@@ -13,6 +15,7 @@ export const getPayments = asyncHandler(async (req, res, next) => {
         res.json(payments)
 })
 
+// ------ Get Single Payment By ID ------
 export const getPaymentById = asyncHandler(async (req, res, next) => {
         const payment = await Payment.findOne({_id: req.params.id, user: req.user.id })
             .populate({
@@ -24,6 +27,7 @@ export const getPaymentById = asyncHandler(async (req, res, next) => {
         res.json(payment)
 })
 
+// ------ Create Payment ------
 export const createPayment = asyncHandler(async (req, res, next) => {
         const { invoice, amount, paymentDate, paymentMethod, notes } = req.body
 
@@ -46,24 +50,23 @@ export const createPayment = asyncHandler(async (req, res, next) => {
             notes,
         })
 
-        const payments = await Payment.find()
-            .populate({
-                path: "invoice",
-                populate: {
-                    path: "customer",
-                    model: "Customer"
-                }
-            });
+        const payments = await Payment.find({ invoice });
             
-        const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0)
+        const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
         const invoiceTotal = existingInvoice.items.reduce(
             (sum, i) => sum + i.quantity * i.unitPrice,
             0
-        )
+        );
 
+        // Mark invoice as paid ONLY if fully paid
         if (totalPaid >= invoiceTotal) {
             existingInvoice.status = "paid"
-            await existingInvoice.save()
+            await existingInvoice.save();
+        } else {
+            if (dayjs(existingInvoice.dueDate).isBefore(dayjs(), "day")) {
+                existingInvoice.status = "overdue";
+                await existingInvoice.save();
+            }
         }
 
         res.status(201).json(payment)
