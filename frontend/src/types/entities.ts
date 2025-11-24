@@ -63,14 +63,16 @@ export interface Invoice {
     issueDate: string; // YYYY-MM-DD
     dueDate: string; // YYYY-MM-DD
     items: LineItem[];
-    subtotal: number;
-    taxTotal: number;
-    total: number;
     status: InvoiceStatus;
     notes?: string;
     createdAt?: string;
     updatedAt?: string;
     quote?: string | Quote;
+    totals: {
+        subtotal: number;
+        tax: number;
+        total: number;
+    };
 }
 
 export interface InvoiceCreate {

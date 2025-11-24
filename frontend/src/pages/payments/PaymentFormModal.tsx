@@ -30,6 +30,7 @@ interface Props {
 // -------------- Payment Form Component -------------------------
 export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
     const [paymentsToday, setPaymentsToday] = useState(0);
+    const [remaining, setRemaining] = useState<number | null>(null);
     
     // Count today's payments
     useEffect(() => {
@@ -112,9 +113,33 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
                     <Controller name="invoice" control={control} render={({ field }) => (
                         <Select {...field} placeholder="Select invoice"
                             options={invoices.map((inv) => ({
-                                label: `${inv.invoiceNumber} - $${inv.total?.toFixed(2)}`,
+                                label: `${inv.invoiceNumber} (${typeof inv.customer === "object"
+                                    ? (inv.customer.company || inv.customer.name)
+                                    : ""
+                                })`,
                                 value: inv._id,
-                            }))} />
+                            }))}
+                            onChange={async (invId) => {
+                                field.onChange(invId);
+                                const all = await listPayments();
+                                const paid = all
+                                    .filter(p => p.invoice === invId || 
+                                        (p.invoice
+                                            && typeof p.invoice=== "object"
+                                            && p.invoice._id === invId
+                                        )
+                                    )
+                                    .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+                                const invoiceObj = invoices.find(i => i._id === invId);
+                                const invoiceTotal = invoiceObj?.totals?.total || 0;
+                                const remainingBalance = invoiceTotal - paid;
+                                setRemaining(remainingBalance);
+                                reset((prev) => ({
+                                    ...prev,
+                                    amount: Number(remainingBalance.toFixed(2)),
+                                }));
+                            }}
+                        />
                     )}/>
                 </Form.Item>
 
@@ -132,7 +157,14 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
                     />
                 </Form.Item>
 
-                <Form.Item label="Amount" validateStatus={errors.amount ? "error" : ""} help={errors.amount?.message}>
+                <Form.Item
+                    label={remaining != null
+                        ? `Amount (Remaining: $${remaining.toFixed(2)})`
+                        : "Amount"
+                    }
+                    validateStatus={errors.amount ? "error" : ""}
+                    help={errors.amount?.message}
+                >
                     <Controller name="amount" control={control} render={({ field }) => <InputNumber {...field} min={0} className="w-full" />} />
                 </Form.Item>
 
