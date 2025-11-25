@@ -1,5 +1,6 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import Invoice from "../models/Invoice.js";
+import Quote from "../models/Quote.js";
 import dayjs from "dayjs";
 
 export const getDashboardSummary = asyncHandler(async (req, res) => {
@@ -30,9 +31,34 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
 
     // reads invoice documents and calculates them dynamically
 
+    // --- Quote Summary ---
+    const quotes = await Quote.find({ user: req.user.id });
+
+    const totalQuotes = quotes.length;
+
+    const thisMonthQuotes = quotes.filter(q =>
+        dayjs(q.issueDate).isSame(dayjs(), "month")
+    ).length;
+
+    const acceptedQuotes = quotes.filter(q => q.status === "accepted").length;
+
+    const declinedQuotes = quotes.filter(q => q.status === "declined").length;
+
+    const expiredQuotes = quotes.filter(q =>
+        q.status !== "converted" && dayjs(q.expiryDate).isBefore(dayjs(), "day")
+    ).length;
+
+    const quoteSummary = {
+        total: totalQuotes,
+        thisMonth: thisMonthQuotes,
+        accepted: acceptedQuotes,
+        declined: declinedQuotes,
+        expired: expiredQuotes,
+    };
+
     return res.json({
         invoices: invoiceSummary,
-        quotes: {},
+        quotes: quoteSummary,
         payments: {},
         customers: {},
     });    
