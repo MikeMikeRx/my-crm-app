@@ -10,6 +10,7 @@ import customerRoutes from "./routes/customer.js"
 import invoiceRoutes from "./routes/invoice.js"
 import quoteRoutes from "./routes/quote.js"
 import paymentRoutes from "./routes/payment.js"
+import dashboardRoutes from "./routes/dashboard.js"
 import errorHandler from "./middleware/errorHandler.js"
 import { globalRateLimiter } from "./middleware/rateLimiter.js"
 import { sanitizeMiddleware } from "./middleware/sanitizer.js"
@@ -48,6 +49,7 @@ app.use(globalRateLimiter)
 // Routes
 app.use("/api/auth", authRoutes)
 app.use("/api/admin", adminRoutes)
+app.use("/api/dashboard", dashboardRoutes)
 app.use("/api/customers", customerRoutes)
 app.use("/api/invoices", invoiceRoutes)
 app.use("/api/quotes", quoteRoutes)
