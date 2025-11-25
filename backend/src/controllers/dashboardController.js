@@ -1,6 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import Invoice from "../models/Invoice.js";
 import Quote from "../models/Quote.js";
+import Payment from "../models/Payment.js";
 import dayjs from "dayjs";
 
 export const getDashboardSummary = asyncHandler(async (req, res) => {
@@ -56,10 +57,33 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
         expired: expiredQuotes,
     };
 
+    // --- Payment Summary ---
+    const payments = await Payment.find({ user: user.req.id });
+
+    const totalPayments = payments.length;
+
+    const thisMonthPayments = payments.filter(p =>
+        p.paymentDate && dayjs(p.paymentDate).isSame(dayjs(), "month")
+    ).length;
+
+    const completedPayments = payments.filter(p => p.status === "completed").length;
+
+    const failedPayments = payments.filter(p => p.status === "failed").length;
+
+    const pendingPayments = payments.filter(p => p.status === "pending").length;
+
+    const paymentSummary = {
+        total: totalPayments,
+        thisMonth: thisMonthPayments,
+        completed: completedPayments,
+        failed: failedPayments,
+        pending: pendingPayments,
+    };
+
     return res.json({
         invoices: invoiceSummary,
         quotes: quoteSummary,
-        payments: {},
+        payments: paymentSummary,
         customers: {},
     });    
 });
