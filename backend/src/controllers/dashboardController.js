@@ -8,102 +8,66 @@ import dayjs from "dayjs";
 export const getDashboardSummary = asyncHandler(async (req, res) => {
 
     // --- Invoice Summary --- 
-    const invoices = await Invoice.find({ user: req.user.id });
-
-    const totalInvoices = invoices.length;
-
-    const thisMonthInvoices = invoices.filter(inv =>
-        dayjs(inv.issueDate).isSame(dayjs(), "month")
-    ).length;
-
-    const overdueInvoices = invoices.filter(inv =>
-        inv.status !== "paid" &&
-        dayjs(inv.dueDate).isBefore(dayjs(), "day")
-    ).length;
-
-    const unpaidInvoices = invoices.filter(inv =>
-        inv.status === "unpaid"
-    ).length;
-
     const invoiceSummary = {
-        total: totalInvoices,
-        thisMonth: thisMonthInvoices,
-        overdue: overdueInvoices,
-        unpaid: unpaidInvoices,
-    }
+        total: invoices.length,
+
+        thisMonth: invoices.filter(inv =>
+            dayjs(inv.issueDate).isSame(dayjs(), "month")
+        ).length,
+        
+        overdue: invoices.filter(inv =>
+            inv.status !== "paid" &&
+            dayjs(inv.dueDate).isBefore(dayjs(), "day")
+        ).length,
+
+        unpaid: invoices.filter(inv => inv.status === "unpaid").length,
+    };
 
     // --- Quote Summary ---
-    const quotes = await Quote.find({ user: req.user.id });
-
-    const totalQuotes = quotes.length;
-
-    const thisMonthQuotes = quotes.filter(q =>
-        dayjs(q.issueDate).isSame(dayjs(), "month")
-    ).length;
-
-    const acceptedQuotes = quotes.filter(q => q.status === "accepted").length;
-
-    const declinedQuotes = quotes.filter(q => q.status === "declined").length;
-
-    const expiredQuotes = quotes.filter(q =>
-        q.status !== "converted" && dayjs(q.expiryDate).isBefore(dayjs(), "day")
-    ).length;
-
     const quoteSummary = {
-        total: totalQuotes,
-        thisMonth: thisMonthQuotes,
-        accepted: acceptedQuotes,
-        declined: declinedQuotes,
-        expired: expiredQuotes,
+        total: quotes.length,
+
+        thisMonth: quotes.filter(q =>
+            dayjs(q.issueDate).isSame(dayjs(), "month")
+        ).length,
+
+        accepted: quotes.filter(q => q.status === "accepted").length,
+
+        declined: quotes.filter(q => q.status === "declined").length,
+
+        expired: quotes.filter(q =>
+            q.status !== "converted" &&
+            dayjs(q.expiryDate).isBefore(dayjs(), "day")
+        ).length,
     };
 
     // --- Payment Summary ---
-    const payments = await Payment.find({ user: req.user.id });
-
-    const totalPayments = payments.length;
-
-    const thisMonthPayments = payments.filter(p =>
-        p.paymentDate && dayjs(p.paymentDate).isSame(dayjs(), "month")
-    ).length;
-
-    const completedPayments = payments.filter(p => p.status === "completed").length;
-
-    const failedPayments = payments.filter(p => p.status === "failed").length;
-
-    const pendingPayments = payments.filter(p => p.status === "pending").length;
-
     const paymentSummary = {
-        total: totalPayments,
-        thisMonth: thisMonthPayments,
-        completed: completedPayments,
-        failed: failedPayments,
-        pending: pendingPayments,
+        total: payments.length,
+
+        thisMonth: payments.filter(p =>
+            p.paymentDate && dayjs(p.paymentDate).isSame(dayjs(), "month")
+        ).length,
+
+        completed: payments.filter(p => p.status === "completed").length,
+
+        failed: payments.filter(p => p.status === "failed").length,
+
+        pending: payments.filter(p => p.status === "pending").length,
     };
 
     // --- Customer Summary ---
-    const customers = await Customer.find({ user: req.user.id });
-
-    const totalCustomers = customers.length;
-
-    const newThisMonth = customers.filter(c =>
-        dayjs(c.createdAt).isSame(dayjs(), "month")
-    ).length;
-
-     // Determine active customers based on invoices/quotes
-    const activeCustomerIds = new Set([
-        ...invoices.map(inv => String(inv.customer)),
-        ...quotes.map(q => String(q.customer)),
-    ]);
-
-    const activeCustomers = customers.filter(c =>
-        activeCustomerIds.has(String(c._id))
-    ).length;
-
     const customerSummary = {
-        total: totalCustomers,
-        new: newThisMonth,
-        active: activeCustomers,
-    }
+        total: customers.length,
+
+        new: customers.filter(c =>
+            dayjs(c.createdAt).isSame(dayjs(), "month")
+        ).length,
+        
+        active: customers.filter(c =>
+            activeCustomerIds.has(String(c._id))
+        ).length,
+    };
 
     return res.json({
         invoices: invoiceSummary,
