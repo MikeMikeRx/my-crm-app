@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import Invoice from "../models/Invoice.js";
 import Quote from "../models/Quote.js";
 import Payment from "../models/Payment.js";
+import Customer from "../models/Customer";
 import dayjs from "dayjs";
 
 export const getDashboardSummary = asyncHandler(async (req, res) => {
@@ -80,10 +81,36 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
         pending: pendingPayments,
     };
 
+    // --- Customer Summary ---
+
+    const customers = await customer.find({ user: user.req.id });
+
+    const totalCustomers = customers.length;
+
+    const newThisMonth = customers.filter(c =>
+        dayjs(c.createdAt).isSame(dayjs(), "month")
+    ).length;
+
+    // A customer is active if has at least one invoice or one quote
+    const activeCustomerIds = new Set([
+        ...invoices.map(inv => String(inv.customer)),
+        ...quotes.map(q => String(q.customer)),
+    ]);
+
+    const activeCustomers = customers.filter(c =>
+        activeCustomerIds.has(String(c._id))
+    ).length;
+
+    const customerSummary = {
+        total: totalCustomers,
+        new: newThisMonth,
+        active: activeCustomers,
+    }
+
     return res.json({
         invoices: invoiceSummary,
         quotes: quoteSummary,
         payments: paymentSummary,
-        customers: {},
+        customers: customerSummary,
     });    
 });
