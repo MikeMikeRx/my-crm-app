@@ -1,5 +1,6 @@
 import { Layout, Menu } from "antd";
 import {
+    DashboardOutlined,
     UserOutlined,
     FileTextOutlined,
     DollarOutlined,
@@ -16,6 +17,7 @@ export default function AppLayout(){
     const { pathname } = useLocation();
 
     const menuItems = [
+        { key: "/", icon: <DashboardOutlined/>, label: <Link to="/">Dashboard</Link> },
         { key: "/customers", icon: <UserOutlined />, label: <Link to="/customers">Customers</Link> },
         { key: "/quotes", icon: <FileTextOutlined />, label: <Link to="/quotes">Quotes</Link> },
         { key: "/invoices", icon: <FileDoneOutlined />, label: <Link to="/invoices">Invoices</Link> },
