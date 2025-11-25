@@ -2,10 +2,11 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import Invoice from "../models/Invoice.js";
 import Quote from "../models/Quote.js";
 import Payment from "../models/Payment.js";
-import Customer from "../models/Customer";
+import Customer from "../models/Customer.js";
 import dayjs from "dayjs";
 
 export const getDashboardSummary = asyncHandler(async (req, res) => {
+
     // --- Invoice Summary --- 
     const invoices = await Invoice.find({ user: req.user.id });
 
@@ -30,8 +31,6 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
         overdue: overdueInvoices,
         unpaid: unpaidInvoices,
     }
-
-    // reads invoice documents and calculates them dynamically
 
     // --- Quote Summary ---
     const quotes = await Quote.find({ user: req.user.id });
@@ -59,7 +58,7 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
     };
 
     // --- Payment Summary ---
-    const payments = await Payment.find({ user: user.req.id });
+    const payments = await Payment.find({ user: req.user.id });
 
     const totalPayments = payments.length;
 
@@ -82,8 +81,7 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
     };
 
     // --- Customer Summary ---
-
-    const customers = await customer.find({ user: user.req.id });
+    const customers = await Customer.find({ user: req.user.id });
 
     const totalCustomers = customers.length;
 
@@ -91,7 +89,7 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
         dayjs(c.createdAt).isSame(dayjs(), "month")
     ).length;
 
-    // A customer is active if has at least one invoice or one quote
+     // Determine active customers based on invoices/quotes
     const activeCustomerIds = new Set([
         ...invoices.map(inv => String(inv.customer)),
         ...quotes.map(q => String(q.customer)),
