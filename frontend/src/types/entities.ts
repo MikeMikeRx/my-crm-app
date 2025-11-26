@@ -120,3 +120,14 @@ export interface SummaryCardProps {
     value: number | undefined;
     loading: boolean;
 }
+
+export interface StatPrevCardItem {
+    status: string;
+    percentage: number;
+}
+
+export interface StatPrevCardProps {
+    title: string;
+    preview?: StatPrevCardItem[];
+    loading: boolean;
+}
