@@ -111,3 +111,12 @@ export interface PaymentCreate {
     paymentDate?: string;
     notes?: string;
 }
+
+/* ------------- Components  ------------- */
+
+// Dashboard
+export interface SummaryCardProps {
+    title: string;
+    value: number | undefined;
+    loading: boolean;
+}
