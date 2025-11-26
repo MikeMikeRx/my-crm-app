@@ -17,66 +17,114 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
         ...quotes.map(q => String(q.customer)),
     ]);
 
-    // --- Invoice Summary ---
-    const invoiceSummary = {
-        total: invoices.length,
+    const toPct = (count, total) =>
+        total > 0 ? Math.round((count / total) * 100) : 0;
 
-        thisMonth: invoices.filter(inv =>
+    // --- Invoice Summary ---
+    const invoiceTotal = invoices.length;
+
+    const invoiceThisMonth = invoices.filter(inv =>
             dayjs(inv.issueDate).isSame(dayjs(), "month")
-        ).length,
-        
-        overdue: invoices.filter(inv =>
+        ).length;
+
+    const invoicePaid = invoices.filter(inv => inv.status === "paid").length;
+    const invoiceUnpaid =  invoices.filter(inv => inv.status === "unpaid").length;
+
+    const invoiceOverdue = invoices.filter(inv =>
             inv.status !== "paid" &&
             dayjs(inv.dueDate).isBefore(dayjs(), "day")
-        ).length,
+        ).length;
 
-        unpaid: invoices.filter(inv => inv.status === "unpaid").length,
+    const invoiceSummary = {
+        total: invoiceTotal,
+        thisMonth: invoiceThisMonth,  
+        overdue: invoiceOverdue,
+        unpaid: invoiceUnpaid,
+        preview: [
+            { status: "paid", percentage: toPct(invoicePaid ,invoiceTotal) },
+            { status: "unpaid", percentage: toPct(invoiceUnpaid ,invoiceTotal) },
+            { status: "overdue", percentage: toPct(invoiceOverdue ,invoiceTotal) },
+        ],
     };
 
     // --- Quote Summary ---
-    const quoteSummary = {
-        total: quotes.length,
+    const quoteTotal = quotes.length;
 
-        thisMonth: quotes.filter(q =>
+    const quoteThisMonth = quotes.filter(q =>
             dayjs(q.issueDate).isSame(dayjs(), "month")
-        ).length,
+        ).length;
 
-        accepted: quotes.filter(q => q.status === "accepted").length,
+    const quoteDraft = quotes.filter(q => q.status === "draft").length;
+    const quoteSent = quotes.filter(q => q.status === "sent").length;
+    const quoteAccepted = quotes.filter(q => q.status === "accepted").length;
+    const quoteDeclined = quotes.filter(q => q.status === "declined").length;
 
-        declined: quotes.filter(q => q.status === "declined").length,
-
-        expired: quotes.filter(q =>
+    const quoteExpired = quotes.filter(q =>
             q.status !== "converted" &&
             dayjs(q.expiryDate).isBefore(dayjs(), "day")
-        ).length,
+        ).length;
+
+    const quoteSummary = {
+        total: quoteTotal,
+        thisMonth: quoteThisMonth,
+        accepted: quoteAccepted,
+        declined: quoteDeclined,
+        expired: quoteExpired,
+        preview: [
+            {status: "draft", percentage: toPct(quoteDraft, quoteTotal) },
+            {status: "sent", percentage: toPct(quoteSent, quoteTotal) },
+            {status: "accepted", percentage: toPct(quoteAccepted, quoteTotal) },
+            {status: "declined", percentage: toPct(quoteDeclined, quoteTotal) },
+            {status: "expired", percentage: toPct(quoteExpired, quoteTotal) },
+        ],
     };
 
     // --- Payment Summary ---
-    const paymentSummary = {
-        total: payments.length,
+    const paymentTotal = payments.length;
 
-        thisMonth: payments.filter(p =>
+    const paymentThisMonth = payments.filter(p =>
             p.paymentDate && dayjs(p.paymentDate).isSame(dayjs(), "month")
-        ).length,
+        ).length;
 
-        completed: payments.filter(p => p.status === "completed").length,
+    const paymentCompleted = payments.filter(p => p.status === "completed").length;
+    const paymentFailed = payments.filter(p => p.status === "failed").length;
+    const paymentPending = payments.filter(p => p.status === "pending").length;
 
-        failed: payments.filter(p => p.status === "failed").length,
 
-        pending: payments.filter(p => p.status === "pending").length,
+    const paymentSummary = {
+        total: paymentTotal,
+        thisMonth: paymentThisMonth,
+        completed: paymentCompleted,
+        failed: paymentFailed,
+        pending: paymentPending,
+        preview: [
+            { status: "completed", percentage: toPct(paymentCompleted, paymentTotal) },
+            { status: "pending", percentage: toPct(paymentPending, paymentTotal) },
+            { status: "failed", percentage: toPct(paymentFailed, paymentTotal) },
+        ],
     };
 
     // --- Customer Summary ---
-    const customerSummary = {
-        total: customers.length,
+    const customerTotal = customers.length;
 
-        new: customers.filter(c =>
+    const customerNewThisMonth = customers.filter(c =>
             dayjs(c.createdAt).isSame(dayjs(), "month")
-        ).length,
-        
-        active: customers.filter(c =>
+        ).length;
+
+    const activeCustomers = customers.filter(c =>
             activeCustomerIds.has(String(c._id))
-        ).length,
+        ).length;
+
+    const inactiveCustomers = customerTotal - activeCustomers
+
+    const customerSummary = {
+        total: customerTotal,
+        new: customerNewThisMonth,
+        active: activeCustomers,
+        preview: [
+            { status: "active", percentage: toPct(activeCustomers, customerTotal) },
+            { status: "inactive", percentage: toPct(inactiveCustomers, customerTotal) },
+        ],
     };
 
     return res.json({
