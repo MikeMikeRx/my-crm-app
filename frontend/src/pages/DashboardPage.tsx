@@ -13,11 +13,12 @@ export default function DashboardPage() {
             .finally(() => setLoading(false));
     }, []);
 
-    return (
-        <Row gutter={[16, 16]}>
+    return <div>
+        {/*--------------------- Row 1 ---------------------*/}
+        <Row gutter={[24, 24]} style={{ marginBottom: 32 }}>
             <Col span={6}>
                 <SummaryCard
-                    title="Invoices (total)"
+                    title="Invoices (This Month)"
                     value={data?.invoices?.total}
                     loading={loading}
                 />
@@ -25,7 +26,7 @@ export default function DashboardPage() {
 
             <Col span={6}>
                 <SummaryCard
-                    title="Quotes (total)"
+                    title="Quotes (This Month)"
                     value={data?.quotes?.total}
                     loading={loading}
                 />
@@ -33,7 +34,7 @@ export default function DashboardPage() {
 
             <Col span={6}>
                 <SummaryCard
-                    title="Payments (total)"
+                    title="Payments (This Month)"
                     value={data?.payments?.total}
                     loading={loading}
                 />
@@ -41,11 +42,47 @@ export default function DashboardPage() {
 
             <Col span={6}>
                 <SummaryCard
-                    title="Customers (total)"
+                    title="New Customers"
                     value={data?.customers?.total}
                     loading={loading}
                 />
-            </Col>            
+            </Col>
         </Row>
-    )
+
+        {/* --------------------- Row 2 --------------------- */}
+        <Row gutter={[24, 24]} style={{ marginBottom: 32 }}>
+            <Col span={6}>
+                <SummaryCard
+                    title="Invoices (Total)"
+                    value={data?.invoices?.total}
+                    loading={loading}
+                />
+            </Col>
+
+            <Col span={6}>
+                <SummaryCard
+                    title="Quotes (Total)"
+                    value={data?.quotes?.total}
+                    loading={loading}
+                />
+            </Col>
+
+            <Col span={6}>
+                <SummaryCard
+                    title="Payments (Total)"
+                    value={data?.payments?.total}
+                    loading={loading}
+                />
+            </Col>
+
+            <Col span={6}>
+                <SummaryCard
+                    title="Customers (Total)"
+                    value={data?.customers?.total}
+                    loading={loading}
+                />
+            </Col>
+        </Row>
+
+    </div>
 }
