@@ -6,8 +6,18 @@ import Customer from "../models/Customer.js";
 import dayjs from "dayjs";
 
 export const getDashboardSummary = asyncHandler(async (req, res) => {
+    // --- Load Data ---
+    const invoices = await Invoice.find({ user: req.user.id });
+    const quotes = await Quote.find({ user: req.user.id });
+    const payments = await Payment.find({ user: req.user.id });
+    const customers = await Customer.find({ user: req.user.id });
 
-    // --- Invoice Summary --- 
+    const activeCustomerIds = new Set([
+        ...invoices.map(inv => String(inv.customer)),
+        ...quotes.map(q => String(q.customer)),
+    ]);
+
+    // --- Invoice Summary ---
     const invoiceSummary = {
         total: invoices.length,
 
