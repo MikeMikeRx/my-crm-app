@@ -3,6 +3,7 @@ import { Row, Col, Card, Progress } from "antd";
 import SummaryCard from "@/components/dashboard/SummaryCard";
 import { getDashboardSummary } from "@/api/dashboard";
 import StatusPreviewCard from "@/components/dashboard/StatusPreviewCard";
+import { formatAmount } from "@/utils/numberFormat";
 
 export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
@@ -20,33 +21,41 @@ export default function DashboardPage() {
             <Row gutter={[24, 24]} style={{ marginBottom: 32 }}>
                 <Col span={6}>
                     <SummaryCard
-                        title="Invoices (This Month)"
-                        value={data?.invoices?.total}
+                        title="Quotes"
+                        subtitle="This Month"
+                        value={`$ ${formatAmount(data?.invoices?.monthSum)}`}
                         loading={loading}
+                        color="#3b82f6"
                     />
                 </Col>
 
                 <Col span={6}>
                     <SummaryCard
-                        title="Quotes (This Month)"
-                        value={data?.quotes?.total}
+                        title="Invoices"
+                        subtitle="This Month"
+                        value={`$ ${formatAmount(data?.invoices?.monthSum)}`}
                         loading={loading}
+                        color="#8b5cf6"
                     />
                 </Col>
 
                 <Col span={6}>
                     <SummaryCard
-                        title="Payments (This Month)"
-                        value={data?.payments?.total}
+                        title="Payments"
+                        subtitle="This Month"
+                        value={`$ ${formatAmount(data?.invoices?.monthSum)}`}
                         loading={loading}
+                        color="#10b981"
                     />
                 </Col>
 
                 <Col span={6}>
                     <SummaryCard
-                        title="New Customers"
-                        value={data?.customers?.total}
+                        title="Due Balance"
+                        subtitle="Outstanding"
+                        value={`$ ${formatAmount(data?.payments?.dueBalance || 0)}`}
                         loading={loading}
+                        color="#ef4444"
                     />
                 </Col>
             </Row>

@@ -117,8 +117,10 @@ export interface PaymentCreate {
 // Dashboard
 export interface SummaryCardProps {
     title: string;
-    value: number | undefined;
+    subtitle: string;
+    value: number | string;
     loading: boolean;
+    color: string;
 }
 
 export interface StatPrevCardItem {
