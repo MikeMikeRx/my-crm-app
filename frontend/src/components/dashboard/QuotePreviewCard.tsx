@@ -1,4 +1,4 @@
-import { Card, Progress } from "antd";
+import { Progress } from "antd";
 import type { StatPrevCardItem, QuoteStatus } from "@/types/entities";
 
 interface Props {
