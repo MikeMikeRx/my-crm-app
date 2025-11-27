@@ -39,6 +39,13 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
             dayjs(inv.issueDate).isSame(dayjs(), "month")
         ).length;
 
+    const invoiceMonthSum = invoices
+        .filter(inv => dayjs(inv.issueDate).isSame(dayjs(), "month"))
+        .reduce((sum, inv) => sum + inv.totals.total, 0);
+
+    const invoiceTotalSum = invoices
+        .reduce((sum, inv) => sum + inv.totals.total, 0);
+
     const invoicePaid = invoices.filter(inv => inv.status === "paid").length;
     const invoiceUnpaid =  invoices.filter(inv => inv.status === "unpaid").length;
 
@@ -49,7 +56,9 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
 
     const invoiceSummary = {
         total: invoiceTotal,
-        thisMonth: invoiceThisMonth,  
+        monthCount: invoiceThisMonth,
+        monthSum: invoiceMonthSum,
+        totalSum: invoiceTotalSum,
         overdue: invoiceOverdue,
         unpaid: invoiceUnpaid,
         preview: [
@@ -78,6 +87,13 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
             dayjs(q.issueDate).isSame(dayjs(), "month")
         ).length;
 
+    const quoteMonthSum = quotes
+        .filter(q => dayjs(q.issueDate).isSame(dayjs(), "month"))
+        .reduce((sum, q) => sum + q.totals.toal, 0);
+
+    const quoteTotalSum = quotes
+        .reduce((sum, q) => sum + q.totals.total, 0);
+
     const quoteDraft = quotes.filter(q => q.status === "draft").length;
     const quoteSent = quotes.filter(q => q.status === "sent").length;
     const quoteAccepted = quotes.filter(q => q.status === "accepted").length;
@@ -90,7 +106,9 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
 
     const quoteSummary = {
         total: quoteTotal,
-        thisMonth: quoteThisMonth,
+        monthCount: quoteThisMonth,
+        monthSum: quoteMonthSum,
+        totalSum: quoteTotalSum,
         accepted: quoteAccepted,
         declined: quoteDeclined,
         expired: quoteExpired,
@@ -133,6 +151,13 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
             p.paymentDate && dayjs(p.paymentDate).isSame(dayjs(), "month")
         ).length;
 
+    const paymentMonthSum = payments
+        .filter(p => dayjs(p.paymentDate).isSame(dayjs(), "month"))
+        .reduce((sum, p) => sum + p.amount, 0);
+
+    const paymentTotalSum = payments
+        .reduce((sum, p) => sum + p.amount, 0);
+
     const paymentCompleted = payments.filter(p => p.status === "completed").length;
     const paymentFailed = payments.filter(p => p.status === "failed").length;
     const paymentPending = payments.filter(p => p.status === "pending").length;
@@ -140,7 +165,9 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
 
     const paymentSummary = {
         total: paymentTotal,
-        thisMonth: paymentThisMonth,
+        monthCount: paymentThisMonth,
+        monthSum: paymentMonthSum,
+        totalSum: paymentTotalSum,
         completed: paymentCompleted,
         failed: paymentFailed,
         pending: paymentPending,
