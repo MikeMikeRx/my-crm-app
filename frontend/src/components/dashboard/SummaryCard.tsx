@@ -1,4 +1,4 @@
-import { Card, Skeleton } from "antd"
+import { Card, Skeleton, Tag } from "antd"
 import type { SummaryCardProps } from "@/types/entities"
 
 export default function SummaryCard({ title, subtitle, value, loading, color }: SummaryCardProps) {
@@ -39,7 +39,7 @@ export default function SummaryCard({ title, subtitle, value, loading, color }: 
                 {loading ? (
                     <Skeleton.Input active size="small" style={{ width: 80 }} />
                 ) : (
-                    <span
+                    <Tag
                         style={{
                             background: color,
                             color: "white",
@@ -50,7 +50,7 @@ export default function SummaryCard({ title, subtitle, value, loading, color }: 
                         }}
                     >
                         {value}
-                    </span>
+                    </Tag>
                 )}
            </div>
         </Card>
