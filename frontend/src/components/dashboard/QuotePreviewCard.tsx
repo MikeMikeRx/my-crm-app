@@ -15,29 +15,28 @@ const QUOTE_COLORS: Record<QuoteStatus, string> = {
     converted: "purple",
 };
 
-export default function QuotePreviewCard({ preview, loading }: Props) {
-    return (
-        <Card title="Quotes Overview" style={{ height: "100%" }}>
-            {loading ? (
-                <p>Loading...</p>
-            ) : (
-                preview.map((item) => (
-                    <div key={item.status} style={{ marginBottom: 14 }}>
-                        <div className="flex justify-between text-xs mb-1">
-                            <span>{item.status.toUpperCase()}</span>
-                            <span>{item.percentage}%</span>
-                        </div>
+export default function QuotePreviewCard({ preview = [], loading }: Props) {
+    if (loading) return <p>Loading...</p>;
 
-                        <Progress
-                            percent={item.percentage}
-                            showInfo={false}
-                            strokeColor={
-                                QUOTE_COLORS[item.status as QuoteStatus] || "gray"
-                            }
-                        />
+    return (
+        <>
+            {preview.map((item) => (
+                <div key={item.status} style={{ marginBottom: 14 }}>
+                    <div className="flex justify-between text-xs mb-1">
+                        <span>{item.status.toUpperCase()}</span>
+                        <span> {item.percentage}%</span>
                     </div>
-                ))
-            )}
-        </Card>
+
+                    <Progress
+                        percent={item.percentage}
+                        showInfo={false}
+                        size="small"
+                        strokeColor={
+                            QUOTE_COLORS[item.status as QuoteStatus] || "gray"
+                        }
+                    />
+                </div>
+            ))}
+        </>
     );
 }

@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { Row, Col, Card, Progress } from "antd";
-import SummaryCard from "@/components/dashboard/SummaryCard";
+import { Row, Col, Card } from "antd";
 import { getDashboardSummary } from "@/api/dashboard";
+import SummaryCard from "@/components/dashboard/SummaryCard";
 import StatusPreviewCard from "@/components/dashboard/StatusPreviewCard";
+import QuotePreviewCard from "@/components/dashboard/QuotePreviewCard";
+import InvoicePreviewCard from "@/components/dashboard/InvoicePreviewCard";
 import { formatAmount } from "@/utils/numberFormat";
 
 export default function DashboardPage() {
@@ -68,46 +70,20 @@ export default function DashboardPage() {
                         <Row gutter={[24, 24]}>
                             {/* Invoice Overview */}
                             <Col span={12}>
-                                <h3 className="text-base font-semibold mb-3">Invoice Overview</h3>
-                                {loading || !data ? (
-                                    <p>Loading...</p>
-                                ) : (
-                                    data.invoices.preview.map((item: any) => (
-                                        <div key={item.status} className="mb-3">
-                                            <div className="flex justify-between text-xs mb-1">
-                                                <span>{item.status}</span>
-                                                <span>{item.percentage}%</span>
-                                            </div>
-                                            <Progress
-                                                percent={item.percentage}
-                                                showInfo={false}
-                                                size="small"
-                                            />
-                                        </div>
-                                    ))
-                                )}
+                                <h3 className="text-base font-semibold mb-3">Quote Overview</h3>
+                                <QuotePreviewCard
+                                    preview={data?.quotes?.preview}
+                                    loading={loading}
+                                />
                             </Col>
 
                             {/* Quote Overview */}
                             <Col span={12}>
-                                <h3 className="text-base font-semibold mb-3">Quote Overview</h3>
-                                {loading || !data ? (
-                                    <p>Loading...</p>
-                                ) : (
-                                    data.quotes.preview.map((item: any) => (
-                                        <div key={item.status} className="mb-3">
-                                            <div className="flex justify-between text-xs mb-1">
-                                                <span>{item.status}</span>
-                                                <span>{item.percentage}%</span>
-                                            </div>
-                                            <Progress
-                                                percent={item.percentage}
-                                                showInfo={false}
-                                                size="small"
-                                            />
-                                        </div>
-                                    ))
-                                )}
+                                <h3 className="text-base font-semibold mb-3">Invoice Overview</h3>
+                                <InvoicePreviewCard
+                                    preview={data?.invoices?.preview}
+                                    loading={loading}
+                                />
                             </Col>
                         </Row>
                     </Card>
