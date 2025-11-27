@@ -103,6 +103,29 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
         ],
     };
 
+    // --- Due Balance Summary ---
+    const invoiceTotals = invoices.map(inv => ({
+        id: String(inv._id),
+        total: inv.totals?.total || 0
+    }));
+
+    const paymentsByInvoice = {};
+    payments.forEach(p => {
+        const inv = String(p.invoice);
+        paymentsByInvoice[inv] = (paymentsByInvoice[inv] || 0) + p.amount;
+    });
+
+    let dueBalance = 0;
+
+    invoiceTotals.forEach(inv => {
+        const paid = paymentsByInvoice[inv.id] || 0;
+        const remaining = inv.total - paid;
+
+        if (remaining > 0) {
+            dueBalance += remaining;
+        }
+    });
+
     // --- Payment Summary ---
     const paymentTotal = payments.length;
 
@@ -121,6 +144,7 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
         completed: paymentCompleted,
         failed: paymentFailed,
         pending: paymentPending,
+        dueBalance,
         preview: [
             { status: "completed", percentage: toPct(paymentCompleted, paymentTotal) },
             { status: "pending", percentage: toPct(paymentPending, paymentTotal) },
