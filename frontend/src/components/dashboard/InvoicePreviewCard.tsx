@@ -1,5 +1,6 @@
 import { Progress } from "antd";
 import type { StatPrevCardItem } from "../../types/entities"
+import { capitalize } from "@/utils/capitalize";
 
 interface Props {
     preview: StatPrevCardItem[];
@@ -20,7 +21,7 @@ export default function InvoicePreviewCard ({ preview = [], loading }: Props) {
             {preview.map((item) => (
                 <div key={item.status} style={{ marginBottom: 14 }}>
                     <div className="flex justify-between text-xs mb-1">
-                        <span>{item.status.toUpperCase()}</span>
+                        <span>{capitalize(item.status)}</span>
                         <span> {item.percentage}%</span>
                     </div>
 
