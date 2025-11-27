@@ -1,7 +1,7 @@
 import { Card, Progress } from "antd";
 import type { StatPrevCardItem } from "../../types/entities"
 
-export interface Props {
+interface Props {
     preview: StatPrevCardItem[];
     loading: boolean;
 }
