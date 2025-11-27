@@ -5,6 +5,7 @@ import SummaryCard from "@/components/dashboard/SummaryCard";
 import StatusPreviewCard from "@/components/dashboard/StatusPreviewCard";
 import QuotePreviewCard from "@/components/dashboard/QuotePreviewCard";
 import InvoicePreviewCard from "@/components/dashboard/InvoicePreviewCard";
+import CustomerPreviewCard from "@/components/dashboard/CustomerPreviewCard";
 import { formatAmount } from "@/utils/numberFormat";
 
 export default function DashboardPage() {
@@ -91,39 +92,12 @@ export default function DashboardPage() {
 
                 {/* RIGHT: Customer summary */}
                 <Col span={6}>
-                    <Card style={{ width: "100%", height: "100%" }}>
-                        <h3 className="text-base font-semibold mb-3">Customers</h3>
-
-                        {loading || !data ? (
-                            <p>Loading...</p>
-                        ) : (
-                            <>
-                                <div className="text-center mb-4">
-                                    <div className="text-3xl font-bold">
-                                        {data.customers.active}
-                                    </div>
-                                    <div className="text-gray-500 text-xs">Active customers</div>
-                                </div>
-
-                                <div className="flex justify-between text-sm mb-1">
-                                    <span>New this month</span>
-                                    <strong>{data.customers.new}</strong>
-                                </div>
-
-                                <div className="flex justify-between text-sm mb-1">
-                                    <span>Total customers</span>
-                                    <strong>{data.customers.total}</strong>
-                                </div>
-
-                                <div className="flex justify-between text-sm">
-                                    <span>Inactive</span>
-                                    <strong>
-                                        {data.customers.total - data.customers.active}
-                                    </strong>
-                                </div>
-                            </>
-                        )}
-                    </Card>
+                    <CustomerPreviewCard
+                        active={data?.customers?.active}
+                        total={data?.customers?.total}
+                        newlyAdded={data?.customers?.new}
+                        loading={loading}
+                    />
                 </Col>
             </Row>        
 
