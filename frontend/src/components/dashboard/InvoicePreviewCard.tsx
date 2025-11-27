@@ -7,9 +7,9 @@ interface Props {
 }
 
 const INVOICE_COLORS: Record<string,string> = {
-    paid: "green",
-    unpaid: "blue",
-    overdue: "red",
+    paid: "#10b981",
+    unpaid: "#3b82f6",
+    overdue: "#ef4444",
 };
 
 export default function InvoicePreviewCard ({ preview = [], loading }: Props) {

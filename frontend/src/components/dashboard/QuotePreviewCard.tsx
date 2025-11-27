@@ -7,10 +7,10 @@ interface Props {
 }
 
 const QUOTE_COLORS: Record<QuoteStatus, string> = {
-    draft: "blue",
-    sent: "orange",
-    accepted: "green",
-    declined: "red",
+    draft: "gray",
+    sent: "#3b82f6",
+    accepted: "#10b981",
+    declined: "#ef4444",
     expired: "black",
     converted: "purple",
 };
