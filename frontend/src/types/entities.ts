@@ -133,3 +133,8 @@ export interface StatPrevCardProps {
     preview?: StatPrevCardItem[];
     loading: boolean;
 }
+
+export interface InvPrevCardProps {
+    preview: StatPrevCardItem[];
+    loading: boolean;
+}
