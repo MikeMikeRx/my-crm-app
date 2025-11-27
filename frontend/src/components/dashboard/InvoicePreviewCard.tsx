@@ -1,5 +1,10 @@
 import { Card, Progress } from "antd";
-import type { InvPrevCardProps } from "../../types/entities"
+import type { StatPrevCardItem } from "../../types/entities"
+
+export interface Props {
+    preview: StatPrevCardItem[];
+    loading: boolean;
+}
 
 const INVOICE_COLORS: Record<string,string> = {
     paid: "green",
@@ -7,7 +12,7 @@ const INVOICE_COLORS: Record<string,string> = {
     overdue: "red",
 };
 
-export default function InvoicePreviewCard ({ preview, loading }: InvPrevCardProps) {
+export default function InvoicePreviewCard ({ preview, loading }: Props) {
     return (
         <Card title="Invoices Overview" style={{ height: "100%" }}>
             {loading ? (
