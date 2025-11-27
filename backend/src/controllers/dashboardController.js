@@ -23,6 +23,18 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
     // --- Invoice Summary ---
     const invoiceTotal = invoices.length;
 
+    const recentInvoices = invoices
+        .sort ((a,b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5)
+        .map(inv => ({
+            _id: inv._id,
+            number: inv.invoiceNumber,
+            customer: inv.customer,
+            total: inv.totals?.total || 0,
+            status: inv.status,
+            createdAt: inv.createdAt,
+        }));
+
     const invoiceThisMonth = invoices.filter(inv =>
             dayjs(inv.issueDate).isSame(dayjs(), "month")
         ).length;
@@ -49,6 +61,18 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
 
     // --- Quote Summary ---
     const quoteTotal = quotes.length;
+
+        const recentQuotes = quotes
+        .sort ((a,b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5)
+        .map(q => ({
+            _id: q._id,
+            number: q.invoiceNumber,
+            customer: q.customer,
+            total: q.totals?.total || 0,
+            status: q.status,
+            createdAt: q.createdAt,
+        }));
 
     const quoteThisMonth = quotes.filter(q =>
             dayjs(q.issueDate).isSame(dayjs(), "month")
@@ -132,5 +156,7 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
         quotes: quoteSummary,
         payments: paymentSummary,
         customers: customerSummary,
+        recentInvoices,
+        recentQuotes,
     });    
 });
