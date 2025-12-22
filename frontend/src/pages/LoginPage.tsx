@@ -4,33 +4,62 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Card, Form, Input, message } from "antd";
 import { useAuthStore } from "@/context/authStore";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getApiError } from "@/api/client";
+import Logo from "../assets/images/logo/Logo.png"
 
-const schema = z.object({
+const loginSchema = z.object({
     email: z.string().email("Invalid email"),
     password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-type FormValues = z.infer<typeof schema>;
+const registerSchema = z.object({
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    email: z.string().email("Invalid email"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+type FormValues = {
+    name?: string;
+    email: string;
+    password: string;
+};
 
 export default function LoginPage () {
-    const { control, handleSubmit, formState: { errors } } = useForm<FormValues>({
-        resolver: zodResolver(schema), defaultValues: { email: "", password: ""},
+    const [mode, setMode] = useState<"login" | "register">("login");
+    const isRegisterMode = mode === "register";
+
+    const { control, handleSubmit, formState: { errors }, reset } = useForm<FormValues>({
+        resolver: zodResolver(isRegisterMode ? registerSchema : loginSchema) as any,
+        defaultValues: { name: "", email: "", password: ""},
     });
 
     const navigate = useNavigate();
-    const { login, user, loading } = useAuthStore();
+    const { login, register, user, loading } = useAuthStore();
 
     // if user already logged in => redirect
     useEffect(() => {
         if (user) navigate("/", { replace: true });
     }, [user, navigate]);
 
+    // Reset form when switching modes
+    useEffect(() => {
+        reset({ name: "", email: "", password: "" });
+    }, [mode, reset]);
+
     const onSubmit = async (values: FormValues) => {
         try {
-            await login(values.email, values.password);
-            message.success("Login successful");
+            if (isRegisterMode) {
+                if (!values.name) {
+                    message.error("Name is required");
+                    return;
+                }
+                await register(values.name, values.email, values.password);
+                message.success("Account created successfully");
+            } else {
+                await login(values.email, values.password);
+                message.success("Login successful");
+            }
             navigate("/", { replace: true });
         } catch (e) {
             const { message: msg } = getApiError(e);
@@ -38,43 +67,96 @@ export default function LoginPage () {
         }
     };
 
+    const toggleMode = () => {
+        setMode(mode === "login" ? "register" : "login");
+    };
+
     return (
-        <div className="flex justify-center items-center min-h-screen bg-gray-100">
-            <Card title="Login" className="w-[350px] shadow-md">
-                <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
-                    <Form.Item
-                        label="Email"
-                        validateStatus={errors.email ? "error" : ""}
-                        help={errors.email?.message}
-                    >
-                        <Controller
-                            name="email"
-                            control={control}
-                            render={({ field }) => (
-                                <Input { ...field } placeholder="you@example.com" />
-                            )}
-                        />   
-                    </Form.Item>
+        <div style={{ display: 'flex', minHeight: '100vh' }}>
+            {/* Left - Logo */}
+            <div style={{
+                width: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#ffffffff',
+                padding: '2rem'
+            }}>
+                <img src={Logo} alt="Logo" style={{ maxWidth: '600px', width: '100%', height: 'auto', marginBottom: '3rem' }} />
+            </div>
 
-                    <Form.Item
-                        label="Password"
-                        validateStatus={errors.password ? "error" : ""}
-                        help={errors.password?.message}
-                    >
-                        <Controller
-                            name="password"
-                            control={control}
-                            render={({ field }) => (
-                                <Input.Password { ...field } placeholder="••••••••" />
+            {/* Right - Login/Sign up Form */}
+            <div style={{
+                width: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#ffffff',
+                padding: '2rem'
+            }}>
+                <div style={{ width: '100%', maxWidth: '500px' }}>
+                    <Card title={isRegisterMode ? "Create Account" : "Login"} style={{ boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }}>
+                        <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
+                            {isRegisterMode && (
+                                <Form.Item
+                                    label="Name"
+                                    validateStatus={errors.name ? "error" : ""}
+                                    help={errors.name?.message}
+                                >
+                                    <Controller
+                                        name="name"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <Input { ...field } placeholder="Johnny Depp" />
+                                        )}
+                                    />
+                                </Form.Item>
                             )}
-                        />
-                    </Form.Item>
 
-                    <Button type="primary" htmlType="submit" block loading={loading} disabled={loading}>
-                        Sign In
-                    </Button>
-                </Form>
-            </Card>
+                            <Form.Item
+                                label="Email"
+                                validateStatus={errors.email ? "error" : ""}
+                                help={errors.email?.message}
+                            >
+                                <Controller
+                                    name="email"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Input { ...field } placeholder="you@example.com" />
+                                    )}
+                                />
+                            </Form.Item>
+
+                            <Form.Item
+                                label="Password"
+                                validateStatus={errors.password ? "error" : ""}
+                                help={errors.password?.message}
+                            >
+                                <Controller
+                                    name="password"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Input.Password { ...field } placeholder="••••••••" />
+                                    )}
+                                />
+                            </Form.Item>
+
+                            <Button type="primary" htmlType="submit" block loading={loading} disabled={loading}>
+                                {isRegisterMode ? "Sign Up" : "Sign In"}
+                            </Button>
+
+                            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                                <span style={{ color: '#666' }}>
+                                    {isRegisterMode ? "Already have an account? " : "Don't have an account? "}
+                                </span>
+                                <Button type="link" onClick={toggleMode} style={{ padding: 0 }}>
+                                    {isRegisterMode ? "Sign in" : "Sign up"}
+                                </Button>
+                            </div>
+                        </Form>
+                    </Card>
+                </div>
+            </div>
         </div>
     );
 }
