@@ -202,11 +202,71 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
         ],
     };
 
+    // Customer Details with counts
+    const customerDetails = customers.map(customer => {
+        const customerId = String(customer._id);
+        const isActive = activeCustomerIds.has(customerId);
+
+        // Count quotes for this customer
+        const customerQuotes = quotes.filter(q => String(q.customer) === customerId).length;
+
+        // Count invoices for this customer
+        const customerInvoices = invoices.filter(inv => String(inv.customer) === customerId).length;
+
+        // Payments for this customer (via Invoices)
+        const customerInvoiceIds = invoices
+            .filter(inv => String(inv.customer) === customerId)
+            .map(inv => String(inv._id));
+
+        const customerPayments = payments.filter(p =>
+            customerInvoiceIds.includes(String(p.invoice))
+        ).length;
+
+        // Calculate outstanding balance for this customer
+        const customerInvoiceTotals = invoices
+            .filter(inv => String(inv.customer) === customerId)
+            .map(inv => ({
+                id: String(inv._id),
+                total: inv.totals?.total || 0
+            }));
+
+        let customerOutstanding = 0;
+        customerInvoiceTotals.forEach(inv => {
+            const paid = paymentsByInvoice[inv.id] || 0;
+            const remaining = inv.total - paid;
+            if (remaining > 0) {
+                customerOutstanding += remaining;
+            }
+        });
+
+        return {
+            _id: customer._id,
+            name: customer.name,
+            email: customer.email,
+            isActive,
+            quotes: customerQuotes,
+            invoices: customerInvoices,
+            payments: customerPayments,
+            outstanding: customerOutstanding,
+        };
+    });
+
+    // Calculate max values for normalization
+    const maxQuotes = Math.max(...customerDetails.map(c => c.quotes), 1);
+    const maxInvoices = Math.max(...customerDetails.map(c => c.invoices), 1);
+    const maxPayments = Math.max(...customerDetails.map(c => c.payments), 1);
+
     return res.json({
         invoices: invoiceSummary,
         quotes: quoteSummary,
         payments: paymentSummary,
         customers: customerSummary,
+        customerDetails,
+        customerMaxValues: {
+            quotes: maxQuotes,
+            invoices: maxInvoices,
+            payments: maxPayments,
+        },
         recentInvoices,
         recentQuotes,
     });    
