@@ -6,6 +6,7 @@ import QuotePreviewCard from "@/components/dashboard/QuotePreviewCard";
 import InvoicePreviewCard from "@/components/dashboard/InvoicePreviewCard";
 import PaymentPreviewCard from "@/components/dashboard/PaymentPreviewCard";
 import CustomerPreviewCard from "@/components/dashboard/CustomerPreviewCard";
+import CustomerListCard from "@/components/dashboard/CustomerListCard";
 import { formatAmount } from "@/utils/numberFormat";
 
 export default function DashboardPage() {
@@ -107,6 +108,19 @@ export default function DashboardPage() {
                         newlyAdded={data?.customers?.new}
                         loading={loading}
                     />
+                </Col>
+            </Row>
+
+            {/* --------------------- Customer Overview Section --------------------- */}
+            <Row gutter={[24, 24]}>
+                <Col span={24}>
+                    <Card title="Customer Overview" style={{ width: "100%" }}>
+                        <CustomerListCard
+                            customers={data?.customerDetails || []}
+                            maxValues={data?.customerMaxValues || { quotes: 1, invoices: 1, payments: 1 }}
+                            loading={loading}
+                        />
+                    </Card>
                 </Col>
             </Row>
         </div>
