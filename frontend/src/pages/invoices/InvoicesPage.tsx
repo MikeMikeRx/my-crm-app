@@ -64,11 +64,11 @@ export default function InvoicesPage() {
         },
         {
             title: "Tax",
-            render: (_, r) => `$${formatAmount(calcTotals(r.items).subtotal)}`,
+            render: (_, r) => `$${formatAmount(calcTotals(r.items).taxTotal)}`,
         },
         {
             title: "Total",
-            render: (_, r) => `$${formatAmount(calcTotals(r.items).subtotal)}`,
+            render: (_, r) => `$${formatAmount(calcTotals(r.items).total)}`,
         },
         {
             title: "Status",
