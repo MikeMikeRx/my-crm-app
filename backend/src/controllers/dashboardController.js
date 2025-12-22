@@ -89,10 +89,20 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
 
     const quoteMonthSum = quotes
         .filter(q => dayjs(q.issueDate).isSame(dayjs(), "month"))
-        .reduce((sum, q) => sum + q.totals.toal, 0);
+        .reduce((sum, q) => {
+            const items = q.items || [];
+            const subtotal = items.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
+            const tax = items.reduce((s, i) => s + (i.quantity * i.unitPrice * (i.taxRate || 0)) / 100, 0);
+            return sum + subtotal + tax;
+        }, 0);
 
     const quoteTotalSum = quotes
-        .reduce((sum, q) => sum + q.totals.total, 0);
+        .reduce((sum, q) => {
+            const items = q.items || [];
+            const subtotal = items.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
+            const tax = items.reduce((s, i) => s + (i.quantity * i.unitPrice * (i.taxRate || 0)) / 100, 0);
+            return sum + subtotal + tax;
+        }, 0);
 
     const quoteDraft = quotes.filter(q => q.status === "draft").length;
     const quoteSent = quotes.filter(q => q.status === "sent").length;

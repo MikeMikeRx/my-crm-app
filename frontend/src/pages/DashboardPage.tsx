@@ -27,7 +27,7 @@ export default function DashboardPage() {
                     <SummaryCard
                         title="Quotes"
                         subtitle="This Month"
-                        value={`$ ${formatAmount(data?.invoices?.monthSum)}`}
+                        value={`$ ${formatAmount(data?.quotes?.monthSum)}`}
                         loading={loading}
                         color="#3b82f6"
                     />
@@ -47,7 +47,7 @@ export default function DashboardPage() {
                     <SummaryCard
                         title="Payments"
                         subtitle="This Month"
-                        value={`$ ${formatAmount(data?.invoices?.monthSum)}`}
+                        value={`$ ${formatAmount(data?.payments?.monthSum)}`}
                         loading={loading}
                         color="#10b981"
                     />
