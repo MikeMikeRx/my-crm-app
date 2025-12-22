@@ -9,6 +9,7 @@ import {
 } from "@ant-design/icons";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/context/authStore";
+import Logo from "../../assets/images/logo/Dark-Logo-small.png"
 
 const { Header, Sider, Content } = Layout;
 
@@ -27,13 +28,33 @@ export default function AppLayout(){
     return (
         <Layout style={{ minHeight: "100vh" }}>
             <Sider theme="dark">
-                <div className="text-white text-center my-4 text-lg font-bold">My CRM</div>
+                <div style={{ marginTop: "20px", padding: "0 10px", marginBottom: "30px" }}>
+                    <img src={Logo} alt="Vitesse Logo" style={{ width: "100%", height: "auto" }} />
+                </div>
                 <Menu theme="dark" mode="inline" selectedKeys={[pathname]} items={menuItems} />
             </Sider>
 
             <Layout>
-                <Header className="flex justify-end items-center bg-white shadow-sm px-6">
-                    <button onClick={logout} className="flex items-center gap-2 text-red-600 hover:text-red-800">
+                <Header style={{
+                        background: "#001529",
+                        padding: "0 24px",
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        alignItems: "center" }}
+                    >
+                    <button
+                        onClick={logout}
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            color: "#ffff",
+                            background: "transparent",
+                            border: "none",
+                            cursor: "pointer",
+                            fontWeight: 600,
+                        }}
+                    >
                         <LogoutOutlined /> Logout
                     </button>
                 </Header>
