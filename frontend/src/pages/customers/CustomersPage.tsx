@@ -60,8 +60,25 @@ export default function CustomersPage() {
     return (
         <div>
             <div className="flex justify-between items-center mb-4">
-                <h1 className="text-xl font-semibold">Customers</h1>
-                <Button type="primary" onClick={() => { setEditing(null); setOpen(true); }}>
+                <h1
+                    style={{
+                        fontSize: "25px",
+                        fontWeight: 700,
+                        padding: "8px 16px",
+                        color: "#1f2937",
+                    }}
+                >
+                    Customers
+                </h1>
+                <Button
+                    type="primary"
+                    onClick={() => { 
+                        setEditing(null); setOpen(true);
+                    }}
+                    style={{
+                        margin:"15px",
+                    }}
+                >
                     + New Customer
                 </Button>
             </div>

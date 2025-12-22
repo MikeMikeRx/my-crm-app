@@ -102,8 +102,24 @@ export default function QuotesPage() {
     return (
         <div>
             <div className="flex justify-between items-center mb-4">
-                <h1 className="text-xl font-semibold">Quotes</h1>
-                <Button type="primary" onClick={() => { setEditing(null); setOpen(true); }}>+ New Quote</Button>
+                <h1
+                    style={{
+                        fontSize: "25px",
+                        fontWeight: 700,
+                        padding: "8px 16px",
+                        color: "#1f2937",
+                    }}
+                >
+                    Quotes
+                </h1>
+
+                <Button
+                    type="primary"
+                    onClick={() => { setEditing(null); setOpen(true); }}
+                    style={{ margin: "15px" }}
+                >
+                    + New Quote
+                </Button>
             </div>
 
             <Table

@@ -89,8 +89,24 @@ export default function PaymentsPage() {
     return (
         <div>
             <div className="flex justify-between items-center mb-4">
-                <h1 className="text-xl font-semibold">Payments</h1>
-                <Button type="primary" onClick={() => setOpen(true)}>
+                <h1
+                    style={{
+                        fontSize: "25px",
+                        fontWeight: 700,
+                        padding: "8px 16px",
+                        color: "#1f2937",
+                    }}
+                >
+                    Payments
+                </h1>
+
+                <Button
+                    type="primary"
+                    onClick={() => setOpen(true)}
+                    style={{
+                        margin:"15px",
+                    }}
+                >
                     + New payment
                 </Button>
             </div>
