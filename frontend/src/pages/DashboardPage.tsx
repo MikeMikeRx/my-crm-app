@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { Row, Col, Card } from "antd";
 import { getDashboardSummary } from "@/api/dashboard";
 import SummaryCard from "@/components/dashboard/SummaryCard";
-import StatusPreviewCard from "@/components/dashboard/StatusPreviewCard";
 import QuotePreviewCard from "@/components/dashboard/QuotePreviewCard";
 import InvoicePreviewCard from "@/components/dashboard/InvoicePreviewCard";
+import PaymentPreviewCard from "@/components/dashboard/PaymentPreviewCard";
 import CustomerPreviewCard from "@/components/dashboard/CustomerPreviewCard";
 import { formatAmount } from "@/utils/numberFormat";
 
@@ -63,14 +63,14 @@ export default function DashboardPage() {
                 </Col>
             </Row>
 
-            {/* --------------------- Middle Section --------------------- */}
+            {/* --------------------- Overview Section --------------------- */}
             <Row gutter={[24, 24]} style={{ marginBottom: 32 }}>
-                {/* LEFT: Invoice + Quote Overview in one big card */}
+                {/* LEFT: Quote + Invoice + Payment Overview in one big card */}
                 <Col span={18}>
                     <Card style={{ width: "100%" }}>
                         <Row gutter={[24, 24]}>
-                            {/* Invoice Overview */}
-                            <Col span={12}>
+                            {/* Quote Overview */}
+                            <Col span={8}>
                                 <h3 className="text-base font-semibold mb-3">Quote Overview</h3>
                                 <QuotePreviewCard
                                     preview={data?.quotes?.preview}
@@ -78,11 +78,20 @@ export default function DashboardPage() {
                                 />
                             </Col>
 
-                            {/* Quote Overview */}
-                            <Col span={12}>
+                            {/* Invoice Overview */}
+                            <Col span={8}>
                                 <h3 className="text-base font-semibold mb-3">Invoice Overview</h3>
                                 <InvoicePreviewCard
                                     preview={data?.invoices?.preview}
+                                    loading={loading}
+                                />
+                            </Col>
+
+                            {/* Payment Overview */}
+                            <Col span={8}>
+                                <h3 className="text-base font-semibold mb-3">Payment Overview</h3>
+                                <PaymentPreviewCard
+                                    preview={data?.payments?.preview}
                                     loading={loading}
                                 />
                             </Col>
@@ -99,43 +108,7 @@ export default function DashboardPage() {
                         loading={loading}
                     />
                 </Col>
-            </Row>        
-
-            {/*--------------------- Bottom Section ---------------------*/}
-            <Row gutter={[24, 24]}>
-                <Col span={6}>
-                    <StatusPreviewCard
-                        title="Invoice Overview"
-                        preview={data?.invoices?.preview}
-                        loading={loading}
-                    />
-                </Col>
-
-                <Col span={6}>
-                    <StatusPreviewCard
-                        title="Quote Overview"
-                        preview={data?.quotes?.preview}
-                        loading={loading}
-                    />
-                </Col>
-
-                <Col span={6}>
-                    <StatusPreviewCard
-                        title="Payment Overview"
-                        preview={data?.payments?.preview}
-                        loading={loading}
-                    />
-                </Col>
-
-                <Col span={6}>
-                    <StatusPreviewCard
-                        title="Customer Overview"
-                        preview={data?.customers?.preview}
-                        loading={loading}
-                    />
-                </Col>
             </Row>
-
         </div>
     )
 }
