@@ -5,6 +5,7 @@ interface CustomerDetail {
     _id: string;
     name: string;
     email?: string;
+    company?: string;
     isActive: boolean;
     quotes: number;
     invoices: number;
@@ -31,7 +32,7 @@ export default function CustomerListCard({ customers = [], maxValues, loading }:
             <div
                 style={{
                     display: "grid",
-                    gridTemplateColumns: "1.4fr 0.8fr 1fr 1fr 1fr 1fr",
+                    gridTemplateColumns: "1.2fr 1fr 0.8fr 1fr 1fr 1fr 1fr",
                     gap: "16px",
                     padding: "12px 24px",
                     backgroundColor: "#f5f5f5",
@@ -43,6 +44,7 @@ export default function CustomerListCard({ customers = [], maxValues, loading }:
                 }}
             >
                 <div>Customer</div>
+                <div>Company</div>
                 <div>Activity</div>
                 <div>Quotes</div>
                 <div>Invoices</div>
@@ -68,7 +70,7 @@ export default function CustomerListCard({ customers = [], maxValues, loading }:
                             key={customer._id}
                             style={{
                                 display: "grid",
-                                gridTemplateColumns: "1.4fr 0.8fr 1fr 1fr 1fr 1fr",
+                                gridTemplateColumns: "1.2fr 1fr 0.8fr 1fr 1fr 1fr 1fr",
                                 gap: "16px",
                                 padding: "16px 24px",
                                 borderBottom: "1px solid #f0f0f0",
@@ -80,6 +82,13 @@ export default function CustomerListCard({ customers = [], maxValues, loading }:
                             <div className="flex items-center gap-2">
                                 <span className="font-bold text-sm">
                                     {customer.name}
+                                </span>
+                            </div>
+
+                            {/* Company */}
+                            <div className="flex items-center">
+                                <span className="text-sm text-gray-600">
+                                    {customer.company || "-"}
                                 </span>
                             </div>
 
