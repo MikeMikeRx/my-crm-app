@@ -1,116 +1,59 @@
-# Vitesse CRM/ERM
+![Logo](./frontend/src/assets/images/logo/Logo-small.png)
 
-Full-stack CRM/ERP application for self-employed professionals and small businesses. Manages the full lifecycle from customers and quotes to invoices, payments, and real-time analytics. Built with Node.js, MongoDB, and Vite.
+Vitesse is a full-stack CRM/ERP application built for self-employed professionals and small businesses.  
+It manages the complete business workflow from customers and quotes to invoices, payments, and real-time analytics.
 
-## Screenshot
-![Dashboard](./screenshots/Dashboard.png)
-- more screenshots in ./screenshots
-
-## Backend
-
-- Full business lifecycle management (Customers → Quotes → Invoices → Payments)
-
-- Secure JWT-based authentication with role-based access (admin/user)
-
-- Customer relationship management (CRUD)
-
-- Quote management with:
-
-    - Automatic subtotal, tax, and total calculations
-
-    - Automatic expiry tracking and status updates
-
-- Invoice management with:
-
-    - Quote-to-invoice conversion with validation
-
-    - Auto-overdue detection based on due dates
-
-    - Real-time status updates (unpaid / paid / overdue)
-
-- Payment processing with:
-
-    - Partial and multiple payments per invoice
-
-    - Automatic invoice status reconciliation
-
-    - Multiple payment methods (cash, card, bank transfer, PayPal)
-
-- Centralized dashboard analytics API:
-
-    - Monthly trends and totals
-
-    - Status distributions (quotes, invoices, payments)
-
-    - Outstanding balance calculations
-
-- Security and reliability:
-
-    - Rate limiting and request validation
-
-    - Input sanitization (NoSQL injection & XSS protection)
-
-    - Centralized error handling and logging
+Built with Node.js and MongoDB on the backend, and React + TypeScript with Vite on the frontend.
 
 ##
+![Dashboard](./screenshots/Dashboard.png)  
+More screenshots available in `./screenshots`.
 
-# Frontend
+---
 
-- React + TypeScript single-page application
+## 📊 Features
 
-- Secure authentication flow with protected routes
+- 👥 Customer & company management
+- 📄 Quotes with automatic totals and expiry tracking
+- 🧾 Invoices with quote conversion and overdue detection
+- 💳 Payments (partial, multiple, multi-method)
+- 💰 Revenue tracking and outstanding balances
+- 📈 Real-time dashboard with KPIs and trends
+- 🔐 Secure authentication with role-based access
+- 🛡 Input validation, rate limiting, and error handling
 
-- Role-aware UI (admin vs user access)
 
-- Customer, quote, invoice, and payment management interfaces
+---
 
-- Quote and invoice forms with dynamic line items and tax calculations
+## ⚙️ Tech Stack
 
-- Real-time dashboard with:
-
-    - Business KPIs and summary cards
-
-    - Status distribution charts
-
-    - Recent activity previews
-
-- State management with Zustand
-
-- Form handling with React Hook Form + Zod validation
-
-- Responsive, production-ready UI using Ant Design and Tailwind CSS
-
-##
-
-# Tech Stack
-### Backend
+#### Backend
 - Node.js (ES Modules)
 - Express.js
-- MongoDB with Mongoose
-- JWT authentication (jsonwebtoken)
-- bcryptjs for password hashing
+- MongoDB + Mongoose
+- JWT authentication
+- bcryptjs
 - Security & middleware:
-    - Helmet
-    - express-rate-limit
-    - mongo-sanitizer
-    - sanitize-html
-    - express-validator
+  - Helmet
+  - express-rate-limit
+  - mongo-sanitize
+  - sanitize-html
+  - express-validator
 - Utilities:
-    - Morgan(logging)
-    - dayjs (date handling)
-    - dotenv
-    - compression
+  - Morgan
+  - dayjs
+  - dotenv
+  - compression
 
-
-##
-
-### Frontend
-- React with TypeScript
-- Vite (build tool)
-- Ant Design (UI components)
-- Tailwind CSS (styling)
-- Zustand (state management)
+#### Frontend:
+- React + TypeScript
+- Vite
+- Ant Design
+- Tailwind CSS
+- Zustand
 - React Router
-- Axios (API communication)
-- React Hook Form + Zod (forms & validation)
+- Axios
+- React Hook Form + Zod
 
+## Installation
+See [SETUP.md](SETUP.md) for full setup instructions.
