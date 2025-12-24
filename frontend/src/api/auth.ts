@@ -14,6 +14,7 @@ export interface RegisterRequest {
     name: string;
     email: string;
     password: string;
+    role?: string;
 }
 
 export async function login(payload: LoginRequest): Promise<LoginResponse> {

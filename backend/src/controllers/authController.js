@@ -4,7 +4,7 @@ import User from "../models/User.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 
 export const registerUser = asyncHandler(async (req, res, next) => {
-        const { name, email, password } = req.body
+        const { name, email, password, role } = req.body
 
         if (!name || !email || !password) {
             return res.status(400).json({ message: "All fields are required" })
@@ -21,7 +21,7 @@ export const registerUser = asyncHandler(async (req, res, next) => {
             name,
             email,
             password: hashedPassword,
-            role: role === "admin" ? "admin" : "user", 
+            role: role === "admin" ? "admin" : "user",
         })
 
         const token = jwt.sign(

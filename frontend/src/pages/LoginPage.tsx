@@ -1,7 +1,7 @@
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button, Card, Form, Input, message } from "antd";
+import { Button, Card, Checkbox, Form, Input, message } from "antd";
 import { useAuthStore } from "@/context/authStore";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -17,12 +17,14 @@ const registerSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
     email: z.string().email("Invalid email"),
     password: z.string().min(6, "Password must be at least 6 characters"),
+    isAdmin: z.boolean().optional(),
 });
 
 type FormValues = {
     name?: string;
     email: string;
     password: string;
+    isAdmin?: boolean;
 };
 
 export default function LoginPage () {
@@ -31,7 +33,7 @@ export default function LoginPage () {
 
     const { control, handleSubmit, formState: { errors }, reset } = useForm<FormValues>({
         resolver: zodResolver(isRegisterMode ? registerSchema : loginSchema) as any,
-        defaultValues: { name: "", email: "", password: ""},
+        defaultValues: { name: "", email: "", password: "", isAdmin: false },
     });
 
     const navigate = useNavigate();
@@ -44,7 +46,7 @@ export default function LoginPage () {
 
     // Reset form when switching modes
     useEffect(() => {
-        reset({ name: "", email: "", password: "" });
+        reset({ name: "", email: "", password: "", isAdmin: false });
     }, [mode, reset]);
 
     const onSubmit = async (values: FormValues) => {
@@ -54,13 +56,15 @@ export default function LoginPage () {
                     message.error("Name is required");
                     return;
                 }
-                await register(values.name, values.email, values.password);
-                message.success("Account created successfully");
+                const role = values.isAdmin ? "admin" : undefined;
+                await register(values.name, values.email, values.password, role);
+                message.success("Account created successfully!");
+                navigate("/", { replace: true });
             } else {
                 await login(values.email, values.password);
                 message.success("Login successful");
+                navigate("/", { replace: true });
             }
-            navigate("/", { replace: true });
         } catch (e) {
             const { message: msg } = getApiError(e);
             message.error(msg);
@@ -140,6 +144,23 @@ export default function LoginPage () {
                                     )}
                                 />
                             </Form.Item>
+
+                            {isRegisterMode && (
+                                <Form.Item>
+                                    <Controller
+                                        name="isAdmin"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <Checkbox
+                                                checked={field.value}
+                                                onChange={field.onChange}
+                                            >
+                                                Register as Admin
+                                            </Checkbox>
+                                        )}
+                                    />
+                                </Form.Item>
+                            )}
 
                             <Button type="primary" htmlType="submit" block loading={loading} disabled={loading}>
                                 {isRegisterMode ? "Sign Up" : "Sign In"}
