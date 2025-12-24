@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createInvoice, updateInvoice } from "@/api/invoices";
 import { listQuotes, getQuote } from "@/api/quotes";
 import type { Invoice, InvoiceCreate, Quote, LineItem } from "@/types/entities";
-import { getApiError } from "@/api/client";
+import { handleError } from "@/utils/handleError";
 import { formatAmount } from "@/utils/numberFormat";
 
 /* ----------------------- Schema Definition ----------------------- */
@@ -112,7 +112,7 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
     // --------------------- Quotes Dropdown ----------------------------------
     const [quotes, setQuotes] = useState<Quote[]>([]);
     useEffect(() => {
-        listQuotes().then(setQuotes).catch(() => message.error("Failed to load quotes"));
+        listQuotes().then(setQuotes).catch((e) => handleError(e, "Failed to load quotes"));
     }, []);
 
     const handleQuoteSelect = async (quoteId: string) => {
@@ -146,8 +146,8 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
                 quote: quoteId,
             });
             message.success("Quote data imported");
-        } catch {
-            message.error("Failed to load quote");
+        } catch (e) {
+            handleError(e, "Failed to load quote");
         }
     };
 
@@ -186,8 +186,7 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
             onSuccess();
             onClose();
         } catch (e) {
-            const { message: msg } = getApiError(e);
-            message.error(msg);
+            handleError(e, editing ? "Failed to update invoice" : "Failed to create invoice");
         }
     };
 

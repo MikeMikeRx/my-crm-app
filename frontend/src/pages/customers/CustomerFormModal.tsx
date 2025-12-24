@@ -5,7 +5,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createCustomer, updateCustomer } from "@/api/customers";
 import type { Customer, CustomerCreate } from "@/types/entities";
-import { getApiError } from "@/api/client";
+import { handleError } from "@/utils/handleError";
 
 const schema = z.object({
     name: z.string().min(2, "Name is required"),
@@ -47,8 +47,7 @@ export default function CustomerFormModal({ open, onClose, onSuccess, editing }:
             onClose();
             reset();
         } catch (e) {
-            const { message: msg } = getApiError(e);
-            message.error(msg);
+            handleError(e, editing ? "Failed to update customer" : "Failed to create customer");
         }
     };
 

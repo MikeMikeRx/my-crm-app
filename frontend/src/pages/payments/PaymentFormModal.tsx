@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createPayment, listPayments } from "@/api/payments";
 import { listInvoices } from "@/api/invoices";
 import type { PaymentCreate, Invoice } from "@/types/entities";
-import { getApiError } from "@/api/client";
+import { handleError } from "@/utils/handleError";
 import { formatAmount } from "@/utils/numberFormat";
 
 /* ----------------------- Schema Definition ----------------------- */
@@ -87,22 +87,21 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
                 ...values,
                 paymentMethod: values.paymentMethod as PaymentCreate["paymentMethod"],
                 paymentDate: dayjs(values.paymentDate).format("YYYY-MM-DD"),
-            };           
+            };
             await createPayment(payload);
             message.success("Payment created");
             onSuccess();
             onClose();
             reset();
         } catch (e) {
-            const { message: msg } = getApiError(e);
-            message.error(msg);
+            handleError(e, "Failed to create payment");
         }
     };
 
     // ----------- Load invoices for dropdown ---------------
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     useEffect(() => {
-        listInvoices().then(setInvoices).catch(() => message.error("Failed to load invoices"));
+        listInvoices().then(setInvoices).catch((e) => handleError(e, "Failed to load invoices"));
     }, []);
 
     // ----------------- JSX ----------------------------------

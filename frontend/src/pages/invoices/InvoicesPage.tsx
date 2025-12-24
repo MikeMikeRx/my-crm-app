@@ -1,11 +1,12 @@
 import { useEffect,useState } from "react";
 import dayjs from "dayjs";
-import { Table, Button, Space, Tag, message } from "antd";
+import { Table, Button, Space, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { listInvoices } from "@/api/invoices";
 import type { Invoice, InvoiceStatus, LineItem } from "@/types/entities";
 import InvoiceFormModal from "./InvoiceFormModal"
 import { formatAmount } from "@/utils/numberFormat";
+import { handleError } from "@/utils/handleError";
 
 
 export default function InvoicesPage() {
@@ -19,8 +20,8 @@ export default function InvoicesPage() {
         try {
             const rows = await listInvoices();
             setData(rows);
-        } catch {
-            message.error("Failed to load invoices");
+        } catch (e) {
+            handleError(e, "Failed to load invoices");
         } finally {
             setLoading(false);
         }

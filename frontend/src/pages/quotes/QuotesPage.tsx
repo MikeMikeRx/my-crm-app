@@ -6,6 +6,7 @@ import { listQuotes, deleteQuote } from "@/api/quotes";
 import type { Quote, LineItem, QuoteStatus } from "@/types/entities";
 import QuoteFormModal from "./QuoteFormModal";
 import { formatAmount } from "@/utils/numberFormat";
+import { handleError } from "@/utils/handleError";
 
 export default function QuotesPage() {
     const [data, setData] = useState<Quote[]>([]);
@@ -18,8 +19,8 @@ export default function QuotesPage() {
         try {
             const rows = await listQuotes();
             setData(rows);
-        } catch {
-            message.error("Failed to load quotes");
+        } catch (e) {
+            handleError(e, "Failed to load quotes");
         } finally {
             setLoading(false);
         }

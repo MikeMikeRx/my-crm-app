@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
-import { Table, Button, message, Tag } from "antd";
+import { Table, Button, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { listPayments } from "@/api/payments";
 import type { Payment } from "@/types/entities";
 import PaymentFormModal from "./PaymentFormModal";
 import { formatAmount } from "@/utils/numberFormat";
+import { handleError } from "@/utils/handleError";
 
 const METHOD_LABELS: Record<string, string> = {
     bank_transfer: "Bank Transfer",
@@ -25,8 +26,8 @@ export default function PaymentsPage() {
         try {
             const rows = await listPayments();
             setData(rows);
-        } catch {
-            message.error("Failed to load payments");
+        } catch (e) {
+            handleError(e, "Failed to load payments");
         } finally {
             setLoading(false);
         }

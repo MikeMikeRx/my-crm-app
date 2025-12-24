@@ -4,6 +4,7 @@ import type { ColumnsType } from "antd/es/table";
 import { listCustomers, deleteCustomer } from "@/api/customers";
 import type { Customer} from "@/types/entities";
 import CustomerFormModal from "./CustomerFormModal";
+import { handleError } from "@/utils/handleError";
 
 export default function CustomersPage() {
     const [data, setData] = useState<Customer[]>([]);
@@ -17,7 +18,7 @@ export default function CustomersPage() {
             const rows = await listCustomers();
             setData(rows);
         } catch (e) {
-            message.error("Failed to load customers");
+            handleError(e, "Failed to load customers");
         } finally {
             setLoading(false);
         }

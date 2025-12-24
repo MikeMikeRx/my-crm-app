@@ -8,6 +8,7 @@ import PaymentPreviewCard from "@/components/dashboard/PaymentPreviewCard";
 import CustomerPreviewCard from "@/components/dashboard/CustomerPreviewCard";
 import CustomerListCard from "@/components/dashboard/CustomerListCard";
 import { formatAmount } from "@/utils/numberFormat";
+import { handleError } from "@/utils/handleError";
 
 export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
@@ -16,6 +17,7 @@ export default function DashboardPage() {
     useEffect(() => {
         getDashboardSummary()
             .then((res) => setData(res))
+            .catch((e) => handleError(e, "Failed to load dashboard"))
             .finally(() => setLoading(false));
     }, []);
 

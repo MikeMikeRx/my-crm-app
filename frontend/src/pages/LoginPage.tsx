@@ -5,7 +5,7 @@ import { Button, Card, Checkbox, Form, Input, message } from "antd";
 import { useAuthStore } from "@/context/authStore";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getApiError } from "@/api/client";
+import { handleError } from "@/utils/handleError";
 import Logo from "../assets/images/logo/Logo.png"
 
 const loginSchema = z.object({
@@ -66,8 +66,7 @@ export default function LoginPage () {
                 navigate("/", { replace: true });
             }
         } catch (e) {
-            const { message: msg } = getApiError(e);
-            message.error(msg);
+            handleError(e, isRegisterMode ? "Registration failed" : "Login failed");
         }
     };
 

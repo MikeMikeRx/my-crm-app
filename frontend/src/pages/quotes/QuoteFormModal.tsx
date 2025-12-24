@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import { listCustomers } from "@/api/customers";
 import { createQuote, listQuotes, updateQuote } from "@/api/quotes";
 import type { Customer, Quote, QuoteCreate, QuoteUpdate } from "@/types/entities";
-import { getApiError } from "@/api/client";
+import { handleError } from "@/utils/handleError";
 import { formatAmount } from "@/utils/numberFormat";
 import {
     Modal,
@@ -62,15 +62,15 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
     useEffect(() => {
         listCustomers()
             .then(setCustomers)
-            .catch(() => message.error("Failed to load customers"));
+            .catch((e) => handleError(e, "Failed to load customers"));
     }, [])
 
     useEffect(() => {
         if(!open || editing) return;
-        
+
         listQuotes()
             .then(setQuotes)
-            .catch(() => message.error("Failed to load quotes"));
+            .catch((e) => handleError(e, "Failed to load quotes"));
     },[open,editing]);
 
     // --- Pre-set Quote Number ---
@@ -173,8 +173,8 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
                 customer: values.customer,
                 quoteNumber: values.quoteNumber,
                 items: values.items,
-                issueDate: values.issueDate, 
-                expiryDate: values.expiryDate,                
+                issueDate: values.issueDate,
+                expiryDate: values.expiryDate,
                 status: values.status,
                 notes: values.notes,
             };
@@ -188,14 +188,12 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
                 await createQuote(payload as QuoteCreate);
                 message.success("Quote created");
             }
-            
+
             onSuccess();
-            onClose(); 
+            onClose();
 
         } catch (e) {
-            const { message: msg } = getApiError(e);
-            message.error(msg);
-            console.log("Submit error", e);
+            handleError(e, editing ? "Failed to update quote" : "Failed to create quote");
         }
     };
 

@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+/* Ensure Ant Design notifications are visible */
+.ant-notification {
+  z-index: 9999 !important;
+}
+
+.ant-notification-notice {
+  pointer-events: auto !important;
+}
