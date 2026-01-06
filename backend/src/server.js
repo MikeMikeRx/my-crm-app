@@ -1,9 +1,10 @@
 import dotenv from "dotenv"
+
+// Config - Load environment variables FIRST
+dotenv.config()
+
 import { connectDB } from "./config/database.js"
 import app from "./app.js"
-
-// Config 
-dotenv.config()
 
 // Database
 connectDB()
