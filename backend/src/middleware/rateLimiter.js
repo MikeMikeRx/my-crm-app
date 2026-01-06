@@ -1,23 +1,33 @@
 import rateLimit from "express-rate-limit"
 
+// ============================================================================
+// AUTHENTICATION RATE LIMITER
+// ============================================================================
+// Protects authentication endpoints (login, register) from brute force attacks
+// Usage: Apply to /auth routes (login, register, password reset)
 export const authRateLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // 1 min for testing / 15 min when it's done
-    max: 10, // 10 for testing / 5 attemps when it's done
+    windowMs: 1 * 60 * 1000, // 1 minute window (testing) / 15 min for production
+    max: 10, // 10 attempts (testing) / 5 attempts for production
     message: {
-        succes: false,
-        message: "Too many attemps from this IP, please try again after 15 minutes"
+        success: false,
+        message: "Too many attempts from this IP, please try again after 15 minutes"
     },
-    standardHeaders: true, // Rate limit info in headers
-    legacyHeaders: false // Disable the 'X-RateLimit-*'
+    standardHeaders: true, // Include rate limit info in response headers
+    legacyHeaders: false // Disable deprecated 'X-RateLimit-*' headers
 })
 
+// ============================================================================
+// GLOBAL RATE LIMITER
+// ============================================================================
+// General rate limiting for all API endpoints
+// Usage: Apply globally to all routes to prevent API abuse
 export const globalRateLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 min
-    max: 100, // 100 requests/min
+    windowMs: 60 * 1000, // 1 minute window
+    max: 100, // 100 requests per minute per IP
     message: {
-        succes: false,
+        success: false,
         message: "Too many requests, max 100/min",
     },
-    standardHeaders: true,
-    legacyHeaders: false,
+    standardHeaders: true, // Include rate limit info in response headers
+    legacyHeaders: false, // Disable deprecated 'X-RateLimit-*' headers
 })
