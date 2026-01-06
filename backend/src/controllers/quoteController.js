@@ -3,17 +3,29 @@ import Customer from "../models/Customer.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import dayjs from "dayjs"
 
-// ------ Get All Quotes ------
+// ============================================================================
+// GET ALL QUOTES
+// ============================================================================
 export const getQuotes = asyncHandler(async (req, res, next) => {
-
+    // ========================================================================
+    // FETCH QUOTES
+    // ========================================================================
+    // Find all quotes belonging to the authenticated user
+    // Populate customer details (name, email, company)
+    // Sort by creation date (newest first)
     const quotes = await Quote.find({ user: req.user.id })
         .populate("customer", "name email company")
         .sort({ createdAt: -1 })
-    
+
+    // ========================================================================
+    // AUTO-UPDATE EXPIRED STATUS
+    // ========================================================================
+    // Automatically expire quotes past their expiry date
+    // Excludes already "converted" or "declined" quotes
     const withTotals = quotes.map(q => {
         const obj = q.toObject();
 
-        // Auto-expire if past expiryDate & not already converted/declined
+        // Check if quote should be expired
         if (
             obj.status !== "converted" &&
             obj.status !== "declined" &&
@@ -23,80 +35,152 @@ export const getQuotes = asyncHandler(async (req, res, next) => {
             obj.status = "expired";
         }
 
-        return{
+        return {
             ...obj,
-            totals: q.totals                
+            totals: q.totals
         };
     });
+
+    // ========================================================================
+    // RESPONSE
+    // ========================================================================
     res.json(withTotals)
 });
 
-// ------ Get Single Quote by ID ------
+// ============================================================================
+// GET QUOTE BY ID
+// ============================================================================
 export const getQuoteById = asyncHandler(async (req, res, next) => {
-
+    // ========================================================================
+    // FETCH QUOTE
+    // ========================================================================
+    // Find quote by ID, ensuring it belongs to the authenticated user
+    // Populate customer details (name, email, company)
     const quote = await Quote.findOne({ _id: req.params.id, user: req.user.id })
         .populate("customer", "name email company");
 
-    if (!quote) return res.status(404).json({message: "Quote not found "});
+    // Check if quote exists
+    if (!quote) {
+        return res.status(404).json({ message: "Quote not found" });
+    }
 
+    // ========================================================================
+    // AUTO-UPDATE EXPIRED STATUS
+    // ========================================================================
     const obj = quote.toObject();
 
-    // Auto-expire
+    // Check if quote should be expired
+    // Excludes already "converted" or "declined" quotes
     if (
         obj.status !== "converted" &&
         obj.status !== "declined" &&
-        obj.expiryDate && 
+        obj.expiryDate &&
         dayjs(obj.expiryDate).isBefore(dayjs(), "day")
     ) {
         obj.status = "expired";
     }
 
+    // ========================================================================
+    // RESPONSE
+    // ========================================================================
     res.json({
         ...obj,
         totals: quote.totals
     });
 });
 
-// ------ Create Quote ------
+// ============================================================================
+// CREATE QUOTE
+// ============================================================================
 export const createQuote = asyncHandler(async (req, res, next) => {
-        const { customer, quoteNumber, issueDate, expiryDate, items, notes } = req.body
+    // ========================================================================
+    // EXTRACT INPUT
+    // ========================================================================
+    const { customer, quoteNumber, issueDate, expiryDate, items, notes } = req.body
 
-        const existingCustomer = await Customer.findOne({ _id: customer, user: req.user.id })
-        if (!existingCustomer) return res.status(400).json({ message: "Invalid customer ID" })
+    // ========================================================================
+    // VALIDATE CUSTOMER
+    // ========================================================================
+    // Ensure customer exists and belongs to the authenticated user
+    const existingCustomer = await Customer.findOne({ _id: customer, user: req.user.id })
+    if (!existingCustomer) {
+        return res.status(400).json({ message: "Invalid customer ID" })
+    }
 
-        const newQuote = await Quote.create({
-            user: req.user.id,
-            customer,
-            quoteNumber,
-            issueDate,
-            expiryDate,
-            items,
-            notes,
-        })
+    // ========================================================================
+    // CREATE QUOTE
+    // ========================================================================
+    // Create new quote with default status "draft"
+    const newQuote = await Quote.create({
+        user: req.user.id,
+        customer,
+        quoteNumber,
+        issueDate,
+        expiryDate,
+        items,
+        notes,
+    })
 
-        res.status(201).json({
-            ...newQuote.toObject(),
-            totals: newQuote.totals
-        })
+    // ========================================================================
+    // RESPONSE
+    // ========================================================================
+    res.status(201).json({
+        ...newQuote.toObject(),
+        totals: newQuote.totals
+    })
 })
 
-// ------ Update Quote ------
+// ============================================================================
+// UPDATE QUOTE
+// ============================================================================
 export const updateQuote = asyncHandler(async (req, res, next) => {
-        const quote = await Quote.findOneAndUpdate(
-            { _id: req.params.id, user: req.user.id },
-            req.body,
-            { new: true, runValidators: true },
-        )
-        if (!quote) return res.status(404).json({ message: "Quote not found" })
-        res.json({
-            ...quote.toObject(),
-            totals: quote.totals
-        })
+    // ========================================================================
+    // UPDATE QUOTE
+    // ========================================================================
+    // Find and update quote, ensuring it belongs to the authenticated user
+    // Options:
+    // - new: true -> return updated document
+    // - runValidators: true -> run model validations on update
+    const quote = await Quote.findOneAndUpdate(
+        { _id: req.params.id, user: req.user.id },
+        req.body,
+        { new: true, runValidators: true },
+    )
+
+    // Check if quote exists
+    if (!quote) {
+        return res.status(404).json({ message: "Quote not found" })
+    }
+
+    // ========================================================================
+    // RESPONSE
+    // ========================================================================
+    res.json({
+        ...quote.toObject(),
+        totals: quote.totals
+    })
 })
 
-// ------ Delete Quote ------
+// ============================================================================
+// DELETE QUOTE
+// ============================================================================
 export const deleteQuote = asyncHandler(async (req, res, next) => {
-        const quote = await Quote.findOneAndDelete({ _id: req.params.id, user: req.user.id })
-        if (!quote) return res.status(404).json({ message: "Quote not found" })
-        res.json({ message: "Quote deleted successfully" })
+    // ========================================================================
+    // DELETE QUOTE
+    // ========================================================================
+    // Find and delete quote, ensuring it belongs to the authenticated user
+    const quote = await Quote.findOneAndDelete({
+        _id: req.params.id,
+        user: req.user.id
+    })
+
+    // Check if quote exists
+    if (!quote) {
+        return res.status(404).json({ message: "Quote not found" })
+    }
+
+    // ========================================================================
+    // RESPONSE
+    // ========================================================================
+    res.json({ message: "Quote deleted successfully" })
 })
