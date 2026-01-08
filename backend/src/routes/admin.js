@@ -4,18 +4,6 @@ import { authorizeRoles } from "../middleware/authRoles.js"
 
 const router = express.Router()
 
-// ============================================================================
-// ADMIN ROUTES
-// ============================================================================
-// All routes require authentication + admin role
-// Protected by: authMiddleware → authorizeRoles("admin")
-// NOTE: Admin functionality is currently minimal - prepared for future features
-
-// ============================================================================
-// GET /api/admin/stats
-// ============================================================================
-// Test endpoint to verify admin access
-// Returns admin user info and server time
 router.get(
     "/stats",
     authMiddleware,

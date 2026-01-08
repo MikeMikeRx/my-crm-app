@@ -1,24 +1,12 @@
 import mongoose from "mongoose"
 
-// ============================================================================
-// CUSTOMER MODEL
-// ============================================================================
-// Represents business customers/clients
-// Linked to invoices, quotes, and payments
 const customerSchema = new mongoose.Schema(
     {
-        // ====================================================================
-        // OWNERSHIP
-        // ====================================================================
         user: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User", // References the User model
+            ref: "User",
             required: true,
         },
-
-        // ====================================================================
-        // CUSTOMER INFORMATION
-        // ====================================================================
         name: {
             type: String,
             required: [true, "Customer name is required"],
@@ -27,8 +15,8 @@ const customerSchema = new mongoose.Schema(
         email: {
             type: String,
             trim: true,
-            lowercase: true, // Automatically converts to lowercase
-            match: [/\S+@\S+\.\S+/, "Invalid email format"], // Email validation regex
+            lowercase: true,
+            match: [/\S+@\S+\.\S+/, "Invalid email format"],
         },
         phone: {
             type: String,
@@ -44,7 +32,7 @@ const customerSchema = new mongoose.Schema(
         },
     },
     {
-        timestamps: true // Automatically adds createdAt and updatedAt fields
+        timestamps: true
     }
 )
 

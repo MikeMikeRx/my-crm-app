@@ -17,69 +17,47 @@ import { sanitizeMiddleware } from "./middleware/sanitizer.js"
 
 const app = express()
 
-// ============================================================================
-// CORS CONFIGURATION
-// ============================================================================
-// Define allowed origins for cross-origin requests
 const allowedOrigins = [
-    "http://localhost:5173", // Vite dev server
-    // "https://my-production-domain.com" // Add production URL when deploying
+    "http://localhost:5173",
+    // "https://my-production-domain.com"
 ]
 
-// ============================================================================
-// SECURITY & MIDDLEWARE
-// ============================================================================
-// Helmet: Sets various HTTP headers for security
 app.use(helmet({
-    contentSecurityPolicy: false, // Disabled for backend/frontend testing
+    contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
     crossOriginResourcePolicy: { policy: "cross-origin" },
     referrerPolicy: { policy: "no-referrer" },
-    frameguard: { action: "deny" }, // Prevent clickjacking
+    frameguard: { action: "deny" },
 }))
 
-// Compression: Compress response bodies
 app.use(compression())
 
-// CORS: Configure cross-origin resource sharing
 app.use(cors({
     origin: function (origin, callback) {
-        if (!origin) return callback(null, true) // Allow requests with no origin (Postman, cURL)
+        if (!origin) return callback(null, true)
         if (allowedOrigins.includes(origin)) return callback(null, true)
         return callback(new Error("Not allowed by CORS"))
     },
-    credentials: true, // Allow cookies and auth headers
-    optionsSuccessStatus: 200 // Avoid issues with legacy browsers
+    credentials: true,
+    optionsSuccessStatus: 200
 }))
 
-// JSON parsing: Parse incoming JSON payloads
 app.use(express.json())
 
-// Input sanitization: Sanitize all incoming data (NoSQL injection, XSS prevention)
 sanitizeMiddleware(app)
 
-// Logging: HTTP request logging (development mode)
 app.use(morgan("dev"))
 
-// Rate limiting: Global rate limiting (100 requests/min per IP)
 app.use(globalRateLimiter)
 
-// ============================================================================
-// API ROUTES
-// ============================================================================
-app.use("/api/auth", authRoutes)           // Authentication (register, login, profile)
-app.use("/api/admin", adminRoutes)         // Admin-only routes (prepared for future features)
-app.use("/api/dashboard", dashboardRoutes) // Dashboard analytics
-app.use("/api/customers", customerRoutes)  // Customer management
-app.use("/api/invoices", invoiceRoutes)    // Invoice management
-app.use("/api/quotes", quoteRoutes)        // Quote management
-app.use("/api/payments", paymentRoutes)    // Payment management
+app.use("/api/auth", authRoutes)
+app.use("/api/admin", adminRoutes)
+app.use("/api/dashboard", dashboardRoutes)
+app.use("/api/customers", customerRoutes)
+app.use("/api/invoices", invoiceRoutes)
+app.use("/api/quotes", quoteRoutes)
+app.use("/api/payments", paymentRoutes)
 
-// ============================================================================
-// HEALTH CHECK ENDPOINT
-// ============================================================================
-// GET /health
-// Returns server status, uptime, and database connection state
 app.get("/health", async (req, res) => {
     const dbState = mongoose.connection.readyState
     const states = ["disconnected", "connected", "connecting", "disconnecting"]
@@ -92,10 +70,7 @@ app.get("/health", async (req, res) => {
     })
 })
 
-// ============================================================================
-// GLOBAL ERROR HANDLER
-// ============================================================================
-// Must be last middleware - catches all errors from routes and middleware
+// Must be last middleware
 app.use(errorHandler)
 
 export default app

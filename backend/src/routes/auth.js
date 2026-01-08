@@ -7,35 +7,19 @@ import { validateRequest } from "../middleware/validator.js"
 
 const router = express.Router()
 
-// ============================================================================
-// AUTHENTICATION ROUTES
-// ============================================================================
-// Handles user registration, login, and profile retrieval
-// Register/Login: Protected by rate limiting (brute force prevention)
-// Profile: Protected by authentication middleware
-
-// ============================================================================
-// POST /api/auth/register
-// ============================================================================
-// Register a new user account
-// Middleware chain:
-// 1. authRateLimiter - Rate limiting (10 attempts/min for testing)
-// 2. Validation - Name, email, password validation
-// 3. validateRequest - Process validation results
-// 4. registerUser - Create user and return JWT token
 router.post(
     "/register",
     authRateLimiter,
     [
         body("name")
             .trim()
-            .escape() // Sanitize HTML
+            .escape()
             .notEmpty()
             .withMessage("Name is required"),
 
         body("email")
             .trim()
-            .normalizeEmail() // Normalize email format
+            .normalizeEmail()
             .isEmail()
             .withMessage("Valid email is required"),
 
@@ -48,22 +32,13 @@ router.post(
     registerUser
 )
 
-// ============================================================================
-// POST /api/auth/login
-// ============================================================================
-// Login with existing user credentials
-// Middleware chain:
-// 1. authRateLimiter - Rate limiting (10 attempts/min for testing)
-// 2. Validation - Email and password validation
-// 3. validateRequest - Process validation results
-// 4. loginUser - Verify credentials and return JWT token
 router.post(
     "/login",
     authRateLimiter,
     [
         body("email")
             .trim()
-            .normalizeEmail() // Normalize email format
+            .normalizeEmail()
             .isEmail()
             .withMessage("Valid email is required"),
 
@@ -76,12 +51,6 @@ router.post(
     loginUser
 )
 
-// ============================================================================
-// GET /api/auth/profile
-// ============================================================================
-// Get authenticated user's profile information
-// Requires: JWT token in Authorization header (Bearer token)
-// Returns: User details (excludes password)
 router.get("/profile", authMiddleware, getProfile)
 
 export default router

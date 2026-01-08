@@ -6,39 +6,26 @@ import Customer from "../models/Customer.js";
 import dayjs from "dayjs";
 
 export const getDashboardSummary = asyncHandler(async (req, res) => {
-    // ============================================================================
-    // LOAD DATA
-    // ============================================================================
     const invoices = await Invoice.find({ user: req.user.id });
     const quotes = await Quote.find({ user: req.user.id });
     const payments = await Payment.find({ user: req.user.id });
     const customers = await Customer.find({ user: req.user.id });
 
-    // ============================================================================
-    // TOTAL COUNTS (used throughout for percentage calculations)
-    // ============================================================================
     const quoteTotal = quotes.length;
     const invoiceTotal = invoices.length;
     const paymentTotal = payments.length;
     const customerTotal = customers.length;
 
-    // ============================================================================
-    // HELPER DATA & FUNCTIONS
-    // ============================================================================
     // Active customers are those who have at least one invoice or quote
     const activeCustomerIds = new Set([
         ...invoices.map(inv => String(inv.customer)),
         ...quotes.map(q => String(q.customer)),
     ]);
 
-    // Helper function to calculate percentages
     const toPct = (count, total) =>
         total > 0 ? Math.round((count / total) * 100) : 0;
 
-    // ============================================================================
     // INVOICE SUMMARY
-    // ============================================================================
-    // Recent invoices (last 5)
     const recentInvoices = invoices
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 5)
@@ -51,7 +38,6 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
             createdAt: inv.createdAt,
         }));
 
-    // This month counts and sums
     const invoiceThisMonth = invoices.filter(inv =>
         dayjs(inv.issueDate).isSame(dayjs(), "month")
     ).length;
@@ -63,7 +49,6 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
     const invoiceTotalSum = invoices
         .reduce((sum, inv) => sum + inv.totals.total, 0);
 
-    // Status counts
     const invoicePaid = invoices.filter(inv => inv.status === "paid").length;
     const invoiceUnpaid = invoices.filter(inv => inv.status === "unpaid").length;
     const invoiceOverdue = invoices.filter(inv =>
@@ -85,10 +70,7 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
         ],
     };
 
-    // ============================================================================
     // QUOTE SUMMARY
-    // ============================================================================
-    // Recent quotes (last 5)
     const recentQuotes = quotes
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 5)
@@ -101,7 +83,6 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
             createdAt: q.createdAt,
         }));
 
-    // This month counts and sums
     const quoteThisMonth = quotes.filter(q =>
         dayjs(q.issueDate).isSame(dayjs(), "month")
     ).length;
@@ -123,7 +104,6 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
             return sum + subtotal + tax;
         }, 0);
 
-    // Status counts
     const quoteDraft = quotes.filter(q => q.status === "draft").length;
     const quoteSent = quotes.filter(q => q.status === "sent").length;
     const quoteAccepted = quotes.filter(q => q.status === "accepted").length;
@@ -150,23 +130,18 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
         ],
     };
 
-    // ============================================================================
     // DUE BALANCE CALCULATION
-    // ============================================================================
-    // Map all invoices with their totals
     const invoiceTotals = invoices.map(inv => ({
         id: String(inv._id),
         total: inv.totals?.total || 0
     }));
 
-    // Group payments by invoice
     const paymentsByInvoice = {};
     payments.forEach(p => {
         const inv = String(p.invoice);
         paymentsByInvoice[inv] = (paymentsByInvoice[inv] || 0) + p.amount;
     });
 
-    // Calculate total due balance (invoice total - payments made)
     let dueBalance = 0;
     invoiceTotals.forEach(inv => {
         const paid = paymentsByInvoice[inv.id] || 0;
@@ -177,10 +152,7 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
         }
     });
 
-    // ============================================================================
     // PAYMENT SUMMARY
-    // ============================================================================
-    // This month counts and sums
     const paymentThisMonth = payments.filter(p =>
         p.paymentDate && dayjs(p.paymentDate).isSame(dayjs(), "month")
     ).length;
@@ -192,7 +164,6 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
     const paymentTotalSum = payments
         .reduce((sum, p) => sum + p.amount, 0);
 
-    // Status counts
     const paymentCompleted = payments.filter(p => p.status === "completed").length;
     const paymentFailed = payments.filter(p => p.status === "failed").length;
     const paymentPending = payments.filter(p => p.status === "pending").length;
@@ -213,9 +184,7 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
         ],
     };
 
-    // ============================================================================
     // CUSTOMER SUMMARY
-    // ============================================================================
     const customerNewThisMonth = customers.filter(c =>
         dayjs(c.createdAt).isSame(dayjs(), "month")
     ).length;
@@ -236,21 +205,14 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
         ],
     };
 
-    // ============================================================================
-    // CUSTOMER DETAILS (for customer list table)
-    // ============================================================================
-    // Calculate per-customer metrics: quotes, invoices, payments, outstanding balance
+    // CUSTOMER DETAILS
     const customerDetails = customers.map(customer => {
         const customerId = String(customer._id);
         const isActive = activeCustomerIds.has(customerId);
 
-        // Count quotes for this customer
         const customerQuotes = quotes.filter(q => String(q.customer) === customerId).length;
-
-        // Count invoices for this customer
         const customerInvoices = invoices.filter(inv => String(inv.customer) === customerId).length;
 
-        // Count payments for this customer (via their invoices)
         const customerInvoiceIds = invoices
             .filter(inv => String(inv.customer) === customerId)
             .map(inv => String(inv._id));
@@ -259,7 +221,6 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
             customerInvoiceIds.includes(String(p.invoice))
         ).length;
 
-        // Calculate outstanding balance for this customer
         const customerInvoiceTotals = invoices
             .filter(inv => String(inv.customer) === customerId)
             .map(inv => ({
@@ -289,9 +250,6 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
         };
     });
 
-    // ============================================================================
-    // RESPONSE
-    // ============================================================================
     return res.json({
         invoices: invoiceSummary,
         quotes: quoteSummary,
