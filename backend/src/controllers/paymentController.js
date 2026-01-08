@@ -4,7 +4,7 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 import dayjs from "dayjs"
 
 // GET ALL PAYMENTS
-export const getPayments = asyncHandler(async (req, res, next) => {
+export const getPayments = asyncHandler(async (req, res) => {
     const payments = await Payment.find({ user: req.user.id })
         .populate({
             path: "invoice",
@@ -17,7 +17,7 @@ export const getPayments = asyncHandler(async (req, res, next) => {
 })
 
 // GET PAYMENT BY ID
-export const getPaymentById = asyncHandler(async (req, res, next) => {
+export const getPaymentById = asyncHandler(async (req, res) => {
     const payment = await Payment.findOne({ _id: req.params.id, user: req.user.id })
         .populate({
             path: "invoice",
@@ -33,7 +33,7 @@ export const getPaymentById = asyncHandler(async (req, res, next) => {
 })
 
 // CREATE PAYMENT
-export const createPayment = asyncHandler(async (req, res, next) => {
+export const createPayment = asyncHandler(async (req, res) => {
     const { paymentId, invoice, amount, paymentDate, paymentMethod, notes } = req.body
 
     if (!invoice || amount == null || !paymentMethod) {

@@ -4,7 +4,7 @@ import User from "../models/User.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 
 // REGISTER USER
-export const registerUser = asyncHandler(async (req, res, next) => {
+export const registerUser = asyncHandler(async (req, res) => {
     const { name, email, password, role } = req.body
 
     if (!name || !email || !password) {
@@ -41,7 +41,7 @@ export const registerUser = asyncHandler(async (req, res, next) => {
 })
 
 // LOGIN USER
-export const loginUser = asyncHandler(async (req, res, next) => {
+export const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body
 
     if (!email || !password) {
@@ -74,7 +74,7 @@ export const loginUser = asyncHandler(async (req, res, next) => {
 })
 
 // GET USER PROFILE
-export const getProfile = asyncHandler(async (req, res, next) => {
+export const getProfile = asyncHandler(async (req, res) => {
     // req.user.id set by auth middleware
     const user = await User.findById(req.user.id).select("-password")
 

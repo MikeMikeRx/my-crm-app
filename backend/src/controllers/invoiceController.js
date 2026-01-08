@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 // GET ALL INVOICES
-export const getInvoices = asyncHandler(async (req, res, next) => {
+export const getInvoices = asyncHandler(async (req, res) => {
     const invoices = await Invoice.find({ user: req.user.id })
         .populate("customer", "name email company")
         .sort({ createdAt: -1 });
@@ -28,7 +28,7 @@ export const getInvoices = asyncHandler(async (req, res, next) => {
 });
 
 // GET INVOICE BY ID
-export const getInvoiceById = asyncHandler(async (req, res, next) => {
+export const getInvoiceById = asyncHandler(async (req, res) => {
     const invoice = await Invoice.findOne({ _id: req.params.id, user: req.user.id })
         .populate("customer", "name email company");
 
@@ -49,7 +49,7 @@ export const getInvoiceById = asyncHandler(async (req, res, next) => {
 });
 
 // CREATE INVOICE
-export const createInvoice = asyncHandler(async (req, res, next) => {
+export const createInvoice = asyncHandler(async (req, res) => {
     const { customer, quote, invoiceNumber, issueDate, dueDate, items, notes } = req.body;
 
     const existingCustomer = await Customer.findOne({ _id: customer, user: req.user.id });
@@ -139,7 +139,7 @@ export const updateInvoice = asyncHandler(async (req, res) => {
 
 // DELETE INVOICE
 // NOTE: This endpoint exists but is not currently used in the application
-export const deleteInvoice = asyncHandler(async (req, res, next) => {
+export const deleteInvoice = asyncHandler(async (req, res) => {
     const invoice = await Invoice.findOneAndDelete({
         _id: req.params.id,
         user: req.user.id

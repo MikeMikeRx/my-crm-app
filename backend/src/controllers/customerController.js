@@ -2,14 +2,14 @@ import Customer from "../models/Customer.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 
 // GET ALL CUSTOMERS
-export const getCustomers = asyncHandler(async (req, res, next) => {
+export const getCustomers = asyncHandler(async (req, res) => {
     const customers = await Customer.find({ user: req.user.id }).sort({ createdAt: -1 })
 
     res.json(customers)
 })
 
 // GET CUSTOMER BY ID
-export const getCustomerById = asyncHandler(async (req, res, next) => {
+export const getCustomerById = asyncHandler(async (req, res) => {
     const customer = await Customer.findOne({ _id: req.params.id, user: req.user.id })
 
     if (!customer) {
@@ -20,7 +20,7 @@ export const getCustomerById = asyncHandler(async (req, res, next) => {
 })
 
 // CREATE CUSTOMER
-export const createCustomer = asyncHandler(async (req, res, next) => {
+export const createCustomer = asyncHandler(async (req, res) => {
     const { name, email, phone, company, address } = req.body
 
     if (!name) {
@@ -40,7 +40,7 @@ export const createCustomer = asyncHandler(async (req, res, next) => {
 })
 
 // UPDATE CUSTOMER
-export const updateCustomer = asyncHandler(async (req, res, next) => {
+export const updateCustomer = asyncHandler(async (req, res) => {
     const customer = await Customer.findOneAndUpdate(
         { _id: req.params.id, user: req.user.id },
         req.body,
@@ -55,7 +55,7 @@ export const updateCustomer = asyncHandler(async (req, res, next) => {
 })
 
 // DELETE CUSTOMER
-export const deleteCustomer = asyncHandler(async (req, res, next) => {
+export const deleteCustomer = asyncHandler(async (req, res) => {
     const customer = await Customer.findOneAndDelete({
         _id: req.params.id,
         user: req.user.id

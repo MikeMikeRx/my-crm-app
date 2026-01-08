@@ -4,7 +4,7 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 import dayjs from "dayjs"
 
 // GET ALL QUOTES
-export const getQuotes = asyncHandler(async (req, res, next) => {
+export const getQuotes = asyncHandler(async (req, res) => {
     const quotes = await Quote.find({ user: req.user.id })
         .populate("customer", "name email company")
         .sort({ createdAt: -1 })
@@ -33,7 +33,7 @@ export const getQuotes = asyncHandler(async (req, res, next) => {
 });
 
 // GET QUOTE BY ID
-export const getQuoteById = asyncHandler(async (req, res, next) => {
+export const getQuoteById = asyncHandler(async (req, res) => {
     const quote = await Quote.findOne({ _id: req.params.id, user: req.user.id })
         .populate("customer", "name email company");
 
@@ -59,7 +59,7 @@ export const getQuoteById = asyncHandler(async (req, res, next) => {
 });
 
 // CREATE QUOTE
-export const createQuote = asyncHandler(async (req, res, next) => {
+export const createQuote = asyncHandler(async (req, res) => {
     const { customer, quoteNumber, issueDate, expiryDate, items, notes } = req.body
 
     const existingCustomer = await Customer.findOne({ _id: customer, user: req.user.id })
@@ -84,7 +84,7 @@ export const createQuote = asyncHandler(async (req, res, next) => {
 })
 
 // UPDATE QUOTE
-export const updateQuote = asyncHandler(async (req, res, next) => {
+export const updateQuote = asyncHandler(async (req, res) => {
     const quote = await Quote.findOneAndUpdate(
         { _id: req.params.id, user: req.user.id },
         req.body,
@@ -102,7 +102,7 @@ export const updateQuote = asyncHandler(async (req, res, next) => {
 })
 
 // DELETE QUOTE
-export const deleteQuote = asyncHandler(async (req, res, next) => {
+export const deleteQuote = asyncHandler(async (req, res) => {
     const quote = await Quote.findOneAndDelete({
         _id: req.params.id,
         user: req.user.id
