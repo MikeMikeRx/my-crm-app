@@ -228,7 +228,7 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
 
     const customerSummary = {
         total: customerTotal,
-        new: customerNewThisMonth,
+        newCount: customerNewThisMonth,
         active: activeCustomers,
         preview: [
             { status: "active", percentage: toPct(activeCustomers, customerTotal) },
