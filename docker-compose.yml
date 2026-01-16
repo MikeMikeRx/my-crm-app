@@ -1,0 +1,40 @@
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: vitesse-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vitesse-backend
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    environment:
+      NODE_ENV: production
+      PORT: 8888
+      MONGO_URI: mongodb://mongo:27017/vitesse
+      JWT_SECRET: change-me-in-prod
+    ports:
+      - "8888:8888"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: vitesse-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  mongo_data:

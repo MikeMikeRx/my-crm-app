@@ -112,5 +112,17 @@ This ensures the main branch always stays in a working, tested state.
 
 ---
 
+## 🐳 Run with Docker
+
+```bash
+Start: docker compose up --build
+
+Frontend: http://localhost:5173
+
+Backend: http://localhost:8888
+
+Stop: docker compose down
+```
+---
 ##  Installation
 👉 See [SETUP.md](SETUP.md) for full setup instructions.
