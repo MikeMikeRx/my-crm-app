@@ -6,7 +6,10 @@ dotenv.config()
 import { connectDB } from "./config/database.js"
 import app from "./app.js"
 
-connectDB()
+if (process.env.NODE_ENV !== "test") {
+  connectDB();
+}
+// connectDB()
 
 const PORT = process.env.PORT || 8888
 app.listen(PORT, () => {
