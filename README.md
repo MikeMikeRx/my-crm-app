@@ -124,5 +124,22 @@ Backend: http://localhost:8888
 Stop: docker compose down
 ```
 ---
+## 🌱 Demo Data
+
+You can populate the database with demo data for quick evaluation.
+
+Demo credentials:
+- Email: demo@vitesse.app
+- Password: demo123
+
+Seed database:
+```bash
+# Local development
+cd backend && npm run seed
+
+# Docker
+docker compose exec backend node scripts/seed.js
+```
+---
 ##  Installation
 👉 See [SETUP.md](SETUP.md) for full setup instructions.
