@@ -9,14 +9,14 @@ Built with Node.js and MongoDB on the backend, and React, TypeScript with Vite o
 
 ###  📊 Features
 
-- 👥 Customer & company management
-- 📄 Quotes with automatic totals and expiry tracking
-- 🧾 Invoices with quote conversion and overdue detection
-- 💳 Payments (partial, multiple, multi-method)
-- 💰 Revenue tracking and outstanding balances
-- 📈 Real-time dashboard with KPIs and trends
-- 🔐 Secure authentication with role-based access
-- 🛡 Input validation, rate limiting, and error handling
+- Customer & company management
+- Quotes with automatic totals and expiry tracking
+- Invoices with quote conversion and overdue detection
+- Payments (partial, multiple, multi-method)
+- Revenue tracking and outstanding balances
+- Real-time dashboard with KPIs and trends
+- Secure authentication with role-based access
+- Input validation, rate limiting, and error handling
 
 ---
 
