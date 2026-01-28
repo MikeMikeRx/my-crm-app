@@ -1,7 +1,6 @@
 import mongoSanitize from "mongo-sanitize"
 import sanitizeHtml from "sanitize-html"
 
-// Sanitizes all incoming request data to prevent NoSQL injection and XSS attacks
 export const sanitizeMiddleware = (app) => {
     const cleanObject = (obj) => {
         if (!obj || typeof obj !== "object") return
@@ -24,7 +23,7 @@ export const sanitizeMiddleware = (app) => {
 
             next()
         } catch (err) {
-            console.error("❌ Sanitization error:", err)
+            console.error("Sanitization error:", err)
             res.status(400).json({ message: "Invalid input detected" })
         }
     })

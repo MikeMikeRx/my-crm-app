@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken"
 import User from "../models/User.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 
-// REGISTER USER
 export const registerUser = asyncHandler(async (req, res) => {
     const { name, email, password, role } = req.body
 
@@ -18,7 +17,6 @@ export const registerUser = asyncHandler(async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Role defaults to "user" unless explicitly set to "admin"
     const user = await User.create({
         name,
         email,
@@ -26,7 +24,6 @@ export const registerUser = asyncHandler(async (req, res) => {
         role: role === "admin" ? "admin" : "user",
     })
 
-    // Generate JWT
     const token = jwt.sign(
         { id: user._id, email: user.email },
         process.env.JWT_SECRET,
@@ -40,7 +37,6 @@ export const registerUser = asyncHandler(async (req, res) => {
     })
 })
 
-// LOGIN USER
 export const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body
 
@@ -48,7 +44,6 @@ export const loginUser = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: "Email and password required" })
     }
 
-    // Password field normally excluded by model, must select explicitly
     const user = await User.findOne({ email }).select("+password")
     if (!user) {
         return res.status(401).json({ message: "Invalid credentials" })
@@ -59,7 +54,6 @@ export const loginUser = asyncHandler(async (req, res) => {
         return res.status(401).json({ message: "Invalid credentials" })
     }
 
-    // Generate JWT
     const token = jwt.sign(
         { id: user._id, email: user.email },
         process.env.JWT_SECRET,
@@ -73,9 +67,7 @@ export const loginUser = asyncHandler(async (req, res) => {
     })
 })
 
-// GET USER PROFILE
 export const getProfile = asyncHandler(async (req, res) => {
-    // req.user.id set by auth middleware
     const user = await User.findById(req.user.id).select("-password")
 
     if (!user) {

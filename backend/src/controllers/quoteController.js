@@ -3,14 +3,11 @@ import Customer from "../models/Customer.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import dayjs from "dayjs";
 
-// GET ALL QUOTES
 export const getQuotes = asyncHandler(async (req, res) => {
   const quotes = await Quote.find({ user: req.user.id })
     .populate("customer", "name email company")
     .sort({ createdAt: -1 });
 
-  // After expiry date, quote status automatically changes to "expired"
-  // Excludes already "converted" or "declined" quotes
   const withTotals = quotes.map((q) => {
     const obj = q.toObject();
 
@@ -32,7 +29,6 @@ export const getQuotes = asyncHandler(async (req, res) => {
   res.json(withTotals);
 });
 
-// GET QUOTE BY ID
 export const getQuoteById = asyncHandler(async (req, res) => {
   const quote = await Quote.findOne({ _id: req.params.id, user: req.user.id }).populate(
     "customer",
@@ -60,7 +56,6 @@ export const getQuoteById = asyncHandler(async (req, res) => {
   });
 });
 
-// CREATE QUOTE
 export const createQuote = asyncHandler(async (req, res) => {
   const { customer, quoteNumber, issueDate, expiryDate, items, notes, status } = req.body;
 
@@ -69,7 +64,6 @@ export const createQuote = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Invalid customer ID" });
   }
 
-  // Allow-list statuses you want to permit on create
   const allowedStatuses = new Set(["draft", "sent", "accepted", "declined"]);
   const safeStatus = status && allowedStatuses.has(status) ? status : "draft";
 
@@ -90,7 +84,6 @@ export const createQuote = asyncHandler(async (req, res) => {
   });
 });
 
-// UPDATE QUOTE
 export const updateQuote = asyncHandler(async (req, res) => {
   const quote = await Quote.findOneAndUpdate(
     { _id: req.params.id, user: req.user.id },
@@ -108,7 +101,6 @@ export const updateQuote = asyncHandler(async (req, res) => {
   });
 });
 
-// DELETE QUOTE
 export const deleteQuote = asyncHandler(async (req, res) => {
   const quote = await Quote.findOneAndDelete({
     _id: req.params.id,

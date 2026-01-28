@@ -6,7 +6,6 @@ export const validateRequest = (req, res, next) => {
     if (!errors.isEmpty()) {
         const messages = errors.array().map(err => err.msg)
 
-        // Single error: return simple message format
         if (messages.length === 1) {
             return res.status(400).json({
                 success: false,
@@ -14,7 +13,6 @@ export const validateRequest = (req, res, next) => {
             })
         }
 
-        // Multiple errors: return detailed error list
         return res.status(400).json({
             success: false,
             message: "Validation failed",

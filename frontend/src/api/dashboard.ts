@@ -84,10 +84,6 @@ export interface DashboardSummary {
   recentQuotes: RecentItem[];
 }
 
-/**
- * GET /dashboard/summary
- * Returns aggregated dashboard metrics and recent activity.
- */
 export async function getDashboardSummary(): Promise<DashboardSummary> {
   const { data } = await api.get<DashboardSummary>("/dashboard/summary");
   return data;

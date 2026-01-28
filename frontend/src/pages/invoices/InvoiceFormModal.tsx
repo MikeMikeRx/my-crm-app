@@ -118,18 +118,15 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
     const handleQuoteSelect = async (quoteId: string) => {
         const q = quotes.find(x => x._id === quoteId);
 
-        // Local validation before calling API
         if (!q) {
             message.error("Quote not found");
             return;
         }
-        // Block declined + expired
         if (q.status === "declined" || q.status === "expired") {
             message.error("You cannot create an invoice from this quote");
             return;
         }
-
-        // Backend fetch + import
+        
         try {
             const quote = await getQuote(quoteId);
             const suffix = exractQuoteSuffix(quote.quoteNumber);

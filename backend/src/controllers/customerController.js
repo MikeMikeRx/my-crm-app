@@ -1,14 +1,12 @@
 import Customer from "../models/Customer.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 
-// GET ALL CUSTOMERS
 export const getCustomers = asyncHandler(async (req, res) => {
     const customers = await Customer.find({ user: req.user.id }).sort({ createdAt: -1 })
 
     res.json(customers)
 })
 
-// GET CUSTOMER BY ID
 export const getCustomerById = asyncHandler(async (req, res) => {
     const customer = await Customer.findOne({ _id: req.params.id, user: req.user.id })
 
@@ -19,7 +17,6 @@ export const getCustomerById = asyncHandler(async (req, res) => {
     res.json(customer)
 })
 
-// CREATE CUSTOMER
 export const createCustomer = asyncHandler(async (req, res) => {
     const { name, email, phone, company, address } = req.body
 
@@ -39,7 +36,6 @@ export const createCustomer = asyncHandler(async (req, res) => {
     res.status(201).json(newCustomer)
 })
 
-// UPDATE CUSTOMER
 export const updateCustomer = asyncHandler(async (req, res) => {
     const customer = await Customer.findOneAndUpdate(
         { _id: req.params.id, user: req.user.id },
@@ -54,7 +50,6 @@ export const updateCustomer = asyncHandler(async (req, res) => {
     res.json(customer)
 })
 
-// DELETE CUSTOMER
 export const deleteCustomer = asyncHandler(async (req, res) => {
     const customer = await Customer.findOneAndDelete({
         _id: req.params.id,

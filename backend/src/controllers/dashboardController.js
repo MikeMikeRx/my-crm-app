@@ -16,7 +16,7 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
     const paymentTotal = payments.length;
     const customerTotal = customers.length;
 
-    // Active customers are those who have at least one invoice or quote
+    // Active customers
     const activeCustomerIds = new Set([
         ...invoices.map(inv => String(inv.customer)),
         ...quotes.map(q => String(q.customer)),
@@ -256,7 +256,6 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
         payments: paymentSummary,
         customers: customerSummary,
         customerDetails,
-        // Total counts used for calculating customer percentage share
         customerMaxValues: {
             quotes: quoteTotal,
             invoices: invoiceTotal,

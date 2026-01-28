@@ -1,11 +1,6 @@
 import { api } from "./client";
 import type { Payment, PaymentCreate, ID } from "@/types/entities";
 
-// ============================================================================
-// PAYMENT API
-// ============================================================================
-// Client for /payments endpoints. Payments are immutable after creation.
-
 export async function listPayments(): Promise<Payment[]> {
   const { data } = await api.get<Payment[]>("/payments");
   return data;

@@ -1,11 +1,6 @@
 import { api } from "./client";
 import type { Invoice, InvoiceCreate, InvoiceUpdate, ID } from "@/types/entities";
 
-// ============================================================================
-// INVOICE API
-// ============================================================================
-// Client for /invoices endpoints. Derived fields (e.g., totals/status) are computed by the backend.
-
 export async function listInvoices(): Promise<Invoice[]> {
   const { data } = await api.get<Invoice[]>("/invoices");
   return data;

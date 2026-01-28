@@ -61,7 +61,6 @@ const invoiceSchema = new mongoose.Schema(
     }
 )
 
-// Calculates invoice totals dynamically (not stored in database)
 invoiceSchema.virtual("totals").get(function () {
     const items = this.items || [];
 

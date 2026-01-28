@@ -4,13 +4,11 @@ import Quote from "../models/Quote.js";
 import dayjs from "dayjs";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
-// GET ALL INVOICES
 export const getInvoices = asyncHandler(async (req, res) => {
     const invoices = await Invoice.find({ user: req.user.id })
         .populate("customer", "name email company")
         .sort({ createdAt: -1 });
 
-    // After due date, invoice status automatically changes to "overdue"
     const withOverdue = invoices.map(inv => {
         const obj = inv.toObject();
 
@@ -27,7 +25,6 @@ export const getInvoices = asyncHandler(async (req, res) => {
     res.json(withOverdue)
 });
 
-// GET INVOICE BY ID
 export const getInvoiceById = asyncHandler(async (req, res) => {
     const invoice = await Invoice.findOne({ _id: req.params.id, user: req.user.id })
         .populate("customer", "name email company");
@@ -48,7 +45,6 @@ export const getInvoiceById = asyncHandler(async (req, res) => {
     });
 });
 
-// CREATE INVOICE
 export const createInvoice = asyncHandler(async (req, res) => {
     const { customer, quote, invoiceNumber, issueDate, dueDate, items, notes } = req.body;
 
@@ -66,7 +62,6 @@ export const createInvoice = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: "Invalid quote ID" });
         }
 
-        // Block invoice creation from declined quotes
         if (quoteDoc.status === "declined") {
             return res.status(400).json({
                 message: "Cannot create invoice from a declined quote"
@@ -98,7 +93,6 @@ export const createInvoice = asyncHandler(async (req, res) => {
         quote: quote || undefined,
     });
 
-    // Mark quote as "converted" after successful invoice creation
     if (quote) {
         await Quote.findOneAndUpdate(
             { _id: quote, user: req.user.id },
@@ -112,12 +106,9 @@ export const createInvoice = asyncHandler(async (req, res) => {
     });
 });
 
-// UPDATE INVOICE
 export const updateInvoice = asyncHandler(async (req, res) => {
     const incoming = req.body;
 
-    // Enforce status rules: only "paid" or "unpaid" allowed
-    // System automatically sets "overdue" status based on due date
     let status = incoming.status;
     if (status !== "paid") status = "unpaid";
 
@@ -137,8 +128,6 @@ export const updateInvoice = asyncHandler(async (req, res) => {
     });
 });
 
-// DELETE INVOICE
-// NOTE: This endpoint exists but is not currently used in the application
 export const deleteInvoice = asyncHandler(async (req, res) => {
     const invoice = await Invoice.findOneAndDelete({
         _id: req.params.id,

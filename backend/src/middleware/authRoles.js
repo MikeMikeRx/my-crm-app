@@ -1,4 +1,3 @@
-// Must be used AFTER authMiddleware (requires req.user)
 export const authorizeRoles = (...allowedRoles) => {
     return (req, res, next) => {
         if (!req.user) {

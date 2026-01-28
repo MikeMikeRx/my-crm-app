@@ -1,11 +1,6 @@
 import { api } from "./client";
 import type { Customer, CustomerCreate, CustomerUpdate, ID } from "@/types/entities";
 
-// ============================================================================
-// CUSTOMER API
-// ============================================================================
-// CRUD helpers for /customers endpoints.
-
 export async function listCustomers(): Promise<Customer[]> {
   const { data } = await api.get<Customer[]>("/customers");
   return data;

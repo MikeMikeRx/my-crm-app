@@ -16,7 +16,6 @@ Object.defineProperty(window, "matchMedia", {
   }),
 });
 
-// Some UI libs call getComputedStyle with pseudo-elements
 const originalGetComputedStyle = window.getComputedStyle;
 window.getComputedStyle = (elt: Element, pseudoElt?: string | null) => {
   // jsdom throws for pseudo-elements; ignore them

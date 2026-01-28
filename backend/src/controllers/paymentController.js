@@ -3,7 +3,6 @@ import Invoice from "../models/Invoice.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import dayjs from "dayjs"
 
-// GET ALL PAYMENTS
 export const getPayments = asyncHandler(async (req, res) => {
     const payments = await Payment.find({ user: req.user.id })
         .populate({
@@ -16,7 +15,6 @@ export const getPayments = asyncHandler(async (req, res) => {
     res.json(payments)
 })
 
-// GET PAYMENT BY ID
 export const getPaymentById = asyncHandler(async (req, res) => {
     const payment = await Payment.findOne({ _id: req.params.id, user: req.user.id })
         .populate({
@@ -32,7 +30,6 @@ export const getPaymentById = asyncHandler(async (req, res) => {
     res.json(payment)
 })
 
-// CREATE PAYMENT
 export const createPayment = asyncHandler(async (req, res) => {
     const { paymentId, invoice, amount, paymentDate, paymentMethod, notes } = req.body
 
@@ -59,7 +56,6 @@ export const createPayment = asyncHandler(async (req, res) => {
         notes,
     })
 
-    // Calculate total amount paid for this invoice
     const payments = await Payment.find({ invoice });
     const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
 
@@ -68,7 +64,6 @@ export const createPayment = asyncHandler(async (req, res) => {
         0
     );
 
-    // Mark invoice as "paid" ONLY if fully paid
     if (totalPaid >= invoiceTotal) {
         existingInvoice.status = "paid"
         await existingInvoice.save();

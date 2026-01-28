@@ -41,7 +41,6 @@ const quoteSchema = new mongoose.Schema(
         ],
         status: {
             type: String,
-            // Quote lifecycle: draft → sent → (accepted/declined/expired) → converted
             enum: ["draft", "sent", "accepted", "declined", "expired", "converted"],
             default: "draft",
         },
@@ -57,7 +56,6 @@ const quoteSchema = new mongoose.Schema(
     }
 )
 
-// Calculates quote totals dynamically (not stored in database)
 quoteSchema.virtual("totals").get(function () {
     const items = this.items || []
 

@@ -39,12 +39,10 @@ export default function LoginPage () {
     const navigate = useNavigate();
     const { login, register, user, loading } = useAuthStore();
 
-    // if user already logged in => redirect
     useEffect(() => {
         if (user) navigate("/", { replace: true });
     }, [user, navigate]);
 
-    // Reset form when switching modes
     useEffect(() => {
         reset({ name: "", email: "", password: "", isAdmin: false });
     }, [mode, reset]);

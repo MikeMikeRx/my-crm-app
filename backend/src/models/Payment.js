@@ -1,6 +1,5 @@
 import mongoose from "mongoose"
 
-// Multiple payments can be applied to a single invoice (partial payments)
 const paymentSchema = new mongoose.Schema(
     {
         user: {

@@ -19,7 +19,6 @@ const app = express()
 
 const allowedOrigins = [
     "http://localhost:5173",
-    // "https://my-production-domain.com"
 ]
 
 app.use(helmet({
@@ -70,7 +69,6 @@ app.get("/health", async (req, res) => {
     })
 })
 
-// Must be last middleware
 app.use(errorHandler)
 
 export default app

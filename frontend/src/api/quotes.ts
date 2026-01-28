@@ -1,11 +1,6 @@
 import { api } from "./client";
 import type { Quote, QuoteCreate, QuoteUpdate, ID } from "@/types/entities";
 
-// ============================================================================
-// QUOTE API
-// ============================================================================
-// Client for /quotes endpoints.
-
 export async function listQuotes(): Promise<Quote[]> {
   const { data } = await api.get<Quote[]>("/quotes");
   return data;

@@ -33,7 +33,6 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
     const [paymentsToday, setPaymentsToday] = useState(0);
     const [remaining, setRemaining] = useState<number | null>(null);
     
-    // Count today's payments
     useEffect(() => {
         if (!open) return;
 
@@ -46,7 +45,6 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
         });
     }, [open]);
 
-    // Generate unique payment ID
     const genPaymentId = (countForToday: number) => {
         const today = dayjs().format("YYYYMMDD");
         const next = String(countForToday + 1).padStart(3, "0");
@@ -66,7 +64,6 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
         },
     });
 
-    // Reset form when modal opens or count changes
     useEffect(() => {
         if (!open) return;
 
@@ -122,10 +119,8 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
                             }))}
                             onChange={async (invId) => {
                                 field.onChange(invId);
-                                // Load all payments
-                                const all = await listPayments();
 
-                                // Sum all payments linked to this invoice
+                                const all = await listPayments();
                                 const paid = all
                                     .filter(p => p.invoice === invId || 
                                         (p.invoice
@@ -135,15 +130,12 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
                                     )
                                     .reduce((sum, p) => sum + Number(p.amount || 0), 0);
 
-                                // Look up selected invoice and extract full invoice total
                                 const invoiceObj = invoices.find(i => i._id === invId);
                                 const invoiceTotal = invoiceObj?.totals?.total || 0;
 
-                                // Compute remaining balance to be paid
                                 const remainingBalance = invoiceTotal - paid;
                                 setRemaining(remainingBalance);
 
-                                // Auto-fill amount with the remaining balance
                                 reset((prev) => ({
                                     ...prev,
                                     amount: Number(remainingBalance.toFixed(2)),

@@ -31,8 +31,8 @@ export interface Quote {
     user: ID;
     customer: ID | Customer;
     quoteNumber: string;
-    issueDate: string; // YYYY-MM-DD
-    expiryDate?: string; // YYYY-MM-DD
+    issueDate: string;
+    expiryDate?: string;
     items: LineItem[];
     total: number;
     status: QuoteStatus;
@@ -60,8 +60,8 @@ export interface Invoice {
     user?: ID;
     customer: ID | Customer;
     invoiceNumber: string;
-    issueDate: string; // YYYY-MM-DD
-    dueDate: string; // YYYY-MM-DD
+    issueDate: string;
+    dueDate: string;
     items: LineItem[];
     status: InvoiceStatus;
     notes?: string;
@@ -96,7 +96,7 @@ export interface Payment {
     invoice: ID | (Invoice & { customer? : Customer });
     amount: number;
     paymentMethod: PaymentMethod;
-    paymentDate?: string; // YYYY-MM-DD
+    paymentDate?: string;
     status: PaymentStatus;
     notes?: string;
     createdAt?: string;

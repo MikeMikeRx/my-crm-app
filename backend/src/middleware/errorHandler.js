@@ -1,6 +1,5 @@
 const errorHandler = (err, req, res, next) => {
-    // Stack trace only shown in development environment
-    console.error("❌ Error:", {
+    console.error("Error:", {
         message: err.message,
         stack: process.env.NODE_ENV === "development" ? err.stack : "hidden",
         path: req.originalUrl,
