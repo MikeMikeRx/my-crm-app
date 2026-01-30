@@ -49,3 +49,5 @@ jobs:
 
       - name: Run tests
         run: npm test
+        env:
+          VITE_API_URL: http://localhost:8888/api
