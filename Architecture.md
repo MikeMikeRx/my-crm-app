@@ -345,7 +345,7 @@ my-crm-app/
 | DELETE | `/api/invoices/:id` | Delete invoice | Yes |
 | GET | `/api/payments` | List payments | Yes |
 | POST | `/api/payments` | Record payment | Yes |
-| GET | `/api/dashboard/stats` | Dashboard KPIs | Yes |
+| GET | `/api/dashboard/summary` | Dashboard KPIs | Yes |
 | GET | `/api/admin/stats` | Admin statistics | Admin |
 | GET | `/health` | Health check | No |
 
