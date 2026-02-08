@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
-import { Table, Button, Tag } from "antd";
+import { Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { listPayments } from "@/api/payments";
 import type { Payment } from "@/types/entities";
 import PaymentFormModal from "./PaymentFormModal";
 import { formatAmount } from "@/utils/numberFormat";
 import { handleError } from "@/utils/handleError";
+import PageHeader from "@/components/PageHeader";
 
 const METHOD_LABELS: Record<string, string> = {
     bank_transfer: "Bank Transfer",
@@ -20,7 +21,10 @@ export default function PaymentsPage() {
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
 
-    // --------------- Load payment list ---------------
+    const startCreatePayment = () => {
+        setOpen(true);
+    }
+
     const load = async () => {
         setLoading(true);
         try {
@@ -37,7 +41,6 @@ export default function PaymentsPage() {
         load();
     }, []);
 
-    // -----------------Table Columns -----------------
     const columns: ColumnsType<Payment> = [
         {
             title: "Payments #",
@@ -86,31 +89,13 @@ export default function PaymentsPage() {
         },
     ];
 
-    // ------------------------- JSX ----------------------------------
     return (
         <div>
-            <div className="flex justify-between items-center mb-4">
-                <h1
-                    style={{
-                        fontSize: "25px",
-                        fontWeight: 700,
-                        padding: "8px 16px",
-                        color: "#1f2937",
-                    }}
-                >
-                    Payments
-                </h1>
-
-                <Button
-                    type="primary"
-                    onClick={() => setOpen(true)}
-                    style={{
-                        margin:"15px",
-                    }}
-                >
-                    + New payment
-                </Button>
-            </div>
+            <PageHeader
+                title="Payment"
+                addLabel="+ New Payment"
+                onAdd={() => { startCreatePayment }}
+            />
 
             <Table
                 columns={columns}

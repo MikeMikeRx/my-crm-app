@@ -7,12 +7,18 @@ import type { Quote, LineItem, QuoteStatus } from "@/types/entities";
 import QuoteFormModal from "./QuoteFormModal";
 import { formatAmount } from "@/utils/numberFormat";
 import { handleError } from "@/utils/handleError";
+import PageHeader from "@/components/PageHeader";
 
 export default function QuotesPage() {
     const [data, setData] = useState<Quote[]>([]);
     const [loading, setLoading] = useState(false);
     const [editing, setEditing] = useState<Quote | null>(null);
     const [open, setOpen] = useState(false);
+
+    const startCreateQuote = () => {
+        setEditing(null);
+        setOpen(true);
+    }
 
     const load = async () => {
         setLoading(true);
@@ -102,26 +108,11 @@ export default function QuotesPage() {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-4">
-                <h1
-                    style={{
-                        fontSize: "25px",
-                        fontWeight: 700,
-                        padding: "8px 16px",
-                        color: "#1f2937",
-                    }}
-                >
-                    Quotes
-                </h1>
-
-                <Button
-                    type="primary"
-                    onClick={() => { setEditing(null); setOpen(true); }}
-                    style={{ margin: "15px" }}
-                >
-                    + New Quote
-                </Button>
-            </div>
+            <PageHeader
+                title="Quotes"
+                addLabel="+ New Quote"
+                onAdd={() => { startCreateQuote }}
+            />
 
             <Table
                 rowKey="_id"

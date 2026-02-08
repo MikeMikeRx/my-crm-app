@@ -5,12 +5,18 @@ import { listCustomers, deleteCustomer } from "@/api/customers";
 import type { Customer} from "@/types/entities";
 import CustomerFormModal from "./CustomerFormModal";
 import { handleError } from "@/utils/handleError";
+import PageHeader from "@/components/PageHeader";
 
 export default function CustomersPage() {
     const [data, setData] = useState<Customer[]>([]);
     const [loading, setLoading] = useState(false);
     const [editing, setEditing] = useState<Customer | null>(null);
     const [open, setOpen] = useState(false);
+
+    const startCreateCustomer = () => {
+        setEditing(null);
+        setOpen(true);
+    }
 
     const load = async () => {
         setLoading(true);
@@ -60,29 +66,11 @@ export default function CustomersPage() {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-4">
-                <h1
-                    style={{
-                        fontSize: "25px",
-                        fontWeight: 700,
-                        padding: "8px 16px",
-                        color: "#1f2937",
-                    }}
-                >
-                    Customers
-                </h1>
-                <Button
-                    type="primary"
-                    onClick={() => { 
-                        setEditing(null); setOpen(true);
-                    }}
-                    style={{
-                        margin:"15px",
-                    }}
-                >
-                    + New Customer
-                </Button>
-            </div>
+            <PageHeader
+                title="Customers"
+                addLabel="+ New Customer"
+                onAdd={() => { startCreateCustomer }}
+            />
 
             <Table
                 columns={columns}

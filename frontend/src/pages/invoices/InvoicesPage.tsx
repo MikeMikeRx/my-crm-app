@@ -7,6 +7,7 @@ import type { Invoice, InvoiceStatus, LineItem } from "@/types/entities";
 import InvoiceFormModal from "./InvoiceFormModal"
 import { formatAmount } from "@/utils/numberFormat";
 import { handleError } from "@/utils/handleError";
+import PageHeader from "@/components/PageHeader";
 
 
 export default function InvoicesPage() {
@@ -14,6 +15,11 @@ export default function InvoicesPage() {
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState<Invoice | null>(null);
+
+    const startCreateInvoice = () => {
+        setEditing(null);
+        setOpen(true);
+    }
 
     const load = async () => {
         setLoading(true);
@@ -98,28 +104,11 @@ export default function InvoicesPage() {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-4">
-                <h1
-                    style={{
-                        fontSize: "25px",
-                        fontWeight: 700,
-                        padding: "8px 16px",
-                        color: "#1f2937",
-                    }}
-                >
-                    Invoices
-                </h1>
-
-                <Button
-                    type="primary"
-                    onClick={() => {
-                            setEditing(null); setOpen(true);
-                        }}
-                    style={{ margin: "15px" }}
-                >
-                    + New Invoice
-                </Button>
-            </div>
+            <PageHeader
+                title="Invoices"
+                addLabel="+ New Invoice"
+                onAdd={() => { startCreateInvoice }}
+            />
 
             <Table
                 columns={columns}
