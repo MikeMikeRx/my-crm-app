@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import LoginPage from "@/pages/LoginPage";
+import LoginPage from "@/pages/login/LoginPage";
 
 // Mock store to prevent real API calls
 vi.mock("@/context/authStore", () => ({

@@ -6,7 +6,7 @@ import { useAuthStore } from "@/context/authStore";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { handleError } from "@/utils/handleError";
-import Logo from "../assets/images/logo/Logo.png"
+import Logo from "@/assets/images/logo/Logo.png"
 
 const loginSchema = z.object({
     email: z.string().email("Invalid email"),
