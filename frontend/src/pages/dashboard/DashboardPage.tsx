@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { Row, Col, Card } from "antd";
 import { getDashboardSummary } from "@/api/dashboard";
-import SummaryCard from "@/components/dashboard/SummaryCard";
-import QuotePreviewCard from "@/components/dashboard/QuotePreviewCard";
-import InvoicePreviewCard from "@/components/dashboard/InvoicePreviewCard";
-import PaymentPreviewCard from "@/components/dashboard/PaymentPreviewCard";
-import CustomerPreviewCard from "@/components/dashboard/CustomerPreviewCard";
-import CustomerListCard from "@/components/dashboard/CustomerListCard";
+import SummaryCard from "./components/SummaryCard";
+import QuotePreviewCard from "./components/QuotePreviewCard";
+import InvoicePreviewCard from "./components/InvoicePreviewCard";
+import PaymentPreviewCard from "./components/PaymentPreviewCard";
+import CustomerPreviewCard from "./components/CustomerPreviewCard";
+import CustomerListCard from "./components/CustomerListCard";
 import { formatAmount } from "@/utils/numberFormat";
 import { handleError } from "@/utils/handleError";
 
