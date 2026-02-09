@@ -8,17 +8,12 @@ import QuoteFormModal from "./QuoteFormModal";
 import { formatAmount } from "@/utils/numberFormat";
 import { handleError } from "@/utils/handleError";
 import PageHeader from "@/components/PageHeader";
+import { useCrudModal } from "@/hooks/useCrudModal";
 
 export default function QuotesPage() {
+    const modal = useCrudModal<Quote>();
     const [data, setData] = useState<Quote[]>([]);
     const [loading, setLoading] = useState(false);
-    const [editing, setEditing] = useState<Quote | null>(null);
-    const [open, setOpen] = useState(false);
-
-    const startCreateQuote = () => {
-        setEditing(null);
-        setOpen(true);
-    }
 
     const load = async () => {
         setLoading(true);
@@ -97,7 +92,7 @@ export default function QuotesPage() {
             title: "Actions",
             render: (_, record) => (
                 <Space>
-                    <Button type="link" onClick={() => {setEditing(record); setOpen(true); }}>Edit</Button>
+                    <Button type="link" onClick={() => modal.startEdit(record) }>Edit</Button>
                     <Popconfirm title="Delete this quote?" onConfirm={() => handleDelete(record._id)}>
                         <Button type="link" danger>Delete</Button>
                     </Popconfirm>
@@ -111,7 +106,7 @@ export default function QuotesPage() {
             <PageHeader
                 title="Quotes"
                 addLabel="+ New Quote"
-                onAdd={ startCreateQuote }
+                onAdd={ modal.startCreate }
             />
 
             <Table
@@ -123,9 +118,9 @@ export default function QuotesPage() {
             />
 
             <QuoteFormModal
-                open={open}
-                editing={editing}
-                onClose={() => setOpen(false)}
+                open={modal.open}
+                editing={modal.editing}
+                onClose={modal.close}
                 onSuccess={load}
             />
         </div>

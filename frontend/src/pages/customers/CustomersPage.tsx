@@ -6,17 +6,12 @@ import type { Customer} from "@/types/entities";
 import CustomerFormModal from "./CustomerFormModal";
 import { handleError } from "@/utils/handleError";
 import PageHeader from "@/components/PageHeader";
+import { useCrudModal } from "@/hooks/useCrudModal";
 
 export default function CustomersPage() {
+    const modal = useCrudModal<Customer>();
     const [data, setData] = useState<Customer[]>([]);
     const [loading, setLoading] = useState(false);
-    const [editing, setEditing] = useState<Customer | null>(null);
-    const [open, setOpen] = useState(false);
-
-    const startCreateCustomer = () => {
-        setEditing(null);
-        setOpen(true);
-    }
 
     const load = async () => {
         setLoading(true);
@@ -50,7 +45,7 @@ export default function CustomersPage() {
                 <Space>
                     <Button
                         type="link"
-                        onClick={() => { setEditing(record); setOpen(true); }}>
+                        onClick={() => { modal.startEdit(record) }}>
                             Edit
                     </Button>
                     <Popconfirm
@@ -69,7 +64,7 @@ export default function CustomersPage() {
             <PageHeader
                 title="Customers"
                 addLabel="+ New Customer"
-                onAdd={ startCreateCustomer }
+                onAdd={modal.startCreate}
             />
 
             <Table
@@ -81,10 +76,10 @@ export default function CustomersPage() {
             />
 
             <CustomerFormModal
-                open={open}
-                onClose={() => setOpen(false)}
+                open={modal.open}
+                onClose={modal.close}
                 onSuccess={load}
-                editing={editing}
+                editing={modal.editing}
             />
         </div>
     )

@@ -8,18 +8,13 @@ import InvoiceFormModal from "./InvoiceFormModal"
 import { formatAmount } from "@/utils/numberFormat";
 import { handleError } from "@/utils/handleError";
 import PageHeader from "@/components/PageHeader";
+import { useCrudModal } from "@/hooks/useCrudModal";
 
 
 export default function InvoicesPage() {
+    const modal = useCrudModal<Invoice>()
     const [data, setData] = useState<Invoice[]>([]);
     const [loading, setLoading] = useState(false);
-    const [open, setOpen] = useState(false);
-    const [editing, setEditing] = useState<Invoice | null>(null);
-
-    const startCreateInvoice = () => {
-        setEditing(null);
-        setOpen(true);
-    }
 
     const load = async () => {
         setLoading(true);
@@ -94,7 +89,7 @@ export default function InvoicesPage() {
             title: "Actions",
             render: (_, record) => (
                 <Space>
-                    <Button type="link" onClick={() => { setEditing(record); setOpen(true); }}>
+                    <Button type="link" onClick={() => modal.startEdit(record)}>
                         Edit
                     </Button>
                 </Space>
@@ -107,7 +102,7 @@ export default function InvoicesPage() {
             <PageHeader
                 title="Invoices"
                 addLabel="+ New Invoice"
-                onAdd={ startCreateInvoice }
+                onAdd={ modal.startCreate }
             />
 
             <Table
@@ -119,10 +114,10 @@ export default function InvoicesPage() {
             />
 
             <InvoiceFormModal
-                open={open}
-                onClose={() => setOpen(false)}
+                open={modal.open}
+                onClose={modal.close}
                 onSuccess={load}
-                editing={editing}
+                editing={modal.editing}
             />
         </div>
     );

@@ -8,6 +8,7 @@ import PaymentFormModal from "./PaymentFormModal";
 import { formatAmount } from "@/utils/numberFormat";
 import { handleError } from "@/utils/handleError";
 import PageHeader from "@/components/PageHeader";
+import { useCrudModal } from "@/hooks/useCrudModal";
 
 const METHOD_LABELS: Record<string, string> = {
     bank_transfer: "Bank Transfer",
@@ -17,13 +18,9 @@ const METHOD_LABELS: Record<string, string> = {
 }
 
 export default function PaymentsPage() {
+    const modal = useCrudModal<Payment>();
     const [data, setData] = useState<Payment[]>([]);
     const [loading, setLoading] = useState(false);
-    const [open, setOpen] = useState(false);
-
-    const startCreatePayment = () => {
-        setOpen(true);
-    }
 
     const load = async () => {
         setLoading(true);
@@ -94,7 +91,7 @@ export default function PaymentsPage() {
             <PageHeader
                 title="Payment"
                 addLabel="+ New Payment"
-                onAdd={startCreatePayment}
+                onAdd={ modal.startCreate }
             />
 
             <Table
@@ -106,8 +103,8 @@ export default function PaymentsPage() {
             />
 
             <PaymentFormModal
-                open={open}
-                onClose={() => setOpen(false)}
+                open={modal.open}
+                onClose={modal.close}
                 onSuccess={load}
             />
         </div>
