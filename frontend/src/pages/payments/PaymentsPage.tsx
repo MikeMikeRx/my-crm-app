@@ -94,7 +94,7 @@ export default function PaymentsPage() {
             <PageHeader
                 title="Payment"
                 addLabel="+ New Payment"
-                onAdd={() => { startCreatePayment }}
+                onAdd={startCreatePayment}
             />
 
             <Table

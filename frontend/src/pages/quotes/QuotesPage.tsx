@@ -111,7 +111,7 @@ export default function QuotesPage() {
             <PageHeader
                 title="Quotes"
                 addLabel="+ New Quote"
-                onAdd={() => { startCreateQuote }}
+                onAdd={ startCreateQuote }
             />
 
             <Table

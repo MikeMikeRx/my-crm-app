@@ -107,7 +107,7 @@ export default function InvoicesPage() {
             <PageHeader
                 title="Invoices"
                 addLabel="+ New Invoice"
-                onAdd={() => { startCreateInvoice }}
+                onAdd={ startCreateInvoice }
             />
 
             <Table

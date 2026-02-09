@@ -69,7 +69,7 @@ export default function CustomersPage() {
             <PageHeader
                 title="Customers"
                 addLabel="+ New Customer"
-                onAdd={() => { startCreateCustomer }}
+                onAdd={ startCreateCustomer }
             />
 
             <Table
