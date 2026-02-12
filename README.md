@@ -1,4 +1,4 @@
-![Logo](./frontend/src/assets/images/logo/Logo-long.png)
+![Logo](./frontend/src/assets/images/logo/Logo-Long.png)
 
 Vitesse is a full-stack CRM/ERP application built for self-employed professionals and small businesses.  
 It manages the complete business workflow from customers and quotes to invoices, payments, and real-time analytics.
@@ -20,7 +20,7 @@ Built with Node.js and MongoDB on the backend, and React, TypeScript with Vite o
 
 ---
 
-![Dashboard](./screenshots/Dashboard.png)  
+![Dashboard](./screenshots/0.%20Dashboard.png)  
 More screenshots available in `./screenshots`.
 
 ---
