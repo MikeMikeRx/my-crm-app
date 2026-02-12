@@ -9,7 +9,7 @@ import {
 } from "@ant-design/icons";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/context/authStore";
-import Logo from "../../assets/images/logo/Dark-Logo-small.png"
+import Logo from "../../assets/images/logo/Logo-Dark-Long.png";
 
 const { Header, Sider, Content } = Layout;
 
