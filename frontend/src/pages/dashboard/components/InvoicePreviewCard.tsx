@@ -1,5 +1,5 @@
 import { Progress } from "antd";
-import type { StatPrevCardItem } from "../../types/entities"
+import type { StatPrevCardItem } from "@/types/entities"
 import { capitalize } from "@/utils/capitalize";
 
 interface Props {
