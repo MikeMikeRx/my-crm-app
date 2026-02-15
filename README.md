@@ -5,6 +5,8 @@ It manages the complete business workflow from customers and quotes to invoices,
 
 Built with Node.js and MongoDB on the backend, and React, TypeScript with Vite on the frontend.
 
+### [Live Demo](https://vitesse-crm-frontend-production.up.railway.app) | `demo@vitesse.app` / `demo123`
+
 ---
 
 ###  📊 Features
