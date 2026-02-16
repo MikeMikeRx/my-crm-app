@@ -449,19 +449,20 @@ Roles:
 ```
 App
 ├── ConfigProvider (Ant Design theme)
-│   └── BrowserRouter
-│       └── Routes
-│           ├── /login → LoginPage
-│           ├── /register → RegisterPage
-│           └── /* → ProtectedRoute
-│               └── MainLayout
-│                   ├── Sidebar (navigation)
-│                   └── Content
-│                       ├── /dashboard → DashboardPage
-│                       ├── /customers → CustomersPage
-│                       ├── /quotes → QuotesPage
-│                       ├── /invoices → InvoicesPage
-│                       └── /payments → PaymentsPage
+│   └── MobileBlock (desktop-only gate, ≥1024px)
+│       └── BrowserRouter
+│           └── Routes
+│               ├── /login → LoginPage
+│               ├── /register → RegisterPage
+│               └── /* → ProtectedRoute
+│                   └── MainLayout
+│                       ├── Sidebar (navigation)
+│                       └── Content
+│                           ├── /dashboard → DashboardPage
+│                           ├── /customers → CustomersPage
+│                           ├── /quotes → QuotesPage
+│                           ├── /invoices → InvoicesPage
+│                           └── /payments → PaymentsPage
 ```
 
 ### State Management Strategy
@@ -540,6 +541,7 @@ src/api/
 | Security Headers | Helmet middleware |
 | CORS | Configured for frontend origin |
 | Input Validation | express-validator on all routes |
+| Demo Guard | Read-only mode for demo account (blocks POST/PUT/PATCH/DELETE) |
 
 ---
 
@@ -625,24 +627,24 @@ cd backend && npm run dev   # Port 8888
 cd frontend && npm run dev  # Port 5173
 ```
 
-### Production Architecture
+### Production Architecture (Railway)
+
+Deployed as two services in a single Railway project:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                      Load Balancer                           │
-└─────────────────────────────────────────────────────────────┘
-                    │                    │
-                    ▼                    ▼
-        ┌───────────────────┐  ┌───────────────────┐
-        │  Frontend (Nginx) │  │  Backend (Node)   │
-        │   Static files    │  │   REST API        │
-        │   Port: 80        │  │   Port: 8888      │
-        └───────────────────┘  └───────────────────┘
+│                       Railway Project                        │
+├─────────────────────────┬───────────────────────────────────┤
+│  Frontend Service       │  Backend Service                  │
+│  (Nginx via Dockerfile) │  (Node.js via Dockerfile)         │
+│  Root: /frontend        │  Root: /backend                   │
+│  Serves static SPA      │  REST API                         │
+└─────────────────────────┴───────────────────────────────────┘
                                         │
                                         ▼
                               ┌───────────────────┐
-                              │     MongoDB       │
-                              │   (Replica Set)   │
+                              │  MongoDB Atlas    │
+                              │  (External)       │
                               └───────────────────┘
 ```
 
