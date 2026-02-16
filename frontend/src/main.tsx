@@ -1,10 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
-import { App, ConfigProvider } from "antd";
 import { router } from "@/routes";
+import { App, ConfigProvider } from "antd";
 import { useAuthStore } from "./context/authStore.ts";
 import { setGlobalNotification } from "./utils/globalNotification";
+import MobileBlock from "./components/mobile-block/MobileBlock.tsx";
 import "antd/dist/reset.css";
 import "@/index.css";
 
@@ -32,9 +33,11 @@ function Bootstrap() {
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ConfigProvider>
-      <App>
-        <Bootstrap />
-      </App>
+      <MobileBlock>
+        <App>
+          <Bootstrap />
+        </App>
+      </MobileBlock>
     </ConfigProvider>
   </React.StrictMode>
 );
