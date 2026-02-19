@@ -1,6 +1,6 @@
 # Architecture Documentation
 
-> **My CRM App (Vitesse)** - A full-stack CRM application for managing customers, quotes, invoices, and payments.
+> **Vitesse CRM** - A full-stack CRM application for managing customers, quotes, invoices, and payments.
 
 ## Table of Contents
 
@@ -50,7 +50,7 @@ This is a **monorepo** containing a React frontend and Node.js backend with clea
 ## Project Structure
 
 ```
-my-crm-app/
+vitesse-crm/
 ├── frontend/                 # React SPA
 │   ├── src/
 │   │   ├── api/              # API client and endpoint modules

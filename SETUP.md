@@ -57,11 +57,11 @@ Before you begin, ensure you have the following installed on your system:
 Open your terminal/command prompt and run:
 
 ```bash
-git clone https://github.com/MikeMikeRx/my-crm-app.git
-cd crm-app
+git clone https://github.com/MikeMikeRx/vitesse-crm.git
+cd vitesse-crm
 ```
 
-You should now be in the `crm-app` directory.
+You should now be in the `vitesse-crm` directory.
 
 ---
 
@@ -350,7 +350,7 @@ npm start
 ### Project Structure
 
 ```
-crm-app/
+vitesse-crm/
 ├── backend/
 │   ├── src/
 │   │   ├── server.js          # Entry point
