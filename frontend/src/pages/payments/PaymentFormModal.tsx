@@ -10,7 +10,6 @@ import type { PaymentCreate, Invoice } from "@/types/entities";
 import { handleError } from "@/utils/handleError";
 import { formatAmount } from "@/utils/numberFormat";
 
-/* ----------------------- Schema Definition ----------------------- */
 const schema = z.object({
     paymentId: z.string().min(1, "Payment number required"),
     invoice: z.string().min(1, "Invoice required"),
@@ -28,7 +27,6 @@ interface Props {
     onSuccess: () => void;
 }
 
-// -------------- Payment Form Component -------------------------
 export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
     const [paymentsToday, setPaymentsToday] = useState(0);
     const [remaining, setRemaining] = useState<number | null>(null);
@@ -51,7 +49,6 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
         return `PAY-${today}-${next}`
     }
 
-    /* ---------------------- React Hook Form setup ------------------ */
     const { control, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
         resolver: zodResolver(schema),
         defaultValues: {
@@ -77,7 +74,6 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
         });
     }, [paymentsToday, open, reset]);
 
-    /* -------------- Submit handler ----------- */
     const submit = async (values: FormValues) => {
         try {
             const payload: PaymentCreate = {
@@ -95,19 +91,17 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
         }
     };
 
-    // ----------- Load invoices for dropdown ---------------
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     useEffect(() => {
         listInvoices().then(setInvoices).catch((e) => handleError(e, "Failed to load invoices"));
     }, []);
 
-    // ----------------- JSX ----------------------------------
     return (
         <Modal open={open} title="New Payment" onCancel={onClose} footer={null} destroyOnHidden>
             <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4">
 
                 {/* Invoice number */}
-                <Form.Item label="Invoice" validateStatus={errors.invoice ? "error" : ""}>
+                <Form.Item layout="vertical" label="Invoice" validateStatus={errors.invoice ? "error" : ""}>
                     <Controller name="invoice" control={control} render={({ field }) => (
                         <Select {...field} placeholder="Select invoice"
                             options={invoices.map((inv) => ({
@@ -147,6 +141,7 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
 
                 {/* Payment number */}
                 <Form.Item
+                    layout="vertical"
                     label="Payment number"
                     validateStatus={errors.paymentId ? "error" : ""}
                     help={errors.paymentId?.message}
@@ -162,6 +157,7 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
 
                 {/* Amount */}
                 <Form.Item
+                    layout="vertical"
                     label={remaining != null
                         ? `Amount (Remaining: $${formatAmount(remaining)})`
                         : "Amount"
@@ -173,7 +169,7 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
                 </Form.Item>
 
                 {/* Payment method */}
-                <Form.Item label="Method" validateStatus={errors.paymentMethod ? "error" : ""} help={errors.paymentMethod?.message}>
+                <Form.Item layout="vertical" label="Method" validateStatus={errors.paymentMethod ? "error" : ""} help={errors.paymentMethod?.message}>
                     <Controller name="paymentMethod" control={control} render={({ field }) => (
                         <Select {...field} placeholder="Select method"
                             options={[
@@ -186,14 +182,14 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
                 </Form.Item>
 
                 {/* Date */}
-                <Form.Item label="Payment Date">
+                <Form.Item layout="vertical" label="Payment Date">
                     <Controller name="paymentDate" control={control} render={({ field }) => (
                         <DatePicker {...field} value={dayjs(field.value)} onChange={(d) => field.onChange(d?.format("YYYY-MM-DD"))}/>
                     )}/>
                 </Form.Item>
 
                 {/* Notes */}
-                <Form.Item label="Notes">
+                <Form.Item layout="vertical" label="Notes">
                     <Controller name="notes" control={control} render={({ field }) => <Input.TextArea {...field} rows={3} />} />
                 </Form.Item>
 
