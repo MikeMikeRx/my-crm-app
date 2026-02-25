@@ -67,8 +67,8 @@ export default function DashboardPage() {
             </Row>
 
             {/* --------------------- Overview Section --------------------- */}
-            <Row gutter={[24, 24]} style={{ marginBottom: 32 }}>
-                <Col span={18}>
+            <Row gutter={[24, 24]} style={{ marginBottom: 32, alignItems: "stretch" }}>
+                <Col span={18} style={{ display: "flex" }}>
                     <Card style={{ width: "100%" }} styles={{ body: { padding: "28px 32px" } }}>
                         <Row style={{ alignItems: "stretch" }}>
                             <Col span={8} style={{ paddingRight: 32, borderRight: "1px solid #f0f0f0", display: "flex", flexDirection: "column" }}>
@@ -111,17 +111,17 @@ export default function DashboardPage() {
                     </Card>
                 </Col>
 
-                <Col span={6}>
+                <Col span={6} style={{ display: "flex" }}>
                     <CustomerPreviewCard
                         active={data?.customers?.active}
                         total={data?.customers?.total}
-                        newlyAdded={data?.customers?.new}
+                        newlyAdded={data?.customers?.newCount}
                         loading={loading}
                     />
                 </Col>
             </Row>
 
-            {/* --------------------- Customer Overview Section --------------------- */}
+            {/* --------------------- Customer List Section --------------------- */}
             <Row gutter={[24, 24]}>
                 <Col span={24}>
                     <Card title="Customer Overview" style={{ width: "100%" }}>

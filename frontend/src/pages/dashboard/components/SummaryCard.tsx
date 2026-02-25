@@ -9,7 +9,8 @@ export default function SummaryCard({ title, subtitle, value, loading, color }: 
                 style={{
                     textAlign: "center",
                     marginBottom: "6",
-                    fontSize: 18,
+                    fontSize: "clamp(13px, 1.2vw, 18px)",
+                    fontWeight: "bold",
                 }}
             >
                 {title}
@@ -30,8 +31,8 @@ export default function SummaryCard({ title, subtitle, value, loading, color }: 
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
-                    margin:"0px 10px",
-                    fontSize: 15,
+                    margin:"0px",
+                    fontSize: "clamp(11px, 1vw, 16px)",
                 }}
             >
                 {subtitle}
