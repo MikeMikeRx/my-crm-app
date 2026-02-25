@@ -31,49 +31,28 @@ export default function DashboardPage() {
             .finally(() => setLoading(false));
     }, []);
 
+    const summaryItems = [
+        { title: "Quotes", subtitle: "This Month", value: data?.quotes?.monthSum, color: "#3b82f6" },
+        { title: "Invoices", subtitle: "This Month", value: data?.invoices?.monthSum, color: "#8b5cf6" },
+        { title: "Payments", subtitle: "This Month", value: data?.payments?.monthSum, color: "#10b981" },
+        { title: "Due Balance", subtitle: "Outstanding", value: data?.payments?.dueBalance ?? 0, color: "#ef4444" },
+    ];
+
     return (
         <div style={{ padding: "24px 32px" }}>
             {/*--------------------- Top Section ---------------------*/}
             <Row gutter={[24, 24]} style={{ marginBottom: 32 }}>
-                <Col span={6}>
-                    <SummaryCard
-                        title="Quotes"
-                        subtitle="This Month"
-                        value={`$ ${formatAmount(data?.quotes?.monthSum)}`}
-                        loading={loading}
-                        color="#3b82f6"
-                    />
-                </Col>
-
-                <Col span={6}>
-                    <SummaryCard
-                        title="Invoices"
-                        subtitle="This Month"
-                        value={`$ ${formatAmount(data?.invoices?.monthSum)}`}
-                        loading={loading}
-                        color="#8b5cf6"
-                    />
-                </Col>
-
-                <Col span={6}>
-                    <SummaryCard
-                        title="Payments"
-                        subtitle="This Month"
-                        value={`$ ${formatAmount(data?.payments?.monthSum)}`}
-                        loading={loading}
-                        color="#10b981"
-                    />
-                </Col>
-
-                <Col span={6}>
-                    <SummaryCard
-                        title="Due Balance"
-                        subtitle="Outstanding"
-                        value={`$ ${formatAmount(data?.payments?.dueBalance || 0)}`}
-                        loading={loading}
-                        color="#ef4444"
-                    />
-                </Col>
+                {summaryItems.map((item) => (
+                    <Col span={6} key={item.title}>
+                        <SummaryCard
+                            title={item.title}
+                            subtitle={item.subtitle}
+                            value={`$ ${formatAmount(item.value)}`}
+                            loading={loading}
+                            color={item.color}
+                        />
+                    </Col>
+                ))}
             </Row>
 
             {/* --------------------- Overview Section --------------------- */}
