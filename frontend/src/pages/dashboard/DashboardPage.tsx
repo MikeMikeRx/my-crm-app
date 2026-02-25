@@ -57,19 +57,19 @@ export default function DashboardPage() {
                     <Card style={{ width: "100%" }} styles={{ body: { padding: "28px 32px" } }}>
                         <Row style={{ alignItems: "stretch" }}>
                             <Col span={8} style={colFirst}>
-                                <SectionHeader title="Quote Overview" color="#3b82f6" />
+                                <SectionHeader title="Quote Overview" color="#3b82f6" separator />
                                 <QuotePreviewCard preview={data?.quotes?.preview ?? []} loading={loading} />
                             </Col>
 
                             <Col span={8} style={colMiddle}>
-                                <SectionHeader title="Invoice Overview" color="#8b5cf6" />
+                                <SectionHeader title="Invoice Overview" color="#8b5cf6" separator />
                                 <div style={{ flex: 1, paddingBottom: 30 }}>
                                     <InvoicePreviewCard preview={data?.invoices?.preview ?? []} loading={loading} />
                                 </div>
                             </Col>
 
                             <Col span={8} style={colLast}>
-                                <SectionHeader title="Payment Overview" color="#10b981" />
+                                <SectionHeader title="Payment Overview" color="#10b981" separator />
                                 <div style={{ flex: 1, paddingBottom: 55 }}>
                                     <PaymentPreviewCard preview={data?.payments?.preview ?? []} loading={loading} />
                                 </div>
