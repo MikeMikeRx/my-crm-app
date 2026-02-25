@@ -50,14 +50,14 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
         .reduce((sum, inv) => sum + inv.totals.total, 0);
 
     const invoicePaid = invoices.filter(inv => inv.status === "paid").length;
-    const invoicePartiallyPaid = invoices.filter(inv =>
-        inv.status === "partially_paid" &&
-        !dayjs(inv.dueDate).isBefore(dayjs(), "day")
-    ).length;
-    const invoiceUnpaid = invoices.filter(inv => inv.status === "unpaid").length;
+    const invoicePartiallyPaid = invoices.filter(inv => inv.status === "partially_paid").length;
     const invoiceOverdue = invoices.filter(inv =>
-        inv.status !== "paid" &&
+        inv.status === "unpaid" &&
         dayjs(inv.dueDate).isBefore(dayjs(), "day")
+    ).length;
+    const invoiceUnpaid = invoices.filter(inv =>
+        inv.status === "unpaid" &&
+        !dayjs(inv.dueDate).isBefore(dayjs(), "day")
     ).length;
 
     const invoiceSummary = {
