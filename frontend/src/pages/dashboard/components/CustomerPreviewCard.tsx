@@ -1,4 +1,5 @@
 import { Card, Progress } from "antd";
+import SectionHeader from "./SectionHeader";
 
 interface Props {
     active: number;
@@ -26,10 +27,7 @@ export default function CustomerPreviewCard({
 
     return (
         <Card style={{ width: "100%", height: "100%" }} styles={{ body: { padding: "28px 32px" } }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}>
-                <div style={{ width: 4, height: 22, borderRadius: 2, backgroundColor: "#3b82f6", flexShrink: 0 }} />
-                <span style={{ fontSize: 15, fontWeight: 700, color: "#111827", letterSpacing: "-0.01em" }}>Customer Overview</span>
-            </div>
+            <SectionHeader title="Customer Overview" color="#3b82f6" centered />
 
             {loading ? (
                 <p>Loading...</p>
