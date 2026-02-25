@@ -1,17 +1,6 @@
 import { Progress, Tag } from "antd";
 import { formatAmount } from "@/utils/numberFormat";
-
-interface CustomerDetail {
-    _id: string;
-    name: string;
-    email?: string;
-    company?: string;
-    isActive: boolean;
-    quotes: number;
-    invoices: number;
-    payments: number;
-    outstanding: number;
-}
+import type { CustomerDetail } from "@/api/dashboard";
 
 interface Props {
     customers: CustomerDetail[];

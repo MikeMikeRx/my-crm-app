@@ -10,15 +10,7 @@ import CustomerListCard from "./components/CustomerListCard";
 import SectionHeader from "./components/SectionHeader";
 import { formatAmount } from "@/utils/numberFormat";
 import { handleError } from "@/utils/handleError";
-
-interface DashboardSummary {
-    quotes: { monthSum: number; preview: any };
-    invoices: { monthSum: number; preview: any };
-    payments: { monthSum: number; preview: any; dueBalance: number };
-    customers: { active: number; total: number; newCount: number };
-    customerDetails: any[];
-    customerMaxValues: { quotes: number; invoices: number; payments: number };
-}
+import type { DashboardSummary } from "@/api/dashboard";
 
 export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
@@ -72,7 +64,7 @@ export default function DashboardPage() {
                                 <SectionHeader title="Quote Overview" color="#3b82f6" />
 
                                 <QuotePreviewCard
-                                    preview={data?.quotes?.preview}
+                                    preview={data?.quotes?.preview ?? []}
                                     loading={loading}
                                 />
                             </Col>
@@ -91,7 +83,7 @@ export default function DashboardPage() {
 
                                 <div style={{ flex: 1, paddingBottom: 30 }}>
                                     <InvoicePreviewCard
-                                        preview={data?.invoices?.preview}
+                                        preview={data?.invoices?.preview ?? []}
                                         loading={loading}
                                     />
                                 </div>
@@ -109,7 +101,7 @@ export default function DashboardPage() {
 
                                 <div style={{ flex: 1, paddingBottom: 55 }}>
                                     <PaymentPreviewCard
-                                        preview={data?.payments?.preview}
+                                        preview={data?.payments?.preview ?? []}
                                         loading={loading}
                                     />
                                 </div>
