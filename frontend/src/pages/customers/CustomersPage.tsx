@@ -45,14 +45,14 @@ export default function CustomersPage() {
                 <Space>
                     <Button
                         type="link"
-                        onClick={() => { modal.startEdit(record) }}>
+                        onClick={(e) => { e.stopPropagation(); modal.startEdit(record); }}>
                             Edit
                     </Button>
                     <Popconfirm
                         title="Delete this customer?"
                         onConfirm={() => handleDelete(record._id)}
                         >
-                            <Button type="link" danger>Delete</Button>
+                            <Button type="link" danger onClick={(e) => e.stopPropagation()}>Delete</Button>
                     </Popconfirm>
                 </Space>
             ),
@@ -73,6 +73,10 @@ export default function CustomersPage() {
                 rowKey="_id"
                 loading={loading}
                 pagination={{ pageSize: 10 }}
+                onRow={(record) => ({
+                    onClick: () => modal.startEdit(record),
+                    style: { cursor: "pointer" },
+                })}
             />
 
             <CustomerFormModal

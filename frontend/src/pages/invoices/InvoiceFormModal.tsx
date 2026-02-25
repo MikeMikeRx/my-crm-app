@@ -280,7 +280,7 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
             <Form layout="vertical" onFinish={handleSubmit(submit)}>
 
                 {/* Quote Number */}
-                <Form.Item label="Quote Number">
+                {!editing && <Form.Item label="Quote Number">
                     <Select
                         placeholder="Select a quote"
                         onChange={handleQuoteSelect}
@@ -304,7 +304,7 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
                                 };
                         })}
                     />
-                </Form.Item>
+                </Form.Item>}
 
                 {/* Customer (disabled, auto-filled) */}
                 <Form.Item label="Customer">

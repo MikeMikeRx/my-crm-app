@@ -4,9 +4,9 @@ import { Modal, Form, Input, InputNumber, DatePicker, Button, Select, message } 
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createPayment, listPayments } from "@/api/payments";
+import { createPayment, listPayments, updatePayment } from "@/api/payments";
 import { listInvoices } from "@/api/invoices";
-import type { PaymentCreate, Invoice } from "@/types/entities";
+import type { Payment, PaymentCreate, PaymentUpdate, Invoice } from "@/types/entities";
 import { handleError } from "@/utils/handleError";
 import { formatAmount } from "@/utils/numberFormat";
 
@@ -28,14 +28,15 @@ interface Props {
     open: boolean;
     onClose: () => void;
     onSuccess: () => void;
+    editing: Payment | null;
 }
 
-export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
+export default function PaymentFormModal({ open, onClose, onSuccess, editing }: Props) {
     const [paymentsToday, setPaymentsToday] = useState(0);
     const [remaining, setRemaining] = useState<number | null>(null);
 
     useEffect(() => {
-        if (!open) return;
+        if (!open || editing) return;
 
         listPayments().then((all) => {
             const today = dayjs().format("YYYY-MM-DD");
@@ -44,7 +45,7 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
             ).length;
             setPaymentsToday(count);
         });
-    }, [open]);
+    }, [open, editing]);
 
     const genPaymentId = (countForToday: number) => {
         const today = dayjs().format("YYYYMMDD");
@@ -87,32 +88,58 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
     useEffect(() => {
         if (!open) return;
 
-        reset({
-            paymentId: genPaymentId(paymentsToday),
-            invoice: "",
-            amount: 0,
-            paymentMethod: undefined,
-            paymentDate: dayjs().format("YYYY-MM-DD"),
-            dueDate: undefined,
-            notes: "",
-        });
-    }, [paymentsToday, open, reset]);
+        if (editing) {
+            const invoiceId = typeof editing.invoice === "object" ? editing.invoice._id : editing.invoice;
+            reset({
+                paymentId: editing.paymentId ?? "",
+                invoice: invoiceId,
+                amount: editing.amount,
+                paymentMethod: editing.paymentMethod,
+                paymentDate: editing.paymentDate ?? dayjs().format("YYYY-MM-DD"),
+                dueDate: editing.dueDate,
+                notes: editing.notes ?? "",
+            });
+            setRemaining(null);
+        } else {
+            reset({
+                paymentId: genPaymentId(paymentsToday),
+                invoice: "",
+                amount: 0,
+                paymentMethod: undefined,
+                paymentDate: dayjs().format("YYYY-MM-DD"),
+                dueDate: undefined,
+                notes: "",
+            });
+        }
+    }, [editing, paymentsToday, open, reset]);
 
     const submit = async (values: FormValues) => {
         try {
-            const payload: PaymentCreate = {
-                ...values,
-                paymentMethod: values.paymentMethod as PaymentCreate["paymentMethod"],
-                paymentDate: dayjs(values.paymentDate).format("YYYY-MM-DD"),
-                dueDate: values.dueDate ? dayjs(values.dueDate).format("YYYY-MM-DD") : undefined,
-            };
-            await createPayment(payload);
-            message.success("Payment created");
+            if (editing) {
+                const payload: PaymentUpdate = {
+                    amount: values.amount,
+                    paymentMethod: values.paymentMethod,
+                    paymentDate: dayjs(values.paymentDate).format("YYYY-MM-DD"),
+                    dueDate: values.dueDate ? dayjs(values.dueDate).format("YYYY-MM-DD") : undefined,
+                    notes: values.notes,
+                };
+                await updatePayment(editing._id, payload);
+                message.success("Payment updated");
+            } else {
+                const payload: PaymentCreate = {
+                    ...values,
+                    paymentMethod: values.paymentMethod as PaymentCreate["paymentMethod"],
+                    paymentDate: dayjs(values.paymentDate).format("YYYY-MM-DD"),
+                    dueDate: values.dueDate ? dayjs(values.dueDate).format("YYYY-MM-DD") : undefined,
+                };
+                await createPayment(payload);
+                message.success("Payment created");
+            }
             onSuccess();
             onClose();
             reset();
         } catch (e) {
-            handleError(e, "Failed to create payment");
+            handleError(e, editing ? "Failed to update payment" : "Failed to create payment");
         }
     };
 
@@ -122,11 +149,11 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
     }, []);
 
     return (
-        <Modal open={open} title="New Payment" onCancel={onClose} footer={null} destroyOnHidden>
+        <Modal open={open} title={editing ? "Edit Payment" : "New Payment"} onCancel={onClose} footer={null} destroyOnHidden>
             <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4">
                 <Form.Item layout="vertical" label="Invoice" validateStatus={errors.invoice ? "error" : ""}>
                     <Controller name="invoice" control={control} render={({ field }) => (
-                        <Select {...field} placeholder="Select invoice"
+                        <Select {...field} placeholder="Select invoice" disabled={!!editing}
                             options={invoices.map((inv) => ({
                                 label: `${inv.invoiceNumber} (${typeof inv.customer === "object"
                                     ? (inv.customer.company || inv.customer.name)
@@ -228,7 +255,7 @@ export default function PaymentFormModal({ open, onClose, onSuccess }: Props) {
                 </Form.Item>
 
                 <Button type="primary" htmlType="submit" block>
-                    Add Payment
+                    {editing ? "Update Payment" : "Add Payment"}
                 </Button>
             </form>
         </Modal>

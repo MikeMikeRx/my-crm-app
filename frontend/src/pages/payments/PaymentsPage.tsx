@@ -100,12 +100,17 @@ export default function PaymentsPage() {
                 rowKey="_id"
                 loading={loading}
                 pagination={{ pageSize: 10 }}
+                onRow={(record) => ({
+                    onClick: () => modal.startEdit(record),
+                    style: { cursor: "pointer" },
+                })}
             />
 
             <PaymentFormModal
                 open={modal.open}
                 onClose={modal.close}
                 onSuccess={load}
+                editing={modal.editing}
             />
         </div>
     );

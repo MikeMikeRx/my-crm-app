@@ -1,5 +1,5 @@
 import { api } from "./client";
-import type { Payment, PaymentCreate, ID } from "@/types/entities";
+import type { Payment, PaymentCreate, PaymentUpdate, ID } from "@/types/entities";
 
 export async function listPayments(): Promise<Payment[]> {
   const { data } = await api.get<Payment[]>("/payments");
@@ -16,4 +16,7 @@ export async function createPayment(payload: PaymentCreate): Promise<Payment> {
   return data;
 }
 
-// NOTE: Payment update/delete operations are intentionally not exposed in the frontend.
+export async function updatePayment(id: ID, payload: PaymentUpdate): Promise<Payment> {
+  const { data } = await api.put<Payment>(`/payments/${id}`, payload);
+  return data;
+}

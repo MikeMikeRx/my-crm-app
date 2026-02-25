@@ -96,7 +96,7 @@ export default function InvoicesPage() {
             title: "Actions",
             render: (_, record) => (
                 <Space>
-                    <Button type="link" onClick={() => modal.startEdit(record)}>
+                    <Button type="link" onClick={(e) => { e.stopPropagation(); modal.startEdit(record); }}>
                         Edit
                     </Button>
                 </Space>
@@ -118,6 +118,10 @@ export default function InvoicesPage() {
                 rowKey="_id"
                 loading={loading}
                 pagination={{ pageSize: 10 }}
+                onRow={(record) => ({
+                    onClick: () => modal.startEdit(record),
+                    style: { cursor: "pointer" },
+                })}
             />
 
             <InvoiceFormModal

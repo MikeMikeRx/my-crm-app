@@ -92,6 +92,7 @@ export type PaymentStatus = "completed" | "failed" | "pending";
 
 export interface Payment {
     _id: ID;
+    paymentId?: string;
     user?: ID;
     invoice: ID | (Invoice & { customer? : Customer });
     amount: number;
@@ -113,6 +114,8 @@ export interface PaymentCreate {
     dueDate?: string;
     notes?: string;
 }
+
+export type PaymentUpdate = Partial<Pick<Payment, "amount" | "paymentMethod" | "paymentDate" | "dueDate" | "notes">>;
 
 /* ------------- Components  ------------- */
 
