@@ -7,6 +7,7 @@ import InvoicePreviewCard from "./components/InvoicePreviewCard";
 import PaymentPreviewCard from "./components/PaymentPreviewCard";
 import CustomerPreviewCard from "./components/CustomerPreviewCard";
 import CustomerListCard from "./components/CustomerListCard";
+import SectionHeader from "./components/SectionHeader";
 import { formatAmount } from "@/utils/numberFormat";
 import { handleError } from "@/utils/handleError";
 
@@ -71,23 +72,36 @@ export default function DashboardPage() {
                 <Col span={18} style={{ display: "flex" }}>
                     <Card style={{ width: "100%" }} styles={{ body: { padding: "28px 32px" } }}>
                         <Row style={{ alignItems: "stretch" }}>
-                            <Col span={8} style={{ paddingRight: 32, borderRight: "1px solid #f0f0f0", display: "flex", flexDirection: "column" }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}>
-                                    <div style={{ width: 4, height: 22, borderRadius: 2, backgroundColor: "#3b82f6", flexShrink: 0 }} />
-                                    <span style={{ fontSize: 15, fontWeight: 700, color: "#111827", letterSpacing: "-0.01em" }}>Quote Overview</span>
-                                </div>
+                            <Col
+                                span={8}
+                                style={{
+                                    paddingRight: 32,
+                                    borderRight: "1px solid #f0f0f0",
+                                    display: "flex",
+                                    flexDirection: "column"
+                                }}
+                            >
+                                <SectionHeader title="Quote Overview" color="#3b82f6" />
+
                                 <QuotePreviewCard
                                     preview={data?.quotes?.preview}
                                     loading={loading}
                                 />
                             </Col>
 
-                            <Col span={8} style={{ paddingLeft: 32, paddingRight: 32, borderRight: "1px solid #f0f0f0", display: "flex", flexDirection: "column" }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}>
-                                    <div style={{ width: 4, height: 22, borderRadius: 2, backgroundColor: "#8b5cf6", flexShrink: 0 }} />
-                                    <span style={{ fontSize: 15, fontWeight: 700, color: "#111827", letterSpacing: "-0.01em" }}>Invoice Overview</span>
-                                </div>
-                                <div style={{ flex: 1, paddingTop: 15, paddingBottom: 30 }}>
+                            <Col
+                                span={8}
+                                style={{
+                                    paddingLeft: 32,
+                                    paddingRight: 32,
+                                    borderRight: "1px solid #f0f0f0",
+                                    display: "flex",
+                                    flexDirection: "column"
+                                    }}
+                            >
+                                <SectionHeader title="Invoice Overview" color="#8b5cf6" />
+
+                                <div style={{ flex: 1, paddingBottom: 30 }}>
                                     <InvoicePreviewCard
                                         preview={data?.invoices?.preview}
                                         loading={loading}
@@ -95,12 +109,17 @@ export default function DashboardPage() {
                                 </div>
                             </Col>
 
-                            <Col span={8} style={{ paddingLeft: 32, display: "flex", flexDirection: "column" }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 22 }}>
-                                    <div style={{ width: 4, height: 22, borderRadius: 2, backgroundColor: "#10b981", flexShrink: 0 }} />
-                                    <span style={{ fontSize: 15, fontWeight: 700, color: "#111827", letterSpacing: "-0.01em" }}>Payment Overview</span>
-                                </div>
-                                <div style={{ flex: 1, paddingTop: 12, paddingBottom: 60 }}>
+                            <Col
+                                span={8}
+                                style={{
+                                    paddingLeft: 32,
+                                    display: "flex",
+                                    flexDirection: "column"
+                                }}
+                            >
+                                <SectionHeader title="Payment Overview" color="#10b981" />
+
+                                <div style={{ flex: 1, paddingBottom: 55 }}>
                                     <PaymentPreviewCard
                                         preview={data?.payments?.preview}
                                         loading={loading}
