@@ -26,7 +26,7 @@ Built with Node.js and MongoDB on the backend, and React, TypeScript with Vite o
 
 ---
 
-![Dashboard](./screenshots/0.%20Dashboard.png)  
+![Dashboard](./screenshots/0.Dashboard.png)  
 More screenshots available in `./screenshots`.
 
 ---
