@@ -78,11 +78,18 @@ export default function InvoicesPage() {
             render: (s: InvoiceStatus) => {
                 const colors: Record<InvoiceStatus, string> = {
                     unpaid: "blue",
+                    partially_paid: "orange",
                     paid: "green",
                     overdue: "red",
                 };
+                const labels: Record<InvoiceStatus, string> = {
+                    unpaid: "Unpaid",
+                    partially_paid: "Partially Paid",
+                    paid: "Paid",
+                    overdue: "Overdue",
+                };
 
-                return <Tag color={colors[s]}>{s}</Tag>;
+                return <Tag color={colors[s]}>{labels[s]}</Tag>;
             },
         },
         {

@@ -71,13 +71,14 @@ export const createPayment = asyncHandler(async (req, res) => {
     );
 
     if (totalPaid >= invoiceTotal) {
-        existingInvoice.status = "paid"
+        existingInvoice.status = "paid";
         await existingInvoice.save();
-    } else {
-        if (dayjs(existingInvoice.dueDate).isBefore(dayjs(), "day")) {
-            existingInvoice.status = "overdue";
-            await existingInvoice.save();
-        }
+    } else if (dayjs(existingInvoice.dueDate).isBefore(dayjs(), "day")) {
+        existingInvoice.status = "overdue";
+        await existingInvoice.save();
+    } else if (totalPaid > 0) {
+        existingInvoice.status = "partially_paid";
+        await existingInvoice.save();
     }
 
     res.status(201).json(payment)

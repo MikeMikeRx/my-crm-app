@@ -21,23 +21,27 @@ export default function QuotePreviewCard({ preview = [], loading }: Props) {
 
     return (
         <>
-            {preview.map((item) => (
-                <div key={item.status} style={{ marginBottom: 14 }}>
-                    <div className="flex justify-between text-xs mb-1">
-                        <span>{capitalize(item.status)}</span>
-                        <span> {item.percentage}%</span>
+            {preview.map((item) => {
+                const color = QUOTE_COLORS[item.status as QuoteStatus] || "gray";
+                return (
+                    <div key={item.status} style={{ marginBottom: 16 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                                <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", backgroundColor: color, flexShrink: 0 }} />
+                                <span style={{ fontSize: 13, fontWeight: 500, color: "#374151" }}>{capitalize(item.status)}</span>
+                            </div>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: "#6b7280" }}>{item.percentage}%</span>
+                        </div>
+                        <Progress
+                            percent={item.percentage}
+                            showInfo={false}
+                            strokeWidth={10}
+                            strokeColor={color}
+                            trailColor="#f3f4f6"
+                        />
                     </div>
-
-                    <Progress
-                        percent={item.percentage}
-                        showInfo={false}
-                        size="small"
-                        strokeColor={
-                            QUOTE_COLORS[item.status as QuoteStatus] || "gray"
-                        }
-                    />
-                </div>
-            ))}
+                );
+            })}
         </>
     );
 }

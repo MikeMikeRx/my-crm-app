@@ -50,6 +50,10 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
         .reduce((sum, inv) => sum + inv.totals.total, 0);
 
     const invoicePaid = invoices.filter(inv => inv.status === "paid").length;
+    const invoicePartiallyPaid = invoices.filter(inv =>
+        inv.status === "partially_paid" &&
+        !dayjs(inv.dueDate).isBefore(dayjs(), "day")
+    ).length;
     const invoiceUnpaid = invoices.filter(inv => inv.status === "unpaid").length;
     const invoiceOverdue = invoices.filter(inv =>
         inv.status !== "paid" &&
@@ -63,8 +67,10 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
         totalSum: invoiceTotalSum,
         overdue: invoiceOverdue,
         unpaid: invoiceUnpaid,
+        partiallyPaid: invoicePartiallyPaid,
         preview: [
             { status: "paid", percentage: toPct(invoicePaid, invoiceTotal) },
+            { status: "partially_paid", percentage: toPct(invoicePartiallyPaid, invoiceTotal) },
             { status: "unpaid", percentage: toPct(invoiceUnpaid, invoiceTotal) },
             { status: "overdue", percentage: toPct(invoiceOverdue, invoiceTotal) },
         ],
