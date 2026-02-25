@@ -97,6 +97,7 @@ export interface Payment {
     amount: number;
     paymentMethod: PaymentMethod;
     paymentDate?: string;
+    dueDate?: string;
     status: PaymentStatus;
     notes?: string;
     createdAt?: string;
@@ -109,6 +110,7 @@ export interface PaymentCreate {
     amount: number;
     paymentMethod: PaymentMethod;
     paymentDate?: string;
+    dueDate?: string;
     notes?: string;
 }
 

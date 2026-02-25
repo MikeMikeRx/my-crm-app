@@ -40,6 +40,11 @@ const paymentValidationRules = [
         .isISO8601()
         .withMessage("Invalid payment date format (expected YYYY-MM-DD)"),
 
+    body("dueDate")
+        .optional()
+        .isISO8601()
+        .withMessage("Invalid due date format (expected YYYY-MM-DD)"),
+
     body("notes")
         .optional()
         .trim()

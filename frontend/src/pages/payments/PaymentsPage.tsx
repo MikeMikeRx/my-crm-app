@@ -89,7 +89,7 @@ export default function PaymentsPage() {
     return (
         <div>
             <PageHeader
-                title="Payment"
+                title="Payments"
                 addLabel="+ New Payment"
                 onAdd={ modal.startCreate }
             />

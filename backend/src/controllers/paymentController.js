@@ -30,8 +30,10 @@ export const getPaymentById = asyncHandler(async (req, res) => {
     res.json(payment)
 })
 
+const PENDING_METHODS = ["bank_transfer", "card", "paypal"]
+
 export const createPayment = asyncHandler(async (req, res) => {
-    const { paymentId, invoice, amount, paymentDate, paymentMethod, notes } = req.body
+    const { paymentId, invoice, amount, paymentDate, dueDate, paymentMethod, notes } = req.body
 
     if (!invoice || amount == null || !paymentMethod) {
         return res.status(400).json({ message: "Invoice, amount, and paymentMethod are required" })
@@ -46,6 +48,8 @@ export const createPayment = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: "Invalid invoice ID" })
     }
 
+    const status = PENDING_METHODS.includes(paymentMethod) ? "pending" : "completed"
+
     const payment = await Payment.create({
         user: req.user.id,
         paymentId,
@@ -53,6 +57,8 @@ export const createPayment = asyncHandler(async (req, res) => {
         amount,
         paymentMethod,
         paymentDate,
+        dueDate: PENDING_METHODS.includes(paymentMethod) ? dueDate : undefined,
+        status,
         notes,
     })
 

@@ -37,6 +37,9 @@ const paymentSchema = new mongoose.Schema(
             required: [true, "Payment date is required"],
             default: Date.now,
         },
+        dueDate: {
+            type: Date,
+        },
         notes: {
             type: String,
             trim: true
