@@ -11,9 +11,18 @@ import SectionHeader from "./components/SectionHeader";
 import { formatAmount } from "@/utils/numberFormat";
 import { handleError } from "@/utils/handleError";
 
+interface DashboardSummary {
+    quotes: { monthSum: number; preview: any };
+    invoices: { monthSum: number; preview: any };
+    payments: { monthSum: number; preview: any; dueBalance: number };
+    customers: { active: number; total: number; newCount: number };
+    customerDetails: any[];
+    customerMaxValues: { quotes: number; invoices: number; payments: number };
+}
+
 export default function DashboardPage() {
     const [loading, setLoading] = useState(true);
-    const [data, setData] = useState<any>(null);
+    const [data, setData] = useState<DashboardSummary | null>(null);
 
     useEffect(() => {
         getDashboardSummary()
@@ -132,9 +141,9 @@ export default function DashboardPage() {
 
                 <Col span={6} style={{ display: "flex" }}>
                     <CustomerPreviewCard
-                        active={data?.customers?.active}
-                        total={data?.customers?.total}
-                        newlyAdded={data?.customers?.newCount}
+                        active={data?.customers?.active ?? 0}
+                        total={data?.customers?.total ?? 0}
+                        newlyAdded={data?.customers?.newCount ?? 0}
                         loading={loading}
                     />
                 </Col>
