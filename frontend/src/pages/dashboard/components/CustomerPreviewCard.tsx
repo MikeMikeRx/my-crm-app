@@ -27,7 +27,7 @@ export default function CustomerPreviewCard({
 
     return (
         <Card style={{ width: "100%", height: "100%" }} styles={{ body: { padding: "28px 32px" } }}>
-            <SectionHeader title="Customer Overview" color="#3b82f6" centered />
+            <SectionHeader title="Customer Activity" color="#3b82f6" centered />
 
             {loading ? (
                 <p>Loading...</p>
