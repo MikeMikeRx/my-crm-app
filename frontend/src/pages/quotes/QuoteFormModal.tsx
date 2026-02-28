@@ -1,30 +1,29 @@
-import { useState, useEffect, useMemo } from "react";
-import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
+import { useEffect, useMemo, useState } from "react";
+import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+    Button,
+    Card,
+    DatePicker,
+    Form,
+    Input,
+    InputNumber,
+    message,
+    Modal,
+    Select,
+    Space,
+    Table,
+    Typography
+} from "antd";
+import dayjs from "dayjs";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import dayjs from "dayjs";
 import { listCustomers } from "@/api/customers";
 import { createQuote, listQuotes, updateQuote } from "@/api/quotes";
 import type { Customer, Quote, QuoteCreate, QuoteUpdate } from "@/types/entities";
 import { handleError } from "@/utils/handleError";
 import { formatAmount } from "@/utils/numberFormat";
-import {
-    Modal,
-    Form,
-    Input,
-    InputNumber,
-    Button,
-    DatePicker,
-    Space,
-    message,
-    Select,
-    Table,
-    Card,
-    Typography
-} from "antd";
 
-/* ----------------------- Schema Definition ----------------------- */
 const itemSchema = z.object({
     description: z.string().min(1, "Description required"),
     quantity: z.number().min(1),
@@ -53,12 +52,10 @@ interface Props {
 
 const { Text } = Typography;
 
-/* ------------------------------- Quote Form Component ------------------------------- */
 export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Props) {
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [quotes, setQuotes] = useState<Quote[]>([]);
 
-    // Fetch data
     useEffect(() => {
         listCustomers()
             .then(setCustomers)
@@ -73,16 +70,12 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
             .catch((e) => handleError(e, "Failed to load quotes"));
     },[open,editing]);
 
-    // --- Pre-set Quote Number ---
     const getNextQuoteNumber = () => {
         const today = dayjs().format("YYYYMMDD");
-        
-        // Find quotes for today
         const todayQuotes = quotes.filter(q =>
             q.quoteNumber?.startsWith(`Q-${today}`)
         );
         
-        // First Quote
         if(todayQuotes.length === 0) {
             return `Q-${today}-1001`;
         }
@@ -93,7 +86,7 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
 
         const next = Math.max(...numbers) + 1;
         return `Q-${today}-${String(next).padStart(4, "0")}`;
-    }
+    };
 
     const nextQuoteNumber = useMemo(() => {
         if (!quotes.length) {
@@ -102,7 +95,6 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
         return getNextQuoteNumber();
     }, [quotes.length]);
     
-/* ------------------------------ React Hook Form setup ------------------------------------*/
     const { control, handleSubmit, reset, formState: { errors }, watch } = useForm<FormValues>({
         resolver: zodResolver(schema),
         defaultValues: editing
@@ -126,7 +118,6 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
 
     const { fields, append, remove } = useFieldArray({ control, name: "items" });
 
-    // --- Editing ---
     useEffect(() => {
         if(!open) return;
 
@@ -163,10 +154,8 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
     }, [open, editing, nextQuoteNumber, reset]);
 
     const items = watch("items");
-
     const total = items.reduce((sum, i) => sum + i.quantity * i.unitPrice * (1 + (i.taxRate || 0) /100), 0);
 
-    // ---- Submit handler ---
     const submit = async (values: FormValues) => {
         try {
             const payload: QuoteUpdate | QuoteCreate = {
@@ -180,11 +169,9 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
             };
 
             if (editing) {
-                // --- UPDATE ---
                 await updateQuote(editing._id, payload as QuoteUpdate);
                 message.success("Quote updated");
             } else {
-                // --- CREATE ---
                 await createQuote(payload as QuoteCreate);
                 message.success("Quote created");
             }
@@ -197,7 +184,6 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
         }
     };
 
-    /* --------------------------- AntD Table Columns --------------------------- */
     const columns = [
         {
             title: "Description",
@@ -278,9 +264,14 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
         },
     ];
 
-    /* --------------------------------------- JSX -------------------------------------------------- */
     return (
-        <Modal open={open} title={editing ? "Edit Quote" : "New Quote"} onCancel={onClose} footer={null} destroyOnHidden width={720}>
+        <Modal
+            open={open}
+            title={editing ? "Edit Quote" : "New Quote"}
+            onCancel={onClose}
+            footer={null}
+            destroyOnHidden width={720}
+        >
             <Form
                 layout="vertical"
                 onFinish={handleSubmit(
@@ -291,7 +282,6 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
                     }
                 )}
             >
-                {/* Customer */}
                 <Form.Item
                     label={<span style={{ fontWeight: 450 }}>Customer</span>}
                     validateStatus={errors.customer ? "error" : ""}
@@ -309,7 +299,6 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
                     )}/>
                 </Form.Item>
 
-                {/* Quote Number*/}
                 <Form.Item
                     label={<span style={{ fontWeight: 450 }}>Quote Number</span>}
                     validateStatus={errors.quoteNumber ? "error" : ""}
@@ -323,7 +312,6 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
                     />
                 </Form.Item>
                 
-                {/* Issue/Expire Dates */}
                 <Space className="w-full mb-4" size="middle" align="start">
 
                     <Form.Item
@@ -358,7 +346,6 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
 
                 </Space>
 
-                {/* Add Item */}
                 <h3 className="font-semibold mb-2">Items</h3>
                 <Table
                     columns={columns}
@@ -376,7 +363,6 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
                     Add Item
                 </Button>
 
-                {/* Status Change */}
                 <Form.Item label="Status">
                     <Controller
                         name="status"
@@ -395,7 +381,6 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
                     /> 
                 </Form.Item>
                 
-                {/* Total price + Tax */}
                 <Form.Item noStyle>
                     <Card
                         size="small"
@@ -410,12 +395,10 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
                     </Card>
                 </Form.Item>
 
-                {/* Notes */}
                 <Form.Item label="Notes">
                     <Controller name="notes" control={control} render={({ field }) => <Input.TextArea {...field} rows={3} />} />
                 </Form.Item>
 
-                {/* Create/Update Button */}
                 <Button type="primary" htmlType="submit" block>
                     {editing ? "Update" : "Create"}
                 </Button>

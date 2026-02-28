@@ -1,17 +1,28 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+    Button,
+    Card,
+    DatePicker,
+    Form,
+    Input,
+    InputNumber,
+    message,
+    Modal,
+    Select,
+    Space,
+    Table,
+    Typography
+} from "antd";
 import dayjs from "dayjs";
-import { Modal, Form, Input, InputNumber, DatePicker, Button, Space, message, Select, Table, Card, Typography } from "antd";
-import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { createInvoice, updateInvoice } from "@/api/invoices";
-import { listQuotes, getQuote } from "@/api/quotes";
-import type { Invoice, InvoiceCreate, Quote, LineItem } from "@/types/entities";
+import { getQuote, listQuotes } from "@/api/quotes";
+import type { Invoice, InvoiceCreate, LineItem, Quote } from "@/types/entities";
 import { handleError } from "@/utils/handleError";
 import { formatAmount } from "@/utils/numberFormat";
-
-/* ----------------------- Schema Definition ----------------------- */
 
 const itemSchema = z.object({
     description: z.string().min(1),
@@ -34,30 +45,24 @@ type FormValues = z.infer<typeof schema>;
 
 const { Text } = Typography;
 
-// Extract the quote suffix
 const exractQuoteSuffix = (quoteNumber: string) => {
     const parts = quoteNumber.split("-");
     return parts[2] || Math.floor(1000 + Math.random() * 9000).toString();
 };
 
-/* ----------------------- Component Props ----------------------- */
 interface Props {
     open: boolean;
     onClose: () => void;
     onSuccess: () => void;
     editing: Invoice | null;
 }
-/* ----------------------- Ivoice Form Component ----------------------- */
 export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: Props) {
-    
-    // Generate invoice number with quote number suffix
-    const genInvoiceNumber = (suffix?: string) => {
+        const genInvoiceNumber = (suffix?: string) => {
         const today = dayjs().format("YYYYMMDD");
         const code = suffix ?? "XXXX";
         return `INV-${today}-${code}`;
     };
 
-    /* ---------------------- React Hook Form setup ------------------ */
     const { control, handleSubmit, reset, watch, formState: { errors } } = useForm<FormValues>({
         resolver: zodResolver(schema),
         defaultValues: editing
@@ -86,13 +91,11 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
     const { fields, append, remove } = useFieldArray({ control, name: "items" });
     const items = watch("items");
     
-    // Live total calculation
     const total = useMemo(() => 
         items.reduce((sum, i) =>
             sum + (i.quantity || 0) * (i.unitPrice || 0) * (1 + (i.taxRate || 0) /100),
         0), [items]);
 
-    // Edit mode setup
     useEffect(() => {
         if (editing) {
             reset({
@@ -109,7 +112,6 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
         }
     }, [editing, reset])
 
-    // --------------------- Quotes Dropdown ----------------------------------
     const [quotes, setQuotes] = useState<Quote[]>([]);
     useEffect(() => {
         listQuotes().then(setQuotes).catch((e) => handleError(e, "Failed to load quotes"));
@@ -148,7 +150,6 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
         }
     };
 
-    // --------------------- Customer Auto-fill ----------------------------------
     const customerName = useMemo(() => {
         if (editing && typeof editing.customer === "object") {
             return editing.customer.company ?? editing.customer.name ?? "";
@@ -165,7 +166,6 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
         return "";
     }, [editing, watch("customer"), quotes]);
     
-    /* ------------------- Submit handler ---------------------- */
     const submit = async (values: FormValues) => {
         try {
             const payload: InvoiceCreate = {
@@ -187,7 +187,6 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
         }
     };
 
-    /* --------------------------- AntD Table Columns --------------------------- */
     const columns = [
         {
             title: "Description",
@@ -268,7 +267,6 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
         },
     ];
     
-    /* ----------------------- JSX ----------------------- */
     return (
         <Modal
             open={open}
@@ -278,8 +276,6 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
             destroyOnHidden
         >
             <Form layout="vertical" onFinish={handleSubmit(submit)}>
-
-                {/* Quote Number */}
                 {!editing && <Form.Item label="Quote Number">
                     <Select
                         placeholder="Select a quote"
@@ -306,19 +302,15 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
                     />
                 </Form.Item>}
 
-                {/* Customer (disabled, auto-filled) */}
                 <Form.Item label="Customer">
                     <Input value={customerName} readOnly />
                 </Form.Item>
 
-                {/* Invoice Number */}
                 <Form.Item label="Invoice Number" validateStatus={errors.invoiceNumber ? "error" : ""} help={errors.invoiceNumber?.message}>
                     <Controller name="invoiceNumber" control={control} render={({ field }) => <Input { ...field } />} />
                 </Form.Item>
 
-                {/* Issue/ Due Date */}
                 <Space className="w-full mb-4" size="middle" align="start">
-
                     <Form.Item
                         label={<span style={{ fontWeight: 450 }}>Issue Date</span>}
                         validateStatus={errors.issueDate ? "error" : ""}
@@ -343,10 +335,8 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
                                 />
                             }/>
                     </Form.Item>
-
                 </Space>
 
-                {/* Items */}
                 <h3 className="font-semibold mb-2">Items</h3>
 
                 <Table
@@ -368,7 +358,6 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
                     Add Item
                 </Button>
 
-                {/* Total */}
                 <Form.Item noStyle>
                     <Card
                         size="small"
@@ -385,7 +374,6 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
                     </Card>
                 </Form.Item>
 
-                {/* Notes */}
                 <Form.Item label="Notes">
                     <Controller
                         name="notes"
@@ -395,7 +383,6 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
                     />
                 </Form.Item>
 
-                {/* Submit */}
                 <Button type="primary" htmlType="submit" block>
                     {editing ? "Update Invoice" : "Create Invoice"}
                 </Button>
