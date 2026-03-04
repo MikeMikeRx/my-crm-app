@@ -16,6 +16,8 @@ import {
     Typography
 } from "antd";
 import dayjs from "dayjs";
+import { formatFormDate, todayForm, todayDoc, toDayjs, FORM_DATE_FMT } from "@/utils/dateFormat";
+import { dateString } from "@/utils/dateSchema";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { createInvoice, updateInvoice } from "@/api/invoices";
@@ -35,8 +37,8 @@ const schema = z.object({
     customer: z.string().min(1, "Customer ID required"),
     quote: z.string().optional(),
     invoiceNumber: z.string().min(1, "Invoice number required"),
-    issueDate: z.any(),
-    dueDate: z.any(),
+    issueDate: dateString,
+    dueDate: dateString,
     items: z.array(itemSchema).min(1, "Add at least one item"),
     notes: z.string().optional(),
 });
@@ -58,7 +60,7 @@ interface Props {
 }
 export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: Props) {
         const genInvoiceNumber = (suffix?: string) => {
-        const today = dayjs().format("YYYYMMDD");
+        const today = todayDoc();
         const code = suffix ?? "XXXX";
         return `INV-${today}-${code}`;
     };
@@ -80,8 +82,8 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
         : {
             customer: "",
             invoiceNumber: genInvoiceNumber(),
-            issueDate: dayjs().format("YYYY-MM-DD"),
-            dueDate: dayjs().add(14, "day").format("YYYY-MM-DD"),
+            issueDate: todayForm(),
+            dueDate: dayjs().add(14, "day").format(FORM_DATE_FMT),
             items: [],
             notes: "",
             quote: undefined,
@@ -138,8 +140,8 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
                     ? (quote.customer as { _id: string })._id
                     : (quote.customer as string) || "",
                 invoiceNumber: genInvoiceNumber(suffix),
-                issueDate: dayjs().format("YYYY-MM-DD"),
-                dueDate: dayjs().add(14, "day").format("YYYY-MM-DD"),
+                issueDate: todayForm(),
+                dueDate: dayjs().add(14, "day").format(FORM_DATE_FMT),
                 items: quote.items as LineItem[],
                 notes: quote.notes || "",
                 quote: quoteId,
@@ -170,8 +172,8 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
         try {
             const payload: InvoiceCreate = {
                 ...values,
-                issueDate: dayjs(values.issueDate).format("YYYY-MM-DD"),
-                dueDate: dayjs(values.dueDate).format("YYYY-MM-DD"),
+                issueDate: formatFormDate(values.issueDate),
+                dueDate: formatFormDate(values.dueDate),
             };
             if (editing) {
                 await updateInvoice(editing._id, payload);
@@ -315,10 +317,16 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
                         label={<span style={{ fontWeight: 450 }}>Issue Date</span>}
                         validateStatus={errors.issueDate ? "error" : ""}
                         help={typeof errors.issueDate?.message === "string" ? errors.issueDate.message : ""}
-                        >
+                    >
                             <Controller name="issueDate" control={control} render={({ field }) =>
-                                <DatePicker {...field} value={field.value ? dayjs(field.value) : null } onChange={(d) => field.onChange(d?.format("YYYY-MM-DD"))} />
-                            } />
+                                (
+                                    <DatePicker
+                                        {...field}
+                                        value={toDayjs(field.value)}
+                                        onChange={(d) => field.onChange(d ? formatFormDate(d) : undefined)}
+                                    />
+                                )}
+                            />
                     </Form.Item>
 
                     <Form.Item
@@ -327,13 +335,14 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
                         help={typeof errors.dueDate?.message === "string" ? errors.dueDate.message : ""}
                         >
                             <Controller name="dueDate" control={control} render={({ field }) =>
-                                <DatePicker
-                                    {...field}
-                                    value={field.value ? dayjs(field.value) : null } onChange={(d) =>
-                                        field.onChange(d?.format("YYYY-MM-DD"))
-                                    }
-                                />
-                            }/>
+                                (
+                                    <DatePicker
+                                        {...field}
+                                        value={toDayjs(field.value)}
+                                        onChange={(d) => field.onChange(d ? formatFormDate(d) : undefined)}
+                                    />
+                                )}
+                            />
                     </Form.Item>
                 </Space>
 

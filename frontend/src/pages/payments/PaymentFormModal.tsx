@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
+import { formatFormDate, todayForm, todayDoc, toDayjs, FORM_DATE_FMT } from "@/utils/dateFormat";
+import { dateString, optionalDateString } from "@/utils/dateSchema";
 import { Modal, Form, Input, InputNumber, DatePicker, Button, Select, message } from "antd";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -17,8 +19,8 @@ const schema = z.object({
     invoice: z.string().min(1, "Invoice required"),
     amount: z.number().min(0.01, "Amount required"),
     paymentMethod: z.enum(["bank_transfer", "card", "cash", "paypal"]),
-    paymentDate: z.any(),
-    dueDate: z.any().optional(),
+    paymentDate: dateString,
+    dueDate: optionalDateString,
     notes: z.string().optional(),
 });
 
@@ -39,16 +41,16 @@ export default function PaymentFormModal({ open, onClose, onSuccess, editing }: 
         if (!open || editing) return;
 
         listPayments().then((all) => {
-            const today = dayjs().format("YYYY-MM-DD");
+            const today = todayForm();
             const count = all.filter(
-                p => p.paymentDate && dayjs(p.paymentDate).format("YYYY-MM-DD") === today
+                p => p.paymentDate && formatFormDate(p.paymentDate) === today
             ).length;
             setPaymentsToday(count);
         });
     }, [open, editing]);
 
     const genPaymentId = (countForToday: number) => {
-        const today = dayjs().format("YYYYMMDD");
+        const today = todayDoc();
         const next = String(countForToday + 1).padStart(3, "0");
         return `PAY-${today}-${next}`
     }
@@ -60,7 +62,7 @@ export default function PaymentFormModal({ open, onClose, onSuccess, editing }: 
             invoice: "",
             amount: 0,
             paymentMethod: undefined,
-            paymentDate: dayjs().format("YYYY-MM-DD"),
+            paymentDate: todayForm(),
             dueDate: undefined,
             notes: "",
         },
@@ -73,7 +75,7 @@ export default function PaymentFormModal({ open, onClose, onSuccess, editing }: 
     useEffect(() => {
         if (isPendingMethod) {
             const base = paymentDate ? dayjs(paymentDate) : dayjs();
-            setValue("dueDate", base.add(3, "day").format("YYYY-MM-DD"));
+            setValue("dueDate", base.add(3, "day").format(FORM_DATE_FMT));
         } else {
             setValue("dueDate", undefined);
         }
@@ -81,7 +83,7 @@ export default function PaymentFormModal({ open, onClose, onSuccess, editing }: 
 
     useEffect(() => {
         if (isPendingMethod && paymentDate) {
-            setValue("dueDate", dayjs(paymentDate).add(3, "day").format("YYYY-MM-DD"));
+            setValue("dueDate", dayjs(paymentDate).add(3, "day").format(FORM_DATE_FMT));
         }
     }, [paymentDate]);
 
@@ -95,7 +97,7 @@ export default function PaymentFormModal({ open, onClose, onSuccess, editing }: 
                 invoice: invoiceId,
                 amount: editing.amount,
                 paymentMethod: editing.paymentMethod,
-                paymentDate: editing.paymentDate ?? dayjs().format("YYYY-MM-DD"),
+                paymentDate: editing.paymentDate ?? todayForm(),
                 dueDate: editing.dueDate,
                 notes: editing.notes ?? "",
             });
@@ -106,7 +108,7 @@ export default function PaymentFormModal({ open, onClose, onSuccess, editing }: 
                 invoice: "",
                 amount: 0,
                 paymentMethod: undefined,
-                paymentDate: dayjs().format("YYYY-MM-DD"),
+                paymentDate: todayForm(),
                 dueDate: undefined,
                 notes: "",
             });
@@ -119,8 +121,8 @@ export default function PaymentFormModal({ open, onClose, onSuccess, editing }: 
                 const payload: PaymentUpdate = {
                     amount: values.amount,
                     paymentMethod: values.paymentMethod,
-                    paymentDate: dayjs(values.paymentDate).format("YYYY-MM-DD"),
-                    dueDate: values.dueDate ? dayjs(values.dueDate).format("YYYY-MM-DD") : undefined,
+                    paymentDate: formatFormDate(values.paymentDate),
+                    dueDate: values.dueDate ? formatFormDate(values.dueDate) : undefined,
                     notes: values.notes,
                 };
                 await updatePayment(editing._id, payload);
@@ -129,8 +131,8 @@ export default function PaymentFormModal({ open, onClose, onSuccess, editing }: 
                 const payload: PaymentCreate = {
                     ...values,
                     paymentMethod: values.paymentMethod as PaymentCreate["paymentMethod"],
-                    paymentDate: dayjs(values.paymentDate).format("YYYY-MM-DD"),
-                    dueDate: values.dueDate ? dayjs(values.dueDate).format("YYYY-MM-DD") : undefined,
+                    paymentDate: formatFormDate(values.paymentDate),
+                    dueDate: values.dueDate ? formatFormDate(values.dueDate) : undefined,
                 };
                 await createPayment(payload);
                 message.success("Payment created");
@@ -229,9 +231,15 @@ export default function PaymentFormModal({ open, onClose, onSuccess, editing }: 
                 </Form.Item>
 
                 <Form.Item layout="vertical" label="Payment Date">
-                    <Controller name="paymentDate" control={control} render={({ field }) => (
-                        <DatePicker {...field} value={dayjs(field.value)} onChange={(d) => field.onChange(d?.format("YYYY-MM-DD"))}/>
-                    )}/>
+                    <Controller name="paymentDate" control={control} render={({ field }) =>
+                        (
+                            <DatePicker
+                                {...field}
+                                value={toDayjs(field.value)}
+                                onChange={(d) => field.onChange(d ? formatFormDate(d) : undefined)}
+                            />
+                        )}
+                    />
                 </Form.Item>
 
                 {isPendingMethod && (
@@ -240,13 +248,15 @@ export default function PaymentFormModal({ open, onClose, onSuccess, editing }: 
                         label="Due Date"
                         extra="Payment will remain pending until this date"
                     >
-                        <Controller name="dueDate" control={control} render={({ field }) => (
-                            <DatePicker
-                                {...field}
-                                value={field.value ? dayjs(field.value) : null}
-                                onChange={(d) => field.onChange(d?.format("YYYY-MM-DD"))}
-                            />
-                        )}/>
+                        <Controller name="dueDate" control={control} render={({ field }) =>
+                            (
+                                <DatePicker
+                                    {...field}
+                                    value={toDayjs(field.value)}
+                                    onChange={(d) => field.onChange(d ? formatFormDate(d) : undefined)}
+                                />
+                            )}
+                        />
                     </Form.Item>
                 )}
 

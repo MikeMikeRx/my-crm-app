@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import dayjs from "dayjs";
 import { Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { listPayments } from "@/api/payments";
 import type { Payment } from "@/types/entities";
 import PaymentFormModal from "./PaymentFormModal";
 import { formatAmount } from "@/utils/numberFormat";
+import { formatFormDate } from "@/utils/dateFormat";
 import { handleError } from "@/utils/handleError";
 import PageHeader from "@/components/PageHeader";
 import { useCrudModal } from "@/hooks/useCrudModal";
@@ -75,7 +75,7 @@ export default function PaymentsPage() {
         {
             title: "Date",
             dataIndex: "paymentDate",
-            render: (v) => (v ? dayjs(v).format("YYYY-MM-DD") : "-"),
+            render: (v) => formatFormDate(v) || "-",
         },
         {
             title: "Status",

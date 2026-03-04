@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import dayjs from "dayjs"
 import { Table, Button, Space, Popconfirm, Tag, message } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { listQuotes, deleteQuote } from "@/api/quotes";
 import type { Quote, LineItem, QuoteStatus } from "@/types/entities";
 import QuoteFormModal from "./QuoteFormModal";
 import { formatAmount } from "@/utils/numberFormat";
+import { formatFormDate } from "@/utils/dateFormat";
 import { handleError } from "@/utils/handleError";
 import PageHeader from "@/components/PageHeader";
 import { useCrudModal } from "@/hooks/useCrudModal";
@@ -57,12 +57,12 @@ export default function QuotesPage() {
         { 
             title: "Issue Date",
             dataIndex: "issueDate",
-            render: (v) => (v ? dayjs(v).format("YYYY-MM-DD") : "-"),
+            render: (v) => formatFormDate(v) || "-",
         },
         { 
             title: "Expiry Date",
             dataIndex: "expiryDate",
-            render: (v) => (v ? dayjs(v).format("YYYY-MM-DD") : "-"),
+            render: (v) => formatFormDate(v) || "-",
         },
         { 
             title: "Total",

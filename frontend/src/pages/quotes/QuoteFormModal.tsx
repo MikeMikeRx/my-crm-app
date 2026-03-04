@@ -16,6 +16,8 @@ import {
     Typography
 } from "antd";
 import dayjs from "dayjs";
+import { formatFormDate, todayForm, todayDoc, toDayjs, FORM_DATE_FMT } from "@/utils/dateFormat";
+import { dateString } from "@/utils/dateSchema";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { listCustomers } from "@/api/customers";
@@ -34,8 +36,8 @@ const itemSchema = z.object({
 const schema = z.object({
     customer: z.string().min(1, "Customer ID required"),
     quoteNumber: z.string().min(1, "Quote number required"),
-    issueDate: z.string().min(1, "Issue date required"),
-    expiryDate: z.string().min(1, "Expiry date required"),
+    issueDate: dateString,
+    expiryDate: dateString,
     notes: z.string().optional(),
     status: z.enum(["draft", "sent", "accepted", "declined"]),
     items: z.array(itemSchema).min(1, "At least one item required"),
@@ -71,7 +73,7 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
     },[open,editing]);
 
     const getNextQuoteNumber = () => {
-        const today = dayjs().format("YYYYMMDD");
+        const today = todayDoc();
         const todayQuotes = quotes.filter(q =>
             q.quoteNumber?.startsWith(`Q-${today}`)
         );
@@ -90,7 +92,7 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
 
     const nextQuoteNumber = useMemo(() => {
         if (!quotes.length) {
-            return `Q-${dayjs().format("YYYYMMDD")}-1001`;
+            return `Q-${todayDoc()}-1001`;
         };
         return getNextQuoteNumber();
     }, [quotes.length]);
@@ -128,10 +130,8 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
                         ? (editing.customer as { _id: string })._id
                         : (editing.customer as string) || "",
                 quoteNumber: editing.quoteNumber,
-                issueDate: dayjs(editing.issueDate).format("YYYY-MM-DD"),
-                expiryDate: editing.expiryDate
-                    ? dayjs(editing.expiryDate).format("YYYY-MM-DD")
-                    : "",
+                issueDate: formatFormDate(editing.issueDate),
+                expiryDate: formatFormDate(editing.expiryDate),
                 status:
                     editing.status === "expired" || editing.status === "converted"
                        ? "draft"
@@ -145,8 +145,8 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
         reset({
             customer: "",
             quoteNumber: nextQuoteNumber,
-            issueDate: dayjs().format("YYYY-MM-DD"),
-            expiryDate: dayjs().add(1, 'year').format("YYYY-MM-DD"),
+            issueDate: todayForm(),
+            expiryDate: dayjs().add(1, "year").format(FORM_DATE_FMT),
             status: "draft",
             items: [{ description: "", quantity: 1,unitPrice: 0, taxRate: 20 }],
             notes: "",
@@ -319,11 +319,12 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
                         validateStatus={errors.issueDate ? "error" : ""}
                         help={typeof errors.issueDate?.message === "string" ? errors.issueDate.message : ""}
                     >
-                    <Controller name="issueDate" control={control} render={({ field }) => (
-                        <DatePicker
-                            {...field}
-                            value={field.value ? dayjs(field.value) : null}
-                            onChange={(d) => field.onChange(d ? d.toISOString() : "")}
+                    <Controller name="issueDate" control={control} render={({ field }) =>
+                        (
+                            <DatePicker
+                                {...field}
+                                value={toDayjs(field.value)}
+                                onChange={(d) => field.onChange(d ? formatFormDate(d) : undefined)}
                             />
                         )}
                     />
@@ -334,11 +335,12 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
                         validateStatus={errors.expiryDate ? "error" : ""}
                         help={typeof errors.expiryDate?.message === "string" ? errors.expiryDate.message : ""}
                     >
-                        <Controller name="expiryDate" control={control} render={({ field }) => (
-                            <DatePicker
-                                {...field}
-                                value={field.value ? dayjs(field.value) : null}
-                                onChange={(d) => field.onChange(d ? d.toISOString() : "")}
+                        <Controller name="expiryDate" control={control} render={({ field }) =>
+                            (
+                                <DatePicker
+                                    {...field}
+                                    value={toDayjs(field.value)}
+                                    onChange={(d) => field.onChange(d ? formatFormDate(d) : undefined)}
                                 />
                             )}
                         />

@@ -1,11 +1,11 @@
 import { useEffect,useState } from "react";
-import dayjs from "dayjs";
 import { Table, Button, Space, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { listInvoices } from "@/api/invoices";
 import type { Invoice, InvoiceStatus, LineItem } from "@/types/entities";
 import InvoiceFormModal from "./InvoiceFormModal"
 import { formatAmount } from "@/utils/numberFormat";
+import { formatFormDate } from "@/utils/dateFormat";
 import { handleError } from "@/utils/handleError";
 import PageHeader from "@/components/PageHeader";
 import { useCrudModal } from "@/hooks/useCrudModal";
@@ -53,12 +53,12 @@ export default function InvoicesPage() {
         { 
             title: "Issue Date",
             dataIndex: "issueDate",
-            render: (v) => (v ? dayjs(v).format("YYYY-MM-DD") : "-"),
+            render: (v) => formatFormDate(v) || "-",
         },
-        { 
+        {
             title: "Due Date",
             dataIndex: "dueDate",
-            render: (v) => (v ? dayjs(v).format("YYYY-MM-DD") : "-"),
+            render: (v) => formatFormDate(v) || "-",
         },
         {
             title: "Subtotal",
