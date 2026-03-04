@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { formatFormDate, todayForm, todayDoc, toDayjs, FORM_DATE_FMT } from "@/utils/dateFormat";
 import { dateString, optionalDateString } from "@/utils/dateSchema";
@@ -13,6 +13,19 @@ import { handleError } from "@/utils/handleError";
 import { formatAmount } from "@/utils/numberFormat";
 
 const PENDING_METHODS = ["bank_transfer", "card", "paypal"] as const;
+
+const PAYMENT_METHOD_OPTIONS = [
+    { label: "Bank Transfer", value: "bank_transfer" },
+    { label: "Card", value: "card" },
+    { label: "Cash", value: "cash" },
+    { label: "PayPal", value: "paypal" },
+];
+
+const genPaymentId = (countForToday: number) => {
+    const today = todayDoc();
+    const next = String(countForToday + 1).padStart(3, "0");
+    return `PAY-${today}-${next}`;
+};
 
 const schema = z.object({
     paymentId: z.string().min(1, "Payment number required"),
@@ -49,12 +62,6 @@ export default function PaymentFormModal({ open, onClose, onSuccess, editing }: 
         });
     }, [open, editing]);
 
-    const genPaymentId = (countForToday: number) => {
-        const today = todayDoc();
-        const next = String(countForToday + 1).padStart(3, "0");
-        return `PAY-${today}-${next}`
-    }
-
     const { control, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormValues>({
         resolver: zodResolver(schema),
         defaultValues: {
@@ -73,19 +80,12 @@ export default function PaymentFormModal({ open, onClose, onSuccess, editing }: 
     const isPendingMethod = PENDING_METHODS.includes(paymentMethod as typeof PENDING_METHODS[number]);
 
     useEffect(() => {
-        if (isPendingMethod) {
-            const base = paymentDate ? dayjs(paymentDate) : dayjs();
-            setValue("dueDate", base.add(3, "day").format(FORM_DATE_FMT));
-        } else {
-            setValue("dueDate", undefined);
-        }
-    }, [paymentMethod]);
-
-    useEffect(() => {
         if (isPendingMethod && paymentDate) {
             setValue("dueDate", dayjs(paymentDate).add(3, "day").format(FORM_DATE_FMT));
+        } else if (!isPendingMethod) {
+            setValue("dueDate", undefined);
         }
-    }, [paymentDate]);
+    }, [isPendingMethod, paymentDate, setValue]);
 
     useEffect(() => {
         if (!open) return;
@@ -150,19 +150,23 @@ export default function PaymentFormModal({ open, onClose, onSuccess, editing }: 
         listInvoices().then(setInvoices).catch((e) => handleError(e, "Failed to load invoices"));
     }, []);
 
+    const invoiceOptions = useMemo(() =>
+        invoices.map((inv) => {
+            const customerName =
+                typeof inv.customer === "object"
+                    ? (inv.customer.company || inv.customer.name || "Unknown")
+                    : (inv.customer || "Unknown");
+            return { label: `${inv.invoiceNumber} (${customerName})`, value: inv._id };
+        })
+    , [invoices]);
+
     return (
         <Modal open={open} title={editing ? "Edit Payment" : "New Payment"} onCancel={onClose} footer={null} destroyOnHidden>
             <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4">
                 <Form.Item layout="vertical" label="Invoice" validateStatus={errors.invoice ? "error" : ""}>
                     <Controller name="invoice" control={control} render={({ field }) => (
                         <Select {...field} placeholder="Select invoice" disabled={!!editing}
-                            options={invoices.map((inv) => ({
-                                label: `${inv.invoiceNumber} (${typeof inv.customer === "object"
-                                    ? (inv.customer.company || inv.customer.name)
-                                    : ""
-                                })`,
-                                value: inv._id,
-                            }))}
+                            options={invoiceOptions}
                             onChange={async (invId) => {
                                 field.onChange(invId);
 
@@ -219,15 +223,13 @@ export default function PaymentFormModal({ open, onClose, onSuccess, editing }: 
                 </Form.Item>
 
                 <Form.Item layout="vertical" label="Method" validateStatus={errors.paymentMethod ? "error" : ""} help={errors.paymentMethod?.message}>
-                    <Controller name="paymentMethod" control={control} render={({ field }) => (
-                        <Select {...field} placeholder="Select method"
-                            options={[
-                                { label: "Bank Transfer", value: "bank_transfer" },
-                                { label: "Card", value: "card" },
-                                { label: "Cash", value: "cash"},
-                                { label: "PayPal", value: "paypal"},
-                            ]}/>
-                    )}/>
+                    <Controller name="paymentMethod" control={control} render={({ field }) =>
+                        (
+                            <Select {...field} placeholder="Select method"
+                                options={PAYMENT_METHOD_OPTIONS}
+                            />
+                        )}
+                    />
                 </Form.Item>
 
                 <Form.Item layout="vertical" label="Payment Date">

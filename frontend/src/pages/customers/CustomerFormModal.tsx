@@ -24,6 +24,8 @@ interface Props {
     editing: Customer | null;
 }
 
+const CUSTOMER_FIELDS = ["name", "email", "phone", "company", "address"] as const;
+
 export default function CustomerFormModal({ open, onClose, onSuccess, editing }: Props) {
     const { control, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
         resolver: zodResolver(schema),
@@ -60,7 +62,7 @@ export default function CustomerFormModal({ open, onClose, onSuccess, editing }:
             destroyOnHidden
         >
             <Form layout="vertical" onFinish={handleSubmit(submit)}>
-                {(["name", "email", "phone", "company", "address"] as const).map((field) => (
+                {CUSTOMER_FIELDS.map((field) => (
                     <Form.Item
                         key={field}
                         label={field.charAt(0).toLocaleUpperCase() + field.slice(1)}

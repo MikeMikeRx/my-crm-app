@@ -13,12 +13,13 @@ import {
     Select,
     Space,
     Table,
-    Typography
+    Typography,
+    type TableColumnsType,
 } from "antd";
 import dayjs from "dayjs";
 import { formatFormDate, todayForm, todayDoc, toDayjs, FORM_DATE_FMT } from "@/utils/dateFormat";
 import { dateString } from "@/utils/dateSchema";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm, type FieldArrayWithId } from "react-hook-form";
 import { z } from "zod";
 import { listCustomers } from "@/api/customers";
 import { createQuote, listQuotes, updateQuote } from "@/api/quotes";
@@ -184,17 +185,17 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
         }
     };
 
-    const columns = [
+    const columns = useMemo<TableColumnsType<FieldArrayWithId<FormValues, "items", "id">>>(() => [
         {
             title: "Description",
             dataIndex: "description",
             width: 130,
-            render: (_: any, __: any, idx: number) => (
+            render: (_, __, idx) => (
                 <Controller
                     name={`items.${idx}.description`}
                     control={control}
                     render={({ field }) =>
-                        <Input 
+                        <Input
                             value={field.value ?? ""}
                             placeholder="Description"
                             onChange={(e) => field.onChange(e.target.value)}
@@ -207,11 +208,11 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
             title: "Qty",
             dataIndex: "quantity",
             width: 100,
-            render: (_: any, __: any, idx: number) => (
+            render: (_, __, idx) => (
                 <Controller
                     name={`items.${idx}.quantity`}
                     control={control}
-                    render={({ field }) => 
+                    render={({ field }) =>
                         <InputNumber
                             value={field.value ?? 0}
                             min={1} onChange={(v) =>field.onChange(v)}
@@ -224,7 +225,7 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
             title: "Price",
             dataIndex: "unitPrice",
             width: 100,
-            render: (_: any, __: any, idx: number) => (
+            render: (_, __, idx) => (
                 <Controller
                     name={`items.${idx}.unitPrice`}
                     control={control}
@@ -238,15 +239,15 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
             title: "Tax %",
             dataIndex: "taxRate",
             width: 100,
-            render: (_: any, __: any, idx: number) => (
+            render: (_, __, idx) => (
                 <Controller
                     name={`items.${idx}.taxRate`}
                     control={control}
                     render={({ field }) =>
                         <InputNumber
-                        value={field.value ?? 0}
-                        min={0} max={100}
-                        onChange={(v) => field.onChange(v)}
+                            value={field.value ?? 0}
+                            min={0} max={100}
+                            onChange={(v) => field.onChange(v)}
                         />
                     }
                 />
@@ -255,14 +256,14 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
         {
             title: "",
             width: 50,
-            render: (_: any, __: any, idx: number) => (
+            render: (_, __, idx) => (
                 <Button
                     icon={<DeleteOutlined />}
                     onClick={() => remove(idx)}
                 />
             ),
         },
-    ];
+    ], [control, remove]);
 
     return (
         <Modal
