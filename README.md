@@ -5,6 +5,8 @@ It manages the complete business workflow from customers and quotes to invoices,
 
 Built with Node.js and MongoDB on the backend, and React, TypeScript with Vite on the frontend.
 
+📘 Author notes: See [AUTHOR_NOTES.md](/AUTHOR_NOTES.md) for the motivation, background, and design decisions behind this project.
+
 ### LiveDemo: [View on Railway](https://vitesse-crm-frontend-production.up.railway.app)
 
 ***Demo credentials***: `demo@vitesse.app` / `demo123`
@@ -52,6 +54,8 @@ More screenshots available in `./screenshots`.
 ## 🏗 Architecture Overview
 
 Vitesse is built as a clear frontend / backend split with strict responsibility boundaries.
+
+👉 See [Architecture.md](/Architecture.md)
 
 ### Backend
 - REST API built with Express (ES Modules)
