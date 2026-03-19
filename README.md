@@ -22,9 +22,9 @@ Built with Node.js and MongoDB on the backend, and React, TypeScript with Vite o
 - Invoices with quote conversion and overdue detection
 - Payments (partial, multiple, multi-method)
 - Revenue tracking and outstanding balances
-- Real-time dashboard with KPIs and trends
-- Secure authentication with role-based access
-- Input validation, rate limiting, and error handling
+- Dashboard with KPIs and revenue overview
+- Secure authentication (JWT + bcrypt)
+- Input sanitization, rate limiting, and error handling
 
 ---
 
@@ -61,10 +61,10 @@ Vitesse is built as a clear frontend / backend split with strict responsibility 
 - REST API built with Express (ES Modules)
 - MongoDB with Mongoose models
 - Stateless authentication via JWT access tokens
-- Business rules enforced server-side (not only in UI)
+- Key domain rules enforced server-side (e.g. invoice creation constraints)
 
 Key backend responsibilities:
-- Validate and sanitize all input
+- Sanitize all input
 - Enforce domain rules (e.g. invoice creation constraints)
 - Protect all resources with auth middleware
 - Return consistent API errors
@@ -76,7 +76,7 @@ Key backend responsibilities:
 - Forms validated with React Hook Form + Zod
 - Ant Design used for layout and components
 
-The frontend never assumes business rules — all critical rules are enforced by the backend.
+Critical domain rules (e.g. invoice creation, payment status) are enforced by the backend, not the UI.
 
 ---
 
@@ -93,10 +93,10 @@ This project includes automated tests on both backend and frontend.
 - Tests drive fixes for discovered domain issues
 
 
-Backend tests ensure:
-- Security rules are enforced server-side
-- Business logic cannot be bypassed by clients
-- Changes do not introduce regressions
+Backend tests cover:
+- Auth flow and protected routes
+- Core CRUD with tenant isolation
+- Key business rules (e.g. invoice creation from declined quotes)
 
 ### Frontend component tests
 - Vitest + React Testing Library
@@ -118,7 +118,7 @@ CI checks:
 - Backend tests
 - Frontend tests
 
-This ensures the main branch always stays in a working, tested state.
+This ensures tests pass on every push.
 
 ---
 
