@@ -1,6 +1,6 @@
 import express from "express"
 import { body } from "express-validator"
-import { registerUser, loginUser, getProfile } from "../controllers/authController.js"
+import { registerUser, loginUser, getProfile, loginDemo } from "../controllers/authController.js"
 import { authMiddleware } from "../middleware/auth.js"
 import { authRateLimiter } from "../middleware/rateLimiter.js"
 import { validateRequest } from "../middleware/validator.js"
@@ -50,6 +50,8 @@ router.post(
     validateRequest,
     loginUser
 )
+
+router.post("/demo", authRateLimiter, loginDemo)
 
 router.get("/profile", authMiddleware, getProfile)
 

@@ -54,7 +54,12 @@ export const useAuthStore = create<AuthState>()(
                 const profile = await authApi.getProfile();
                 set({ user: profile, initialized: true });
             } catch {
-                set({ user: null, initialized: true});
+                try {
+                    const data = await authApi.loginDemo();
+                    set({ user: data.user, initialized: true });
+                } catch {
+                    set({ user: null, initialized: true });
+                }
             } finally {
                 set({ loading: false });
             }

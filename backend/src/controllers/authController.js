@@ -67,6 +67,25 @@ export const loginUser = asyncHandler(async (req, res) => {
     })
 })
 
+export const loginDemo = asyncHandler(async (_req, res) => {
+    const user = await User.findOne({ email: "demo@vitesse.app" })
+    if (!user) {
+        return res.status(404).json({ message: "Demo account not found" })
+    }
+
+    const token = jwt.sign(
+        { id: user._id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: "1d" }
+    )
+
+    res.json({
+        message: "Demo login successful",
+        token,
+        user: { id: user._id, name: user.name, email: user.email },
+    })
+})
+
 export const getProfile = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user.id).select("-password")
 

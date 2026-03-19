@@ -42,6 +42,12 @@ export async function getProfile(): Promise<AuthUser> {
 }
 
 
+export async function loginDemo(): Promise<AuthResponse> {
+  const { data } = await api.post<AuthResponse>("/auth/demo");
+  if (data.token) setAccessToken(data.token);
+  return data;
+}
+
 export function clearAuthToken() {
   setAccessToken(null);
 }
