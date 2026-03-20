@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import User from "../models/User.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
+import { seedDemoData } from "../../seed/index.js"
 
 export const registerUser = asyncHandler(async (req, res) => {
     const { name, email, password, role } = req.body
@@ -72,6 +73,8 @@ export const loginDemo = asyncHandler(async (_req, res) => {
     if (!user) {
         return res.status(404).json({ message: "Demo account not found" })
     }
+
+    await seedDemoData(user._id)
 
     const token = jwt.sign(
         { id: user._id, email: user.email },
