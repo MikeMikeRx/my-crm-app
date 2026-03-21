@@ -67,10 +67,14 @@ vitesse-crm/
 │   ├── src/
 │   │   ├── config/           # Database configuration
 │   │   ├── controllers/      # Request handlers
+│   │   │   └── dashboard/    # Dashboard-specific controllers
 │   │   ├── middleware/       # Auth, validation, error handling
 │   │   ├── models/           # Mongoose schemas
 │   │   ├── routes/           # Express route definitions
-│   │   └── utils/            # Async handler, helpers
+│   │   ├── services/         # Business logic and aggregation
+│   │   │   └── dashboard/    # Dashboard aggregation services
+│   │   └── utils/            # Async handler, status helpers, financial calculations
+│   │       └── dashboard/    # Dashboard-specific utilities
 │   ├── tests/                # Jest + Supertest tests
 │   └── package.json
 │
@@ -281,7 +285,8 @@ vitesse-crm/
   issueDate: Date,
   dueDate: Date,
   items: [{ description, quantity, unitPrice, taxRate }],
-  status: "unpaid" | "paid" | "overdue",
+  status: "unpaid" | "partially_paid" | "paid",
+  // "overdue" derived at read-time via resolveInvoiceStatus() — not stored
   // Virtual: totals { subtotal, tax, total }
 }
 ```
@@ -327,6 +332,7 @@ vitesse-crm/
 |--------|----------|-------------|------|
 | POST | `/api/auth/register` | Register new user | No |
 | POST | `/api/auth/login` | Login, receive JWT | No |
+| POST | `/api/auth/demo` | Login as demo account (seeds sample data) | No |
 | GET | `/api/auth/profile` | Get current user | Yes |
 | GET | `/api/customers` | List user's customers | Yes |
 | GET | `/api/customers/:id` | Get customer by ID | Yes |
@@ -342,9 +348,10 @@ vitesse-crm/
 | GET | `/api/invoices/:id` | Get invoice | Yes |
 | POST | `/api/invoices` | Create invoice | Yes |
 | PUT | `/api/invoices/:id` | Update invoice | Yes |
-| DELETE | `/api/invoices/:id` | Delete invoice | Yes |
+| DELETE | `/api/invoices/:id` | **Disabled** — invoices are immutable for financial integrity | Yes |
 | GET | `/api/payments` | List payments | Yes |
 | POST | `/api/payments` | Record payment | Yes |
+| PUT/DELETE | `/api/payments/:id` | **Disabled** — payments are immutable for financial integrity | Yes |
 | GET | `/api/dashboard/summary` | Dashboard KPIs | Yes |
 | GET | `/api/admin/stats` | Admin statistics | Admin |
 | GET | `/health` | Health check | No |
@@ -573,22 +580,44 @@ src/api/
 - Computed on JSON serialization
 - Trade-off: Slight computation overhead
 
-### 3. MVC Pattern on Backend
+### 3. MVC Pattern on Backend with Service Layer
 
-**Context**: Need organized code structure for REST API.
+**Context**: Need organized code structure for REST API; dashboard aggregation requires non-trivial business logic.
 
-**Decision**: Model-View-Controller with service-less architecture.
+**Decision**: Model-View-Controller with a service layer for complex aggregation.
 
 ```
-Route → Controller → Model → Database
+Route → Controller → Service (aggregation) → Model → Database
+Route → Controller → Model → Database         (simple CRUD)
 ```
 
 **Rationale**:
-- Simple CRUD operations don't need service layer
-- Controllers handle business logic directly
-- Future: Extract services if logic becomes complex
+- Simple CRUD routes keep business logic in controllers
+- Dashboard and financial aggregation extracted into `services/dashboard/` to keep controllers thin
+- `utils/invoiceStatus.js` centralizes overdue derivation logic reused across controllers and services
 
-### 4. Component-Level Data Fetching
+### 4. Financial Data Immutability
+
+**Context**: Payments and invoices represent real financial transactions.
+
+**Decision**: DELETE on invoices and PUT/DELETE on payments are intentionally disabled at the route level.
+
+**Rationale**:
+- Prevents accidental or malicious alteration of financial records
+- Consistent with accounting principles — corrections are made via new entries, not deletions
+
+### 5. Invoice Status Derived at Read-Time
+
+**Context**: An invoice becomes overdue when its due date passes, regardless of when it was last written.
+
+**Decision**: Store only `unpaid | partially_paid | paid` in the database. Derive `overdue` at read-time via `resolveInvoiceStatus()`.
+
+**Rationale**:
+- Avoids stale status data (no background job needed to flip statuses at midnight)
+- Single utility function (`utils/invoiceStatus.js`) used consistently by controllers and services
+- Trade-off: Slight computation on every read
+
+### 6. Component-Level Data Fetching
 
 **Context**: Pages need to display data from API.
 
@@ -600,7 +629,7 @@ Route → Controller → Model → Database
 - Trade-off: No caching, refetches on navigation
 - Future improvement: Add React Query
 
-### 5. Docker Compose for Development
+### 7. Docker Compose for Development
 
 **Context**: Need consistent development environment.
 
@@ -691,4 +720,4 @@ VITE_API_URL=http://localhost:8888
 
 ---
 
-*Last updated: February 2026*
+*Last updated: March 2026*
