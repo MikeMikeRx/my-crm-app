@@ -71,7 +71,7 @@ const quoteValidationRules = [
 
     body("status")
         .optional()
-        .isIn(["draft", "sent", "accepted", "declined", "expired", "converted"])
+        .isIn(["draft", "sent", "accepted", "declined"])
         .withMessage("Invalid status"),
 
     body("notes")

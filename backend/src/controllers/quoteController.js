@@ -85,9 +85,13 @@ export const createQuote = asyncHandler(async (req, res) => {
 });
 
 export const updateQuote = asyncHandler(async (req, res) => {
+  const allowedStatuses = new Set(["draft", "sent", "accepted", "declined"]);
+  const { status, ...rest } = req.body;
+  const update = status && allowedStatuses.has(status) ? { ...rest, status } : rest;
+
   const quote = await Quote.findOneAndUpdate(
     { _id: req.params.id, user: req.user.id },
-    req.body,
+    update,
     { new: true, runValidators: true }
   );
 
