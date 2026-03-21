@@ -34,7 +34,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     res.status(201).json({
         message: "User registered successfully",
         token,
-        user: { id: user._id, name: user.name, email: user.email },
+        user: { id: user._id, name: user.name, email: user.email, role: user.role },
     })
 })
 
@@ -64,7 +64,7 @@ export const loginUser = asyncHandler(async (req, res) => {
     res.json({
         message: "Login successful",
         token,
-        user: { id: user._id, name: user.name, email: user.email },
+        user: { id: user._id, name: user.name, email: user.email, role: user.role },
     })
 })
 
@@ -85,7 +85,7 @@ export const loginDemo = asyncHandler(async (_req, res) => {
     res.json({
         message: "Demo login successful",
         token,
-        user: { id: user._id, name: user.name, email: user.email },
+        user: { id: user._id, name: user.name, email: user.email, role: user.role },
     })
 })
 

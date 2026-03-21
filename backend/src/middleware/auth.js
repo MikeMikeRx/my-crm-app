@@ -17,7 +17,7 @@ export const authMiddleware = async (req, res, next) => {
             return res.status(401).json({ message: "Invalid token payload." })
         }
 
-        const user = await User.findById(decoded.id).select("_id name email")
+        const user = await User.findById(decoded.id).select("_id name email role")
 
         if (!user) {
             return res.status(401).json({ message: "User not found or invalid token" })
