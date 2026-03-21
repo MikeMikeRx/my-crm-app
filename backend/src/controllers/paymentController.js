@@ -65,10 +65,7 @@ export const createPayment = asyncHandler(async (req, res) => {
     const payments = await Payment.find({ invoice });
     const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
 
-    const invoiceTotal = existingInvoice.items.reduce(
-        (sum, i) => sum + i.quantity * i.unitPrice,
-        0
-    );
+    const invoiceTotal = existingInvoice.totals.total;
 
     if (totalPaid >= invoiceTotal) {
         existingInvoice.status = "paid";
