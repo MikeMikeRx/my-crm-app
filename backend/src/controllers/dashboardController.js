@@ -4,6 +4,7 @@ import Quote from "../models/Quote.js";
 import Payment from "../models/Payment.js";
 import Customer from "../models/Customer.js";
 import dayjs from "dayjs";
+import { resolveInvoiceStatus } from "../utils/invoiceStatus.js";
 
 export const getDashboardSummary = asyncHandler(async (req, res) => {
     const invoices = await Invoice.find({ user: req.user.id });
@@ -34,7 +35,7 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
             number: inv.invoiceNumber,
             customer: inv.customer,
             total: inv.totals?.total || 0,
-            status: inv.status,
+            status: resolveInvoiceStatus(inv),
             createdAt: inv.createdAt,
         }));
 
@@ -49,16 +50,10 @@ export const getDashboardSummary = asyncHandler(async (req, res) => {
     const invoiceTotalSum = invoices
         .reduce((sum, inv) => sum + inv.totals.total, 0);
 
-    const invoicePaid = invoices.filter(inv => inv.status === "paid").length;
-    const invoicePartiallyPaid = invoices.filter(inv => inv.status === "partially_paid").length;
-    const invoiceOverdue = invoices.filter(inv =>
-        inv.status === "unpaid" &&
-        dayjs(inv.dueDate).isBefore(dayjs(), "day")
-    ).length;
-    const invoiceUnpaid = invoices.filter(inv =>
-        inv.status === "unpaid" &&
-        !dayjs(inv.dueDate).isBefore(dayjs(), "day")
-    ).length;
+    const invoicePaid = invoices.filter(inv => resolveInvoiceStatus(inv) === "paid").length;
+    const invoicePartiallyPaid = invoices.filter(inv => resolveInvoiceStatus(inv) === "partially_paid").length;
+    const invoiceOverdue = invoices.filter(inv => resolveInvoiceStatus(inv) === "overdue").length;
+    const invoiceUnpaid = invoices.filter(inv => resolveInvoiceStatus(inv) === "unpaid").length;
 
     const invoiceSummary = {
         total: invoiceTotal,

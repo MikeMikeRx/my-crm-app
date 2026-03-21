@@ -1,28 +1,21 @@
 import Invoice from "../models/Invoice.js";
 import Customer from "../models/Customer.js";
 import Quote from "../models/Quote.js";
-import dayjs from "dayjs";
+import Payment from "../models/Payment.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { resolveInvoiceStatus } from "../utils/invoiceStatus.js";
 
 export const getInvoices = asyncHandler(async (req, res) => {
     const invoices = await Invoice.find({ user: req.user.id })
         .populate("customer", "name email company")
         .sort({ createdAt: -1 });
 
-    const withOverdue = invoices.map(inv => {
+    const result = invoices.map(inv => {
         const obj = inv.toObject();
-
-        if (obj.status !== "paid" && dayjs(obj.dueDate).isBefore(dayjs(), "day")) {
-            obj.status = "overdue"
-        };
-
-        return {
-            ...obj,
-            totals: inv.totals
-        };
+        return { ...obj, status: resolveInvoiceStatus(obj), totals: inv.totals };
     });
 
-    res.json(withOverdue)
+    res.json(result);
 });
 
 export const getInvoiceById = asyncHandler(async (req, res) => {
@@ -35,14 +28,7 @@ export const getInvoiceById = asyncHandler(async (req, res) => {
 
     const obj = invoice.toObject();
 
-    if (obj.status !== "paid" && dayjs(obj.dueDate).isBefore(dayjs(), "day")) {
-        obj.status = "overdue";
-    };
-
-    res.json({
-        ...obj,
-        totals: invoice.totals
-    });
+    res.json({ ...obj, status: resolveInvoiceStatus(obj), totals: invoice.totals });
 });
 
 export const createInvoice = asyncHandler(async (req, res) => {
@@ -107,25 +93,34 @@ export const createInvoice = asyncHandler(async (req, res) => {
 });
 
 export const updateInvoice = asyncHandler(async (req, res) => {
-    const incoming = req.body;
-
-    let status = incoming.status;
-    if (status !== "paid") status = "unpaid";
+    const { status: _ignored, ...fields } = req.body;
 
     const updated = await Invoice.findOneAndUpdate(
         { _id: req.params.id, user: req.user.id },
-        { ...incoming, status },
+        fields,
         { new: true, runValidators: true }
     );
 
     if (!updated) {
-        return res.status(404).json({ message: "Invoice not found" })
+        return res.status(404).json({ message: "Invoice not found" });
     }
 
-    res.json({
-        ...updated.toObject(),
-        totals: updated.totals
-    });
+    // Recalculate payment-derived status (invoice total may have changed)
+    const payments = await Payment.find({ invoice: updated._id, status: "completed" });
+    const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
+    const invoiceTotal = updated.totals.total;
+
+    if (totalPaid >= invoiceTotal && invoiceTotal > 0) {
+        updated.status = "paid";
+    } else if (totalPaid > 0) {
+        updated.status = "partially_paid";
+    } else {
+        updated.status = "unpaid";
+    }
+    await updated.save();
+
+    const obj = updated.toObject();
+    res.json({ ...obj, status: resolveInvoiceStatus(obj), totals: updated.totals });
 });
 
 export const deleteInvoice = asyncHandler(async (req, res) => {
