@@ -18,6 +18,7 @@ async function seed(token) {
       quoteNumber: `Q-${Date.now()}`,
       issueDate: new Date().toISOString().slice(0, 10),
       expiryDate: "2027-12-31",
+      status: "sent",
       items: [ITEM],
     });
 

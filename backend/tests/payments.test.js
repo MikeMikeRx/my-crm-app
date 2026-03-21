@@ -18,6 +18,7 @@ async function createInvoiceWithDeps(token) {
       quoteNumber: `Q-${Date.now()}`,
       issueDate: "2026-01-01",
       expiryDate: "2026-12-31",
+      status: "sent",
       items: [ITEM],
     });
 

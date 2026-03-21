@@ -48,6 +48,12 @@ export const createInvoice = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: "Invalid quote ID" });
         }
 
+        if (quoteDoc.status === "draft") {
+            return res.status(400).json({
+                message: "Cannot create invoice from a draft quote"
+            });
+        }
+
         if (quoteDoc.status === "declined") {
             return res.status(400).json({
                 message: "Cannot create invoice from a declined quote"

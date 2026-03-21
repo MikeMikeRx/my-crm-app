@@ -284,7 +284,7 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
                         placeholder="Select a quote"
                         onChange={handleQuoteSelect}
                         options={quotes
-                            .filter(q => q.status !== "converted")
+                            .filter(q => q.status !== "converted" && q.status !== "draft")
                             .map((q) => {
                                 const statusLabel =
                                     q.status === "declined"
