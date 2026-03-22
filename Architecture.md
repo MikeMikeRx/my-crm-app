@@ -285,7 +285,7 @@ vitesse-crm/
   issueDate: Date,
   dueDate: Date,
   items: [{ description, quantity, unitPrice, taxRate }],
-  status: "unpaid" | "partially_paid" | "paid",
+  status: "draft" | "sent" | "partially_paid" | "paid",
   // "overdue" derived at read-time via resolveInvoiceStatus() — not stored
   // Virtual: totals { subtotal, tax, total }
 }
@@ -347,8 +347,9 @@ vitesse-crm/
 | GET | `/api/invoices` | List invoices | Yes |
 | GET | `/api/invoices/:id` | Get invoice | Yes |
 | POST | `/api/invoices` | Create invoice | Yes |
-| PUT | `/api/invoices/:id` | Update invoice | Yes |
-| DELETE | `/api/invoices/:id` | **Disabled** — invoices are immutable for financial integrity | Yes |
+| PUT | `/api/invoices/:id` | Update invoice (draft only) | Yes |
+| PATCH | `/api/invoices/:id/status` | Transition invoice status (state machine) | Yes |
+| DELETE | `/api/invoices/:id` | **Disabled** — exposed only in controller; not mounted at route level | Yes |
 | GET | `/api/payments` | List payments | Yes |
 | POST | `/api/payments` | Record payment | Yes |
 | PUT/DELETE | `/api/payments/:id` | **Disabled** — payments are immutable for financial integrity | Yes |
@@ -594,30 +595,53 @@ Route → Controller → Model → Database         (simple CRUD)
 **Rationale**:
 - Simple CRUD routes keep business logic in controllers
 - Dashboard and financial aggregation extracted into `services/dashboard/` to keep controllers thin
-- `utils/invoiceStatus.js` centralizes overdue derivation logic reused across controllers and services
+- `utils/status/*` centralizes status logic across invoices, quotes, and payments
 
-### 4. Financial Data Immutability
+### 4. Financial Data Integrity Guards
 
 **Context**: Payments and invoices represent real financial transactions.
 
-**Decision**: DELETE on invoices and PUT/DELETE on payments are intentionally disabled at the route level.
+**Decision**: Payments are immutable (no PUT/DELETE routes). Invoices have graduated protections: only draft invoices can be edited; DELETE is disabled at the route level; overpayments are rejected at the payment layer.
 
 **Rationale**:
 - Prevents accidental or malicious alteration of financial records
 - Consistent with accounting principles — corrections are made via new entries, not deletions
+- Invoice fields (items, dates, notes) can only be edited while status is `draft`; any other status returns a 400
+- Overpayment check compares the sum of completed payments against the tax-inclusive invoice total before accepting a new payment
 
-### 5. Invoice Status Derived at Read-Time
+### 5. Invoice State Machine
+
+**Context**: Invoices move through a defined lifecycle and should not skip states or regress.
+
+**Decision**: Status transitions are validated server-side via `isValidTransition()` before any update is applied.
+
+```
+draft → sent ──────────────────→ paid
+              ↘                 ↗
+               partially_paid ──
+```
+
+Any other transition (e.g. `draft → paid`, `paid → sent`) is rejected with a 400.
+
+`overdue` is not a stored status — it is derived at read-time from `sent | partially_paid` + past due date.
+
+**Rationale**:
+- Prevents invalid state hops — `isValidTransition()` is checked before every status write
+- A separate `PATCH /:id/status` endpoint keeps status transitions distinct from field edits
+- Editing is only allowed in `draft` state; once sent, the invoice is locked for field changes
+
+### 6. Invoice Status Derived at Read-Time
 
 **Context**: An invoice becomes overdue when its due date passes, regardless of when it was last written.
 
-**Decision**: Store only `unpaid | partially_paid | paid` in the database. Derive `overdue` at read-time via `resolveInvoiceStatus()`.
+**Decision**: Store only `draft | sent | partially_paid | paid` in the database. Derive `overdue` at read-time via `resolveInvoiceStatus()`.
 
 **Rationale**:
 - Avoids stale status data (no background job needed to flip statuses at midnight)
-- Single utility function (`utils/invoiceStatus.js`) used consistently by controllers and services
+- Status utilities in `utils/status/` (`invoiceStatus.js`, `quoteStatus.js`, `paymentStatus.js`) used consistently by controllers and services
 - Trade-off: Slight computation on every read
 
-### 6. Component-Level Data Fetching
+### 7. Component-Level Data Fetching
 
 **Context**: Pages need to display data from API.
 
@@ -629,7 +653,7 @@ Route → Controller → Model → Database         (simple CRUD)
 - Trade-off: No caching, refetches on navigation
 - Future improvement: Add React Query
 
-### 7. Docker Compose for Development
+### 8. Docker Compose for Development
 
 **Context**: Need consistent development environment.
 

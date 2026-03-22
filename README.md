@@ -18,9 +18,9 @@ Built with Node.js and MongoDB on the backend, and React, TypeScript with Vite o
 ###  📊 Features
 
 - Customer & company management
-- Quotes with automatic totals and expiry tracking
-- Invoices with quote conversion and overdue detection
-- Payments (partial, multiple, multi-method)
+- Quotes with automatic totals, expiry tracking, and status enforcement
+- Invoices with status enforcement (draft → sent → partially_paid → paid), quote conversion, and overdue detection
+- Payments (partial, multiple, multi-method) with overpayment prevention
 - Revenue tracking and outstanding balances
 - Dashboard with KPIs and revenue overview
 - Secure authentication (JWT + bcrypt)
@@ -96,7 +96,10 @@ This project includes automated tests on both backend and frontend.
 Backend tests cover:
 - Auth flow and protected routes
 - Core CRUD with tenant isolation
-- Key business rules (e.g. invoice creation from declined quotes)
+- Key business rules (e.g. invoice creation from declined/draft quotes)
+- Invoice state machine transitions
+- Dashboard aggregation and edge cases
+- Tax-inclusive payment scenarios and overpayment prevention
 
 ### Frontend component tests
 - Vitest + React Testing Library
