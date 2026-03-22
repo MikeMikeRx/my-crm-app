@@ -38,9 +38,10 @@ export const createCustomer = asyncHandler(async (req, res) => {
 })
 
 export const updateCustomer = asyncHandler(async (req, res) => {
+    const { name, email, phone, company, address } = req.body
     const customer = await Customer.findOneAndUpdate(
         { _id: req.params.id, user: req.user.id },
-        req.body,
+        { name, email, phone, company, address },
         { new: true, runValidators: true }
     )
 

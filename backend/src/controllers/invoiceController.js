@@ -93,11 +93,11 @@ export const createInvoice = asyncHandler(async (req, res) => {
 });
 
 export const updateInvoice = asyncHandler(async (req, res) => {
-    const { status: _ignored, ...fields } = req.body;
+    const { issueDate, dueDate, items, notes } = req.body;
 
     const updated = await Invoice.findOneAndUpdate(
         { _id: req.params.id, user: req.user.id },
-        fields,
+        { issueDate, dueDate, items, notes },
         { new: true, runValidators: true }
     );
 

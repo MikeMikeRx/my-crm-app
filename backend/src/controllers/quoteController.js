@@ -51,8 +51,9 @@ export const createQuote = asyncHandler(async (req, res) => {
 });
 
 export const updateQuote = asyncHandler(async (req, res) => {
-  const { status, ...rest } = req.body;
-  const update = status && ALLOWED_QUOTE_STATUSES.has(status) ? { ...rest, status } : rest;
+  const { customer, issueDate, expiryDate, items, notes, status } = req.body;
+  const update = { customer, issueDate, expiryDate, items, notes };
+  if (status && ALLOWED_QUOTE_STATUSES.has(status)) update.status = status;
 
   const quote = await Quote.findOneAndUpdate(
     { _id: req.params.id, user: req.user.id },
