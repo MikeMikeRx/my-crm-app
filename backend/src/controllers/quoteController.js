@@ -1,17 +1,16 @@
 import Quote from "../models/Quote.js";
 import Customer from "../models/Customer.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { resolveQuoteStatus } from "../utils/invoiceStatus.js";
+import { formatQuote } from "../utils/formatters/quoteFormatter.js";
+
+const ALLOWED_QUOTE_STATUSES = new Set(["draft", "sent", "accepted", "declined"]);
 
 export const getQuotes = asyncHandler(async (req, res) => {
   const quotes = await Quote.find({ user: req.user.id })
     .populate("customer", "name email company")
     .sort({ createdAt: -1 });
 
-  const withTotals = quotes.map((q) => {
-    const obj = q.toObject();
-    return { ...obj, status: resolveQuoteStatus(obj), totals: q.totals };
-  });
+  const withTotals = quotes.map(q => formatQuote(q));
 
   res.json(withTotals);
 });
@@ -26,8 +25,7 @@ export const getQuoteById = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Quote not found" });
   }
 
-  const obj = quote.toObject();
-  res.json({ ...obj, status: resolveQuoteStatus(obj), totals: quote.totals });
+  res.json(formatQuote(quote));
 });
 
 export const createQuote = asyncHandler(async (req, res) => {
@@ -38,8 +36,7 @@ export const createQuote = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Invalid customer ID" });
   }
 
-  const allowedStatuses = new Set(["draft", "sent", "accepted", "declined"]);
-  const safeStatus = status && allowedStatuses.has(status) ? status : "draft";
+  const safeStatus = status && ALLOWED_QUOTE_STATUSES.has(status) ? status : "draft";
 
   const newQuote = await Quote.create({
     user: req.user.id,
@@ -52,16 +49,12 @@ export const createQuote = asyncHandler(async (req, res) => {
     status: safeStatus,
   });
 
-  res.status(201).json({
-    ...newQuote.toObject(),
-    totals: newQuote.totals,
-  });
+  res.status(201).json(formatQuote(newQuote));
 });
 
 export const updateQuote = asyncHandler(async (req, res) => {
-  const allowedStatuses = new Set(["draft", "sent", "accepted", "declined"]);
   const { status, ...rest } = req.body;
-  const update = status && allowedStatuses.has(status) ? { ...rest, status } : rest;
+  const update = status && ALLOWED_QUOTE_STATUSES.has(status) ? { ...rest, status } : rest;
 
   const quote = await Quote.findOneAndUpdate(
     { _id: req.params.id, user: req.user.id },
@@ -73,10 +66,7 @@ export const updateQuote = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Quote not found" });
   }
 
-  res.json({
-    ...quote.toObject(),
-    totals: quote.totals,
-  });
+  res.json(formatQuote(quote));
 });
 
 export const deleteQuote = asyncHandler(async (req, res) => {

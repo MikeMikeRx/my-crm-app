@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { resolveInvoiceStatus } from "../../utils/invoiceStatus.js";
+import { resolveInvoiceStatus } from "../../utils/status/invoiceStatus.js";
 import { toPct } from "../../utils/dashboard/percentages.js";
 
 export const getInvoiceSummary = (invoices) => {

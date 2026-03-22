@@ -3,17 +3,15 @@ import Customer from "../models/Customer.js";
 import Quote from "../models/Quote.js";
 import Payment from "../models/Payment.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { resolveInvoiceStatus, computePaymentStatus } from "../utils/invoiceStatus.js";
+import { computePaymentStatus } from "../utils/status/paymentStatus.js";
+import { formatInvoice } from "../utils/formatters/invoiceFormatter.js";
 
 export const getInvoices = asyncHandler(async (req, res) => {
     const invoices = await Invoice.find({ user: req.user.id })
         .populate("customer", "name email company")
         .sort({ createdAt: -1 });
 
-    const result = invoices.map(inv => {
-        const obj = inv.toObject();
-        return { ...obj, status: resolveInvoiceStatus(obj), totals: inv.totals };
-    });
+    const result = invoices.map(inv => formatInvoice(inv));
 
     res.json(result);
 });
@@ -26,9 +24,7 @@ export const getInvoiceById = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: "Invoice not found" });
     }
 
-    const obj = invoice.toObject();
-
-    res.json({ ...obj, status: resolveInvoiceStatus(obj), totals: invoice.totals });
+    res.json(formatInvoice(invoice));
 });
 
 export const createInvoice = asyncHandler(async (req, res) => {
@@ -92,10 +88,7 @@ export const createInvoice = asyncHandler(async (req, res) => {
         );
     }
 
-    res.status(201).json({
-        ...newInvoice.toObject(),
-        totals: newInvoice.totals
-    });
+    res.status(201).json(formatInvoice(newInvoice));
 });
 
 export const updateInvoice = asyncHandler(async (req, res) => {
@@ -116,8 +109,7 @@ export const updateInvoice = asyncHandler(async (req, res) => {
     updated.status = computePaymentStatus(totalPaid, updated.totals.total);
     await updated.save();
 
-    const obj = updated.toObject();
-    res.json({ ...obj, status: resolveInvoiceStatus(obj), totals: updated.totals });
+    res.json(formatInvoice(updated));
 });
 
 export const deleteInvoice = asyncHandler(async (req, res) => {

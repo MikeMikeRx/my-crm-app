@@ -1,7 +1,7 @@
 import Payment from "../models/Payment.js"
 import Invoice from "../models/Invoice.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
-import { computePaymentStatus } from "../utils/invoiceStatus.js"
+import { computePaymentStatus } from "../utils/status/paymentStatus.js"
 
 export const getPayments = asyncHandler(async (req, res) => {
     const payments = await Payment.find({ user: req.user.id })
