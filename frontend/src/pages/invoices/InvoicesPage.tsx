@@ -77,13 +77,15 @@ export default function InvoicesPage() {
             dataIndex: "status",
             render: (s: InvoiceStatus) => {
                 const colors: Record<InvoiceStatus, string> = {
-                    unpaid: "blue",
-                    partially_paid: "orange",
+                    draft: "default",
+                    sent: "orange",
+                    partially_paid: "blue",
                     paid: "green",
                     overdue: "red",
                 };
                 const labels: Record<InvoiceStatus, string> = {
-                    unpaid: "Unpaid",
+                    draft: "Draft",
+                    sent: "Sent",
                     partially_paid: "Partially Paid",
                     paid: "Paid",
                     overdue: "Overdue",

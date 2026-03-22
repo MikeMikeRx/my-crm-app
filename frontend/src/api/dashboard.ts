@@ -22,8 +22,10 @@ export interface InvoiceSummary {
   monthCount: number;
   monthSum: number;
   totalSum: number;
+  draft: number;
+  sent: number;
+  partiallyPaid: number;
   overdue: number;
-  unpaid: number;
   preview: StatusPreview[];
 }
 

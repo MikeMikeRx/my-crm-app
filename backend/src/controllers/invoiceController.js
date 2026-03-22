@@ -3,7 +3,7 @@ import Customer from "../models/Customer.js";
 import Quote from "../models/Quote.js";
 import Payment from "../models/Payment.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { computePaymentStatus } from "../utils/status/paymentStatus.js";
+import { isValidTransition } from "../utils/status/invoiceStatus.js";
 import { formatInvoice } from "../utils/formatters/invoiceFormatter.js";
 import { CUSTOMER_POPULATE, DEFAULT_SORT } from "../utils/queries/queryDefaults.js";
 
@@ -77,7 +77,6 @@ export const createInvoice = asyncHandler(async (req, res) => {
         issueDate,
         dueDate,
         items,
-        status: "unpaid",
         notes,
         quote: quote || undefined,
     });
@@ -100,9 +99,8 @@ export const updateInvoice = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: "Invoice not found" });
     }
 
-    const hasPayments = await Payment.exists({ invoice: invoice._id, status: "completed" });
-    if (hasPayments) {
-        return res.status(400).json({ message: "Cannot edit an invoice that has completed payments" });
+    if (invoice.status !== "draft") {
+        return res.status(400).json({ message: `Cannot edit an invoice with status "${invoice.status}". Only draft invoices can be modified.` });
     }
 
     const updated = await Invoice.findOneAndUpdate(
@@ -111,16 +109,27 @@ export const updateInvoice = asyncHandler(async (req, res) => {
         { new: true, runValidators: true }
     );
 
-    if (!updated) {
+    res.json(formatInvoice(updated));
+});
+
+export const transitionInvoiceStatus = asyncHandler(async (req, res) => {
+    const { status } = req.body;
+
+    const invoice = await Invoice.findOne({ _id: req.params.id, user: req.user.id });
+    if (!invoice) {
         return res.status(404).json({ message: "Invoice not found" });
     }
 
-    const payments = await Payment.find({ invoice: updated._id, status: "completed" });
-    const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
-    updated.status = computePaymentStatus(totalPaid, updated.totals.total);
-    await updated.save();
+    if (!isValidTransition(invoice.status, status)) {
+        return res.status(400).json({
+            message: `Invalid transition: "${invoice.status}" → "${status}"`,
+        });
+    }
 
-    res.json(formatInvoice(updated));
+    invoice.status = status;
+    await invoice.save();
+
+    res.json(formatInvoice(invoice));
 });
 
 export const deleteInvoice = asyncHandler(async (req, res) => {

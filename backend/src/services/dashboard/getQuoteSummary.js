@@ -46,9 +46,9 @@ export const getQuoteSummary = (quotes) => {
         declined: quoteDeclined,
         expired: quoteExpired,
         preview: [
-            { status: "accepted", percentage: toPct(quoteAccepted, quoteTotal) },
             { status: "draft", percentage: toPct(quoteDraft, quoteTotal) },
             { status: "sent", percentage: toPct(quoteSent, quoteTotal) },
+            { status: "accepted", percentage: toPct(quoteAccepted, quoteTotal) }, 
             { status: "declined", percentage: toPct(quoteDeclined, quoteTotal) },
             { status: "expired", percentage: toPct(quoteExpired, quoteTotal) },
         ],

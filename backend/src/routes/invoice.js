@@ -9,6 +9,7 @@ import {
     createInvoice,
     updateInvoice,
     deleteInvoice,
+    transitionInvoiceStatus,
 } from "../controllers/invoiceController.js"
 
 const router = express.Router()
@@ -85,6 +86,7 @@ router.post("/", invoiceValidationRules, validateRequest, createInvoice)
 router.get("/", getInvoices)
 router.get("/:id", getInvoiceById)
 router.put("/:id", invoiceValidationRules, validateRequest, updateInvoice)
+router.patch("/:id/status", transitionInvoiceStatus)
 
 // NOTE: Delete endpoint intentionally not exposed to maintain financial integrity
 // router.delete("/:id", deleteInvoice)

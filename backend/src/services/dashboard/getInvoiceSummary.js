@@ -28,23 +28,26 @@ export const getInvoiceSummary = (invoices) => {
     const invoiceTotalSum = invoices
         .reduce((sum, inv) => sum + inv.totals.total, 0);
 
-    const invoicePaid = invoices.filter(inv => resolveInvoiceStatus(inv) === "paid").length;
+    const invoiceDraft = invoices.filter(inv => resolveInvoiceStatus(inv) === "draft").length;
+    const invoiceSent = invoices.filter(inv => resolveInvoiceStatus(inv) === "sent").length;
     const invoicePartiallyPaid = invoices.filter(inv => resolveInvoiceStatus(inv) === "partially_paid").length;
     const invoiceOverdue = invoices.filter(inv => resolveInvoiceStatus(inv) === "overdue").length;
-    const invoiceUnpaid = invoices.filter(inv => resolveInvoiceStatus(inv) === "unpaid").length;
+    const invoicePaid = invoices.filter(inv => resolveInvoiceStatus(inv) === "paid").length;
 
     const invoiceSummary = {
         total: invoiceTotal,
         monthCount: invoiceThisMonth,
         monthSum: invoiceMonthSum,
         totalSum: invoiceTotalSum,
-        overdue: invoiceOverdue,
-        unpaid: invoiceUnpaid,
+        draft: invoiceDraft,
+        sent: invoiceSent,
         partiallyPaid: invoicePartiallyPaid,
+        overdue: invoiceOverdue,
         preview: [
-            { status: "paid", percentage: toPct(invoicePaid, invoiceTotal) },
+            { status: "draft", percentage: toPct(invoiceDraft, invoiceTotal) },
+            { status: "sent", percentage: toPct(invoiceSent, invoiceTotal) },
             { status: "partially_paid", percentage: toPct(invoicePartiallyPaid, invoiceTotal) },
-            { status: "unpaid", percentage: toPct(invoiceUnpaid, invoiceTotal) },
+            { status: "paid", percentage: toPct(invoicePaid, invoiceTotal) },            
             { status: "overdue", percentage: toPct(invoiceOverdue, invoiceTotal) },
         ],
     };

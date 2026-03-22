@@ -1,7 +1,6 @@
 import Payment from "../models/Payment.js"
 import Invoice from "../models/Invoice.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
-import { computePaymentStatus } from "../utils/status/paymentStatus.js"
 
 export const getPayments = asyncHandler(async (req, res) => {
     const payments = await Payment.find({ user: req.user.id })
@@ -48,8 +47,10 @@ export const createPayment = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: "Invalid invoice ID" })
     }
 
-    if (existingInvoice.status === "paid") {
-        return res.status(400).json({ message: "Invoice is already fully paid" })
+    if (!["sent", "partially_paid"].includes(existingInvoice.status)) {
+        return res.status(400).json({
+            message: `Cannot add payment to an invoice with status "${existingInvoice.status}". Only sent or partially paid invoices can receive payments.`
+        })
     }
 
     const completedPayments = await Payment.find({ invoice, status: "completed" });
@@ -75,10 +76,16 @@ export const createPayment = asyncHandler(async (req, res) => {
         notes,
     })
 
-    const allCompleted = await Payment.find({ invoice, status: "completed" });
-    const newTotalPaid = allCompleted.reduce((sum, p) => sum + p.amount, 0);
-    existingInvoice.status = computePaymentStatus(newTotalPaid, existingInvoice.totals.total);
-    await existingInvoice.save();
+    if (status === "completed") {
+        const allCompleted = await Payment.find({ invoice, status: "completed" });
+        const newTotalPaid = allCompleted.reduce((sum, p) => sum + p.amount, 0);
+        if (newTotalPaid >= existingInvoice.totals.total) {
+            existingInvoice.status = "paid";
+        } else {
+            existingInvoice.status = "partially_paid";
+        }
+        await existingInvoice.save();
+    }
 
     res.status(201).json(payment)
 })
