@@ -95,6 +95,16 @@ export const createInvoice = asyncHandler(async (req, res) => {
 export const updateInvoice = asyncHandler(async (req, res) => {
     const { issueDate, dueDate, items, notes } = req.body;
 
+    const invoice = await Invoice.findOne({ _id: req.params.id, user: req.user.id });
+    if (!invoice) {
+        return res.status(404).json({ message: "Invoice not found" });
+    }
+
+    const hasPayments = await Payment.exists({ invoice: invoice._id, status: "completed" });
+    if (hasPayments) {
+        return res.status(400).json({ message: "Cannot edit an invoice that has completed payments" });
+    }
+
     const updated = await Invoice.findOneAndUpdate(
         { _id: req.params.id, user: req.user.id },
         { issueDate, dueDate, items, notes },
@@ -114,14 +124,17 @@ export const updateInvoice = asyncHandler(async (req, res) => {
 });
 
 export const deleteInvoice = asyncHandler(async (req, res) => {
-    const invoice = await Invoice.findOneAndDelete({
-        _id: req.params.id,
-        user: req.user.id
-    })
-
+    const invoice = await Invoice.findOne({ _id: req.params.id, user: req.user.id });
     if (!invoice) {
-        return res.status(404).json({ message: "Invoice not found" })
+        return res.status(404).json({ message: "Invoice not found" });
     }
 
-    res.json({ message: "Invoice deleted successfully" })
+    const hasPayments = await Payment.exists({ invoice: invoice._id });
+    if (hasPayments) {
+        return res.status(400).json({ message: "Cannot delete an invoice that has associated payments" });
+    }
+
+    await invoice.deleteOne();
+
+    res.json({ message: "Invoice deleted successfully" });
 })

@@ -10,7 +10,7 @@ export const getPayments = asyncHandler(async (req, res) => {
             select: "invoiceNumber status customer",
             populate: { path: "customer", select: "name company" },
         })
-        .sort({ paymentDate: -1 }) // intentional: sort by payment date, not record creation
+        .sort({ paymentDate: -1 })
 
     res.json(payments)
 })
@@ -48,6 +48,19 @@ export const createPayment = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: "Invalid invoice ID" })
     }
 
+    if (existingInvoice.status === "paid") {
+        return res.status(400).json({ message: "Invoice is already fully paid" })
+    }
+
+    const completedPayments = await Payment.find({ invoice, status: "completed" });
+    const totalPaid = completedPayments.reduce((sum, p) => sum + p.amount, 0);
+    const invoiceTotal = existingInvoice.totals.total
+    if (totalPaid + Number(amount) > invoiceTotal) {
+        return res.status(400).json({
+            message: `Payment would exceed invoice total. Remaining balance: ${(invoiceTotal - totalPaid).toFixed(2)}`
+        });
+    }
+
     const status = PENDING_METHODS.includes(paymentMethod) ? "pending" : "completed"
 
     const payment = await Payment.create({
@@ -62,9 +75,9 @@ export const createPayment = asyncHandler(async (req, res) => {
         notes,
     })
 
-    const completedPayments = await Payment.find({ invoice, status: "completed" });
-    const totalPaid = completedPayments.reduce((sum, p) => sum + p.amount, 0);
-    existingInvoice.status = computePaymentStatus(totalPaid, existingInvoice.totals.total);
+    const allCompleted = await Payment.find({ invoice, status: "completed" });
+    const newTotalPaid = allCompleted.reduce((sum, p) => sum + p.amount, 0);
+    existingInvoice.status = computePaymentStatus(newTotalPaid, existingInvoice.totals.total);
     await existingInvoice.save();
 
     res.status(201).json(payment)
