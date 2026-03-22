@@ -3,7 +3,7 @@ import Customer from "../models/Customer.js";
 import Quote from "../models/Quote.js";
 import Payment from "../models/Payment.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { resolveInvoiceStatus } from "../utils/invoiceStatus.js";
+import { resolveInvoiceStatus, computePaymentStatus } from "../utils/invoiceStatus.js";
 
 export const getInvoices = asyncHandler(async (req, res) => {
     const invoices = await Invoice.find({ user: req.user.id })
@@ -111,18 +111,9 @@ export const updateInvoice = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: "Invoice not found" });
     }
 
-    // Recalculate payment-derived status (invoice total may have changed)
     const payments = await Payment.find({ invoice: updated._id, status: "completed" });
     const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
-    const invoiceTotal = updated.totals.total;
-
-    if (totalPaid >= invoiceTotal && invoiceTotal > 0) {
-        updated.status = "paid";
-    } else if (totalPaid > 0) {
-        updated.status = "partially_paid";
-    } else {
-        updated.status = "unpaid";
-    }
+    updated.status = computePaymentStatus(totalPaid, updated.totals.total);
     await updated.save();
 
     const obj = updated.toObject();

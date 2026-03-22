@@ -1,6 +1,7 @@
 import Payment from "../models/Payment.js"
 import Invoice from "../models/Invoice.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
+import { computePaymentStatus } from "../utils/invoiceStatus.js"
 
 export const getPayments = asyncHandler(async (req, res) => {
     const payments = await Payment.find({ user: req.user.id })
@@ -63,16 +64,7 @@ export const createPayment = asyncHandler(async (req, res) => {
 
     const completedPayments = await Payment.find({ invoice, status: "completed" });
     const totalPaid = completedPayments.reduce((sum, p) => sum + p.amount, 0);
-
-    const invoiceTotal = existingInvoice.totals.total;
-
-    if (totalPaid >= invoiceTotal) {
-        existingInvoice.status = "paid";
-    } else if (totalPaid > 0) {
-        existingInvoice.status = "partially_paid";
-    } else {
-        existingInvoice.status = "unpaid";
-    }
+    existingInvoice.status = computePaymentStatus(totalPaid, existingInvoice.totals.total);
     await existingInvoice.save();
 
     res.status(201).json(payment)
