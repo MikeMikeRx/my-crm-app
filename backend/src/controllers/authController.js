@@ -4,6 +4,9 @@ import User from "../models/User.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { seedDemoData } from "../../seed/index.js"
 
+const generateAuthToken = (user) =>
+    jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "1d" })
+
 export const registerUser = asyncHandler(async (req, res) => {
     const { name, email, password, role } = req.body
 
@@ -25,11 +28,7 @@ export const registerUser = asyncHandler(async (req, res) => {
         role: role === "admin" ? "admin" : "user",
     })
 
-    const token = jwt.sign(
-        { id: user._id, email: user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: "1d" }
-    )
+    const token = generateAuthToken(user)
 
     res.status(201).json({
         message: "User registered successfully",
@@ -55,11 +54,7 @@ export const loginUser = asyncHandler(async (req, res) => {
         return res.status(401).json({ message: "Invalid credentials" })
     }
 
-    const token = jwt.sign(
-        { id: user._id, email: user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: "1d" }
-    )
+    const token = generateAuthToken(user)
 
     res.json({
         message: "Login successful",
@@ -76,11 +71,7 @@ export const loginDemo = asyncHandler(async (_req, res) => {
 
     await seedDemoData(user._id)
 
-    const token = jwt.sign(
-        { id: user._id, email: user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: "1d" }
-    )
+    const token = generateAuthToken(user)
 
     res.json({
         message: "Demo login successful",
