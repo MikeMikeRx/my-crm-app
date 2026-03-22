@@ -5,11 +5,12 @@ import Payment from "../models/Payment.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { computePaymentStatus } from "../utils/status/paymentStatus.js";
 import { formatInvoice } from "../utils/formatters/invoiceFormatter.js";
+import { CUSTOMER_POPULATE, DEFAULT_SORT } from "../utils/queries/queryDefaults.js";
 
 export const getInvoices = asyncHandler(async (req, res) => {
     const invoices = await Invoice.find({ user: req.user.id })
-        .populate("customer", "name email company")
-        .sort({ createdAt: -1 });
+        .populate(...CUSTOMER_POPULATE)
+        .sort(DEFAULT_SORT);
 
     const result = invoices.map(inv => formatInvoice(inv));
 
@@ -18,7 +19,7 @@ export const getInvoices = asyncHandler(async (req, res) => {
 
 export const getInvoiceById = asyncHandler(async (req, res) => {
     const invoice = await Invoice.findOne({ _id: req.params.id, user: req.user.id })
-        .populate("customer", "name email company");
+        .populate(...CUSTOMER_POPULATE);
 
     if (!invoice) {
         return res.status(404).json({ message: "Invoice not found" });

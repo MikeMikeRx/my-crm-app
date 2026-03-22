@@ -1,8 +1,9 @@
 import Customer from "../models/Customer.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
+import { DEFAULT_SORT } from "../utils/queries/queryDefaults.js"
 
 export const getCustomers = asyncHandler(async (req, res) => {
-    const customers = await Customer.find({ user: req.user.id }).sort({ createdAt: -1 })
+    const customers = await Customer.find({ user: req.user.id }).sort(DEFAULT_SORT)
 
     res.json(customers)
 })

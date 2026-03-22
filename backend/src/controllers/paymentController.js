@@ -10,7 +10,7 @@ export const getPayments = asyncHandler(async (req, res) => {
             select: "invoiceNumber status customer",
             populate: { path: "customer", select: "name company" },
         })
-        .sort({ paymentDate: -1 })
+        .sort({ paymentDate: -1 }) // intentional: sort by payment date, not record creation
 
     res.json(payments)
 })

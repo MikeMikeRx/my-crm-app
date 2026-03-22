@@ -2,13 +2,14 @@ import Quote from "../models/Quote.js";
 import Customer from "../models/Customer.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { formatQuote } from "../utils/formatters/quoteFormatter.js";
+import { CUSTOMER_POPULATE, DEFAULT_SORT } from "../utils/queries/queryDefaults.js";
 
 const ALLOWED_QUOTE_STATUSES = new Set(["draft", "sent", "accepted", "declined"]);
 
 export const getQuotes = asyncHandler(async (req, res) => {
   const quotes = await Quote.find({ user: req.user.id })
-    .populate("customer", "name email company")
-    .sort({ createdAt: -1 });
+    .populate(...CUSTOMER_POPULATE)
+    .sort(DEFAULT_SORT);
 
   const withTotals = quotes.map(q => formatQuote(q));
 
@@ -16,10 +17,7 @@ export const getQuotes = asyncHandler(async (req, res) => {
 });
 
 export const getQuoteById = asyncHandler(async (req, res) => {
-  const quote = await Quote.findOne({ _id: req.params.id, user: req.user.id }).populate(
-    "customer",
-    "name email company"
-  );
+  const quote = await Quote.findOne({ _id: req.params.id, user: req.user.id }).populate(...CUSTOMER_POPULATE);
 
   if (!quote) {
     return res.status(404).json({ message: "Quote not found" });
