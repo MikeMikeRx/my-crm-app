@@ -34,6 +34,11 @@ async function createInvoiceWithDeps(token) {
       items: [ITEM],
     });
 
+  await request(app)
+    .patch(`/api/invoices/${invoice.body._id}/status`)
+    .set("Authorization", `Bearer ${token}`)
+    .send({ status: "sent" });
+
   return invoice.body;
 }
 

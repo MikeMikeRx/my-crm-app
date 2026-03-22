@@ -1,4 +1,6 @@
 process.env.JWT_SECRET = "test-secret";
+process.env.AUTH_RATE_LIMIT_MAX = "1000";
+process.env.GLOBAL_RATE_LIMIT_MAX = "1000";
 
 import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";

@@ -34,6 +34,11 @@ async function seed(token) {
       items: [ITEM],
     });
 
+  await request(app)
+    .patch(`/api/invoices/${invoice.body._id}/status`)
+    .set("Authorization", `Bearer ${token}`)
+    .send({ status: "sent" });
+
   const payment = await request(app)
     .post("/api/payments")
     .set("Authorization", `Bearer ${token}`)
