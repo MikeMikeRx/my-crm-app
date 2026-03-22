@@ -1,7 +1,7 @@
 import Quote from "../models/Quote.js";
 import Customer from "../models/Customer.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import dayjs from "dayjs";
+import { resolveQuoteStatus } from "../utils/invoiceStatus.js";
 
 export const getQuotes = asyncHandler(async (req, res) => {
   const quotes = await Quote.find({ user: req.user.id })
@@ -10,20 +10,7 @@ export const getQuotes = asyncHandler(async (req, res) => {
 
   const withTotals = quotes.map((q) => {
     const obj = q.toObject();
-
-    if (
-      obj.status !== "converted" &&
-      obj.status !== "declined" &&
-      obj.expiryDate &&
-      dayjs(obj.expiryDate).isBefore(dayjs(), "day")
-    ) {
-      obj.status = "expired";
-    }
-
-    return {
-      ...obj,
-      totals: q.totals,
-    };
+    return { ...obj, status: resolveQuoteStatus(obj), totals: q.totals };
   });
 
   res.json(withTotals);
@@ -40,20 +27,7 @@ export const getQuoteById = asyncHandler(async (req, res) => {
   }
 
   const obj = quote.toObject();
-
-  if (
-    obj.status !== "converted" &&
-    obj.status !== "declined" &&
-    obj.expiryDate &&
-    dayjs(obj.expiryDate).isBefore(dayjs(), "day")
-  ) {
-    obj.status = "expired";
-  }
-
-  res.json({
-    ...obj,
-    totals: quote.totals,
-  });
+  res.json({ ...obj, status: resolveQuoteStatus(obj), totals: quote.totals });
 });
 
 export const createQuote = asyncHandler(async (req, res) => {
