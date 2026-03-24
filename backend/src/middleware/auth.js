@@ -1,33 +1,35 @@
-import jwt from "jsonwebtoken"
-import User from "../models/User.js"
+import jwt from "jsonwebtoken";
 
-export const authMiddleware = async (req, res, next) => {
-    const authHeader = req.headers.authorization
+export const authMiddleware = (req, res, next) => {
+    const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return res.status(401).json({ message: "No token provided, authorization denied" })
+        return res.status(401).json({ message: "No token provided, authorization denied" });
     }
 
     try {
-        const token = authHeader.split(" ")[1]
+        const token = authHeader.split(" ")[1];
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET)
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         if (!decoded?.id) {
-            return res.status(401).json({ message: "Invalid token payload." })
+            return res.status(401).json({ message: "Invalid token payload." });
         }
 
-        const user = await User.findById(decoded.id).select("_id name email role")
-
-        if (!user) {
-            return res.status(401).json({ message: "User not found or invalid token" })
+        if (!decoded?.tenant) {
+            return res.status(401).json({ message: "Token missing tenant." });
         }
 
-        req.user = user
+        if (!decoded?.role) {
+            return res.status(401).json({ message: "Token missing role" });
+        }
 
-        next()
+        req.user = { id: decoded.id, email: decoded.email, role: decoded.role };
+        req.tenant = { id: decoded.tenant };
+
+        next();
     } catch (err) {
-        console.error("❌ JWT verification failed", err.message)
-        res.status(401).json({ message: "Token is not valid or expired" })
+        console.error("JWT verification failed", err.message);
+        res.status(401).json({ message: "Token is not valid or expired" });
     }
 }
