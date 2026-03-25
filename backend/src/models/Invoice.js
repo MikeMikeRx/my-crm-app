@@ -7,6 +7,11 @@ const invoiceSchema = new mongoose.Schema(
             ref: "User",
             required: true,
         },
+        tenant: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Tenant",
+            required: true,
+        },
         customer: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Customer",

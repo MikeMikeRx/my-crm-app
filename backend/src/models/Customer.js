@@ -7,6 +7,11 @@ const customerSchema = new mongoose.Schema(
             ref: "User",
             required: true,
         },
+        tenant: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Tenant",
+            required: true,
+        },
         name: {
             type: String,
             required: [true, "Customer name is required"],

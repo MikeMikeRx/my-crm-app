@@ -7,6 +7,11 @@ const paymentSchema = new mongoose.Schema(
             ref: "User",
             required: true,
         },
+        tenant: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Tenant",
+            required: true,
+        },
         invoice: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Invoice",

@@ -5,7 +5,7 @@ import Membership from "../src/models/Membership.js";
 
 if (process.env.NODE_ENV !== "production") {
     const dotenv = await import("dotenv");
-    dotenv.config();
+    dotenv.config({ path: new URL("../.env", import.meta.url) });
 }
 
 const DATABASE = process.env.DATABASE
