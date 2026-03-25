@@ -1,4 +1,3 @@
-import mongoose from "mongoose"
 import Customer from "../src/models/Customer.js"
 import Quote from "../src/models/Quote.js"
 import Invoice from "../src/models/Invoice.js"
@@ -9,40 +8,32 @@ import { getQuotes } from "./quotes.js"
 import { getInvoices } from "./invoices.js"
 import { getPayments } from "./payments.js"
 
-async function createAll(Model, dataMap, session) {
+async function createAll(Model, dataMap) {
     const entries = await Promise.all(
         Object.entries(dataMap).map(async ([key, data]) => {
             const doc = new Model(data)
-            await doc.save({ session })
+            await doc.save()
             return [key, doc]
         })
     )
     return Object.fromEntries(entries)
 }
 
-export async function seedDemoData(userId) {
-    const session = await mongoose.startSession()
-    try {
-        await session.withTransaction(async () => {
-            await Promise.all([
-                Payment.deleteMany({ user: userId }, { session }),
-                Invoice.deleteMany({ user: userId }, { session }),
-                Quote.deleteMany({ user: userId }, { session }),
-                Customer.deleteMany({ user: userId }, { session }),
-            ])
+export async function seedDemoData(userId, tenantId) {
+    await Promise.all([
+        Payment.deleteMany({ tenant: tenantId }),
+        Invoice.deleteMany({ tenant: tenantId }),
+        Quote.deleteMany({ tenant: tenantId }),
+        Customer.deleteMany({ tenant: tenantId }),
+    ])
 
-            const customers = await createAll(Customer, getCustomers(userId), session)
-            const quotes = await createAll(Quote, getQuotes(userId, customers), session)
-            const invoices = await createAll(Invoice, getInvoices(userId, customers, quotes), session)
-            await createAll(Payment, getPayments(userId, invoices), session)
+    const customers = await createAll(Customer, getCustomers(userId, tenantId))
+    const quotes = await createAll(Quote, getQuotes(userId, tenantId, customers))
+    const invoices = await createAll(Invoice, getInvoices(userId, tenantId, customers, quotes))
+    await createAll(Payment, getPayments(userId, tenantId, invoices))
 
-            await Invoice.updateMany(
-                { _id: { $in: [invoices.novaUnpaid._id, invoices.acmeUnpaid._id] } },
-                { status: "partially_paid" },
-                { session }
-            )
-        })
-    } finally {
-        await session.endSession()
-    }
+    await Invoice.updateMany(
+        { _id: { $in: [invoices.novaUnpaid._id, invoices.acmeUnpaid._id] } },
+        { status: "partially_paid" }
+    )
 }

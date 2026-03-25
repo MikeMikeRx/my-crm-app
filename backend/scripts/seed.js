@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
 import User from "../src/models/User.js";
+import Tenant from "../src/models/Tenant.js";
+import Membership from "../src/models/Membership.js";
 import Customer from "../src/models/Customer.js";
 import Quote from "../src/models/Quote.js";
 import Invoice from "../src/models/Invoice.js";
@@ -11,7 +13,7 @@ import { seedDemoData } from "../seed/index.js";
 
 if (process.env.NODE_ENV !== "production") {
   const dotenv = await import("dotenv");
-  dotenv.config();
+  dotenv.config({ path: new URL("../.env", import.meta.url) });
 }
 
 const DATABASE = process.env.DATABASE;
@@ -24,6 +26,13 @@ async function seed() {
   console.log("Connected to DB");
 
   try {
+    const existingUser = await User.findOne({ email: DEMO_USER.email });
+
+    if (existingUser) {
+      await Membership.deleteMany({ user: existingUser._id });
+      await Tenant.deleteMany({ owner: existingUser._id });
+    }
+
     await Promise.all([
       Payment.deleteMany({}),
       Invoice.deleteMany({}),
@@ -40,10 +49,23 @@ async function seed() {
       role: DEMO_USER.role,
     });
 
-    await seedDemoData(user._id);
+    const tenant = await Tenant.create({
+      name: DEMO_USER.name,
+      slug: "demo-user",
+      owner: user._id,
+    });
+
+    await Membership.create({
+      user: user._id,
+      tenant: tenant._id,
+      role: "owner",
+    });
+
+    await seedDemoData(user._id, tenant._id);
 
     console.log("Demo data seeded successfully");
     console.log("Demo login:");
+    console.log(`Tenant: ${tenant.name} (${tenant.slug})`);
     console.log(`Email: ${DEMO_USER.email}`);
     console.log(`Password: ${DEMO_USER.password}`);
   } catch (err) {

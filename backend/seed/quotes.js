@@ -1,6 +1,6 @@
 const fmt = (d) => d.toISOString().slice(0, 10).replace(/-/g, "")
 
-export function getQuotes(userId, { acme, nova }) {
+export function getQuotes(userId, tenantId, { acme, nova }) {
     const nowTs = Date.now()
     const now = new Date(nowTs)
     const today = fmt(now)
@@ -8,6 +8,7 @@ export function getQuotes(userId, { acme, nova }) {
     return {
         acmeAccepted: {
             user: userId,
+            tenant: tenantId,
             customer: acme._id,
             quoteNumber: `Q-${today}-1001`,
             issueDate: now,
@@ -18,6 +19,7 @@ export function getQuotes(userId, { acme, nova }) {
         },
         acmeDraft: {
             user: userId,
+            tenant: tenantId,
             customer: acme._id,
             quoteNumber: `Q-${today}-1002`,
             issueDate: now,
@@ -28,6 +30,7 @@ export function getQuotes(userId, { acme, nova }) {
         },
         acmeDeclined: {
             user: userId,
+            tenant: tenantId,
             customer: acme._id,
             quoteNumber: `Q-${today}-1003`,
             issueDate: now,
@@ -38,6 +41,7 @@ export function getQuotes(userId, { acme, nova }) {
         },
         acmePaid: {
             user: userId,
+            tenant: tenantId,
             customer: acme._id,
             quoteNumber: `Q-${fmt(new Date(nowTs - 15 * 86400000))}-1001`,
             issueDate: new Date(nowTs - 15 * 86400000),
@@ -48,6 +52,7 @@ export function getQuotes(userId, { acme, nova }) {
         },
         acmeOverdue: {
             user: userId,
+            tenant: tenantId,
             customer: acme._id,
             quoteNumber: `Q-${fmt(new Date(nowTs - 35 * 86400000))}-1001`,
             issueDate: new Date(nowTs - 35 * 86400000),
@@ -58,6 +63,7 @@ export function getQuotes(userId, { acme, nova }) {
         },
         acmeSent: {
             user: userId,
+            tenant: tenantId,
             customer: acme._id,
             quoteNumber: `Q-${fmt(new Date(nowTs - 3 * 86400000))}-1002`,
             issueDate: new Date(nowTs - 3 * 86400000),
@@ -68,6 +74,7 @@ export function getQuotes(userId, { acme, nova }) {
         },
         novaAccepted: {
             user: userId,
+            tenant: tenantId,
             customer: nova._id,
             quoteNumber: `Q-${fmt(new Date(nowTs - 20 * 86400000))}-1001`,
             issueDate: new Date(nowTs - 20 * 86400000),

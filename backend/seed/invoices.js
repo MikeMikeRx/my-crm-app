@@ -1,6 +1,6 @@
 const fmt = (d) => d.toISOString().slice(0, 10).replace(/-/g, "")
 
-export function getInvoices(userId, { acme, nova }, { acmeAccepted, acmePaid, acmeOverdue, novaAccepted }) {
+export function getInvoices(userId, tenantId, { acme, nova }, { acmeAccepted, acmePaid, acmeOverdue, novaAccepted }) {
     const nowTs = Date.now()
     const now = new Date(nowTs)
     const today = fmt(now)
@@ -8,26 +8,29 @@ export function getInvoices(userId, { acme, nova }, { acmeAccepted, acmePaid, ac
     return {
         novaUnpaid: {
             user: userId,
+            tenant: tenantId,
             customer: nova._id,
             invoiceNumber: `INV-${fmt(new Date(nowTs - 5 * 86400000))}-1001`,
             issueDate: new Date(nowTs - 5 * 86400000),
             dueDate: new Date(nowTs + 9 * 86400000),
-            status: "unpaid",
+            status: "sent",
             items: novaAccepted.items,
             quote: novaAccepted._id,
         },
         acmeUnpaid: {
             user: userId,
+            tenant: tenantId,
             customer: acme._id,
             invoiceNumber: `INV-${today}-1001`,
             issueDate: now,
             dueDate: new Date(nowTs + 14 * 86400000),
-            status: "unpaid",
+            status: "sent",
             items: acmeAccepted.items,
             quote: acmeAccepted._id,
         },
         acmePaid: {
             user: userId,
+            tenant: tenantId,
             customer: acme._id,
             invoiceNumber: `INV-${fmt(new Date(nowTs - 10 * 86400000))}-1001`,
             issueDate: new Date(nowTs - 10 * 86400000),
@@ -38,11 +41,12 @@ export function getInvoices(userId, { acme, nova }, { acmeAccepted, acmePaid, ac
         },
         acmeOverdue: {
             user: userId,
+            tenant: tenantId,
             customer: acme._id,
             invoiceNumber: `INV-${fmt(new Date(nowTs - 30 * 86400000))}-1001`,
             issueDate: new Date(nowTs - 30 * 86400000),
             dueDate: new Date(nowTs - 10 * 86400000),
-            status: "unpaid",
+            status: "sent",
             items: acmeOverdue.items,
             quote: acmeOverdue._id,
         },

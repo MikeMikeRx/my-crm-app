@@ -82,12 +82,18 @@ export const loginDemo = asyncHandler(async (_req, res) => {
         return res.status(404).json({ message: "Demo account not found" })
     }
 
-    const membership = await Membership.findOne({ user: user._id }).populate("tenant", "name slug")
+    let membership = await Membership.findOne({ user: user._id }).populate("tenant", "name slug")
     if (!membership) {
-        return res.status(403).json({ message: "No tenant membership found for demo account" })
+        const tenant = await Tenant.create({ name: user.name, slug: "demo-user", owner: user._id })
+        membership = await Membership.create({ user: user._id, tenant: tenant._id, role: "owner" })
+        await membership.populate("tenant", "name slug")
     }
 
-    await seedDemoData(user._id)
+    try {
+        await seedDemoData(user._id, membership.tenant._id)
+    } catch (err) {
+        console.error("Demo seed failed:", err.message)
+    }
 
     const token = generateAuthToken(user, membership.tenant._id)
 

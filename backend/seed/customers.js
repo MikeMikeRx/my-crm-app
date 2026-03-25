@@ -1,7 +1,8 @@
-export function getCustomers(userId) {
+export function getCustomers(userId, tenantId) {
     return {
         acme: {
             user: userId,
+            tenant: tenantId,
             name: "James Whitfield",
             email: "j.whitfield@acme.com",
             phone: "+1 555 123 456",
@@ -10,6 +11,7 @@ export function getCustomers(userId) {
         },
         nova: {
             user: userId,
+            tenant: tenantId,
             name: "Sarah Chen",
             email: "sarah.chen@novadigital.io",
             phone: "+1 415 987 3210",
@@ -18,6 +20,7 @@ export function getCustomers(userId) {
         },
         stellar: {
             user: userId,
+            tenant: tenantId,
             name: "Marcus Webb",
             email: "m.webb@stellardynamics.com",
             phone: "+44 20 7946 0958",
