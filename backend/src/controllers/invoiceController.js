@@ -8,7 +8,7 @@ import { formatInvoice } from "../utils/formatters/invoiceFormatter.js";
 import { CUSTOMER_POPULATE, DEFAULT_SORT } from "../utils/queries/queryDefaults.js";
 
 export const getInvoices = asyncHandler(async (req, res) => {
-    const invoices = await Invoice.find({ user: req.user.id })
+    const invoices = await Invoice.find({ tenant: req.tenant.id })
         .populate(...CUSTOMER_POPULATE)
         .sort(DEFAULT_SORT);
 
@@ -18,7 +18,7 @@ export const getInvoices = asyncHandler(async (req, res) => {
 });
 
 export const getInvoiceById = asyncHandler(async (req, res) => {
-    const invoice = await Invoice.findOne({ _id: req.params.id, user: req.user.id })
+    const invoice = await Invoice.findOne({ _id: req.params.id, tenant: req.tenant.id })
         .populate(...CUSTOMER_POPULATE);
 
     if (!invoice) {
@@ -31,7 +31,7 @@ export const getInvoiceById = asyncHandler(async (req, res) => {
 export const createInvoice = asyncHandler(async (req, res) => {
     const { customer, quote, invoiceNumber, issueDate, dueDate, items, notes } = req.body;
 
-    const existingCustomer = await Customer.findOne({ _id: customer, user: req.user.id });
+    const existingCustomer = await Customer.findOne({ _id: customer, tenant: req.tenant.id });
     if (!existingCustomer) {
         return res.status(400).json({ message: "Invalid customer ID" });
     }
@@ -39,7 +39,7 @@ export const createInvoice = asyncHandler(async (req, res) => {
     let quoteDoc = null;
 
     if (quote) {
-        quoteDoc = await Quote.findOne({ _id: quote, user: req.user.id });
+        quoteDoc = await Quote.findOne({ _id: quote, tenant: req.tenant.id });
 
         if (!quoteDoc) {
             return res.status(400).json({ message: "Invalid quote ID" });
@@ -72,6 +72,7 @@ export const createInvoice = asyncHandler(async (req, res) => {
 
     const newInvoice = await Invoice.create({
         user: req.user.id,
+        tenant: req.tenant.id,
         customer,
         invoiceNumber,
         issueDate,
@@ -83,7 +84,7 @@ export const createInvoice = asyncHandler(async (req, res) => {
 
     if (quote) {
         await Quote.findOneAndUpdate(
-            { _id: quote, user: req.user.id },
+            { _id: quote, tenant: req.tenant.id },
             { status: "converted" }
         );
     }
@@ -94,7 +95,7 @@ export const createInvoice = asyncHandler(async (req, res) => {
 export const updateInvoice = asyncHandler(async (req, res) => {
     const { issueDate, dueDate, items, notes } = req.body;
 
-    const invoice = await Invoice.findOne({ _id: req.params.id, user: req.user.id });
+    const invoice = await Invoice.findOne({ _id: req.params.id, tenant: req.tenant.id });
     if (!invoice) {
         return res.status(404).json({ message: "Invoice not found" });
     }
@@ -104,7 +105,7 @@ export const updateInvoice = asyncHandler(async (req, res) => {
     }
 
     const updated = await Invoice.findOneAndUpdate(
-        { _id: req.params.id, user: req.user.id },
+        { _id: req.params.id, tenant: req.tenant.id },
         { issueDate, dueDate, items, notes },
         { new: true, runValidators: true }
     );
@@ -115,7 +116,7 @@ export const updateInvoice = asyncHandler(async (req, res) => {
 export const transitionInvoiceStatus = asyncHandler(async (req, res) => {
     const { status } = req.body;
 
-    const invoice = await Invoice.findOne({ _id: req.params.id, user: req.user.id });
+    const invoice = await Invoice.findOne({ _id: req.params.id, tenant: req.tenant.id });
     if (!invoice) {
         return res.status(404).json({ message: "Invoice not found" });
     }
@@ -133,7 +134,7 @@ export const transitionInvoiceStatus = asyncHandler(async (req, res) => {
 });
 
 export const deleteInvoice = asyncHandler(async (req, res) => {
-    const invoice = await Invoice.findOne({ _id: req.params.id, user: req.user.id });
+    const invoice = await Invoice.findOne({ _id: req.params.id, tenant: req.tenant.id });
     if (!invoice) {
         return res.status(404).json({ message: "Invoice not found" });
     }

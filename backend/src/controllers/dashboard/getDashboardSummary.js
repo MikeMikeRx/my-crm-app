@@ -10,10 +10,10 @@ import { getCustomerSummary } from "../../services/dashboard/getCustomerSummary.
 
 export const getDashboardSummary = asyncHandler(async (req, res) => {
     const [invoices, quotes, payments, customers] = await Promise.all([
-        Invoice.find({ user: req.user.id }),
-        Quote.find({ user: req.user.id }),
-        Payment.find({ user: req.user.id }),
-        Customer.find({ user: req.user.id }),
+        Invoice.find({ tenant: req.tenant.id }),
+        Quote.find({ tenant: req.tenant.id }),
+        Payment.find({ tenant: req.tenant.id }),
+        Customer.find({ tenant: req.tenant.id }),
     ]);
 
     const { invoiceSummary, recentInvoices } = getInvoiceSummary(invoices);

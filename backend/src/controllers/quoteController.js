@@ -7,7 +7,7 @@ import { CUSTOMER_POPULATE, DEFAULT_SORT } from "../utils/queries/queryDefaults.
 const ALLOWED_QUOTE_STATUSES = new Set(["draft", "sent", "accepted", "declined"]);
 
 export const getQuotes = asyncHandler(async (req, res) => {
-  const quotes = await Quote.find({ user: req.user.id })
+  const quotes = await Quote.find({ tenant: req.tenant.id })
     .populate(...CUSTOMER_POPULATE)
     .sort(DEFAULT_SORT);
 
@@ -17,7 +17,7 @@ export const getQuotes = asyncHandler(async (req, res) => {
 });
 
 export const getQuoteById = asyncHandler(async (req, res) => {
-  const quote = await Quote.findOne({ _id: req.params.id, user: req.user.id }).populate(...CUSTOMER_POPULATE);
+  const quote = await Quote.findOne({ _id: req.params.id, tenant: req.tenant.id }).populate(...CUSTOMER_POPULATE);
 
   if (!quote) {
     return res.status(404).json({ message: "Quote not found" });
@@ -29,7 +29,7 @@ export const getQuoteById = asyncHandler(async (req, res) => {
 export const createQuote = asyncHandler(async (req, res) => {
   const { customer, quoteNumber, issueDate, expiryDate, items, notes, status } = req.body;
 
-  const existingCustomer = await Customer.findOne({ _id: customer, user: req.user.id });
+  const existingCustomer = await Customer.findOne({ _id: customer, tenant: req.tenant.id });
   if (!existingCustomer) {
     return res.status(400).json({ message: "Invalid customer ID" });
   }
@@ -38,6 +38,7 @@ export const createQuote = asyncHandler(async (req, res) => {
 
   const newQuote = await Quote.create({
     user: req.user.id,
+    tenant: req.tenant.id,
     customer,
     quoteNumber,
     issueDate,
@@ -56,7 +57,7 @@ export const updateQuote = asyncHandler(async (req, res) => {
   if (status && ALLOWED_QUOTE_STATUSES.has(status)) update.status = status;
 
   const quote = await Quote.findOneAndUpdate(
-    { _id: req.params.id, user: req.user.id },
+    { _id: req.params.id, tenant: req.tenant.id },
     update,
     { new: true, runValidators: true }
   );
@@ -71,7 +72,7 @@ export const updateQuote = asyncHandler(async (req, res) => {
 export const deleteQuote = asyncHandler(async (req, res) => {
   const quote = await Quote.findOneAndDelete({
     _id: req.params.id,
-    user: req.user.id,
+    tenant: req.tenant.id,
   });
 
   if (!quote) {

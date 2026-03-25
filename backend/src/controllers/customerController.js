@@ -3,13 +3,13 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 import { DEFAULT_SORT } from "../utils/queries/queryDefaults.js"
 
 export const getCustomers = asyncHandler(async (req, res) => {
-    const customers = await Customer.find({ user: req.user.id }).sort(DEFAULT_SORT)
+    const customers = await Customer.find({ tenant: req.tenant.id }).sort(DEFAULT_SORT)
 
     res.json(customers)
 })
 
 export const getCustomerById = asyncHandler(async (req, res) => {
-    const customer = await Customer.findOne({ _id: req.params.id, user: req.user.id })
+    const customer = await Customer.findOne({ _id: req.params.id, tenant: req.tenant.id })
 
     if (!customer) {
         return res.status(404).json({ message: "Customer not found" })
@@ -27,6 +27,7 @@ export const createCustomer = asyncHandler(async (req, res) => {
 
     const newCustomer = await Customer.create({
         user: req.user.id,
+        tenant: req.tenant.id,
         name,
         email,
         phone,
@@ -40,7 +41,7 @@ export const createCustomer = asyncHandler(async (req, res) => {
 export const updateCustomer = asyncHandler(async (req, res) => {
     const { name, email, phone, company, address } = req.body
     const customer = await Customer.findOneAndUpdate(
-        { _id: req.params.id, user: req.user.id },
+        { _id: req.params.id, tenant: req.tenant.id },
         { name, email, phone, company, address },
         { new: true, runValidators: true }
     )
@@ -55,7 +56,7 @@ export const updateCustomer = asyncHandler(async (req, res) => {
 export const deleteCustomer = asyncHandler(async (req, res) => {
     const customer = await Customer.findOneAndDelete({
         _id: req.params.id,
-        user: req.user.id
+        tenant: req.tenant.id
     })
 
     if (!customer) {

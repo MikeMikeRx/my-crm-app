@@ -3,7 +3,7 @@ import Invoice from "../models/Invoice.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 
 export const getPayments = asyncHandler(async (req, res) => {
-    const payments = await Payment.find({ user: req.user.id })
+    const payments = await Payment.find({ tenant: req.tenant.id })
         .populate({
             path: "invoice",
             select: "invoiceNumber status customer",
@@ -15,7 +15,7 @@ export const getPayments = asyncHandler(async (req, res) => {
 })
 
 export const getPaymentById = asyncHandler(async (req, res) => {
-    const payment = await Payment.findOne({ _id: req.params.id, user: req.user.id })
+    const payment = await Payment.findOne({ _id: req.params.id, tenant: req.tenant.id })
         .populate({
             path: "invoice",
             select: "invoiceNumber status customer",
@@ -42,7 +42,7 @@ export const createPayment = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: "Amount must be greater than 0" })
     }
 
-    const existingInvoice = await Invoice.findOne({ _id: invoice, user: req.user.id })
+    const existingInvoice = await Invoice.findOne({ _id: invoice, tenant: req.tenant.id })
     if (!existingInvoice) {
         return res.status(400).json({ message: "Invalid invoice ID" })
     }
@@ -66,6 +66,7 @@ export const createPayment = asyncHandler(async (req, res) => {
 
     const payment = await Payment.create({
         user: req.user.id,
+        tenant: req.tenant.id,
         paymentId,
         invoice,
         amount,
