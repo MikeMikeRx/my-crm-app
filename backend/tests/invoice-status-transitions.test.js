@@ -15,10 +15,10 @@ async function createInvoiceWithDeps(token) {
     .set("Authorization", `Bearer ${token}`)
     .send({
       customer: customer.body._id,
-      quoteNumber: `Q-${Date.now()}`,
+      quoteNumber: `Q-${Date.now()}-${Math.random()}`,
       issueDate: "2026-01-01",
       expiryDate: "2026-12-31",
-      status: "sent",
+      status: "accepted",
       items: [ITEM],
     });
 

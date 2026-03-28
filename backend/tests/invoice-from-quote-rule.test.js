@@ -23,7 +23,7 @@ describe("Business rule: invoice from quote", () => {
       .set("Authorization", `Bearer ${token}`)
       .send({
         customer: customerId,
-        quoteNumber: `Q-${Date.now()}`,
+        quoteNumber: `Q-${Date.now()}-${Math.random()}`,
         issueDate: "2026-01-16",
         expiryDate: "2027-01-16",
         status,
@@ -40,7 +40,7 @@ describe("Business rule: invoice from quote", () => {
       .send({
         customer: customerId,
         quote: quoteId,
-        invoiceNumber: `INV-${Date.now()}`,
+        invoiceNumber: `INV-${Date.now()}-${Math.random()}`,
         issueDate: "2026-01-16",
         dueDate: "2026-01-30",
         items: [{ description: "Item", quantity: 1, unitPrice: 100, taxRate: 20 }],
@@ -48,27 +48,74 @@ describe("Business rule: invoice from quote", () => {
       });
   }
 
-  it("rejects invoice creation from a draft quote", async () => {
-    const quoteId = await createQuote("draft");
-    const inv = await tryCreateInvoice(quoteId);
-    expect(inv.statusCode).toBe(400);
+  describe("Rejected statuses", () => {
+    it("rejects invoice creation from a draft quote", async () => {
+      const quoteId = await createQuote("draft");
+      const inv = await tryCreateInvoice(quoteId);
+      expect(inv.statusCode).toBe(400);
+    });
+
+    it("rejects invoice creation from a sent quote", async () => {
+      const quoteId = await createQuote("sent");
+      const inv = await tryCreateInvoice(quoteId);
+      expect(inv.statusCode).toBe(400);
+    });
+
+    it("rejects invoice creation from a declined quote", async () => {
+      const quoteId = await createQuote("declined");
+      const inv = await tryCreateInvoice(quoteId);
+      expect(inv.statusCode).toBe(400);
+    });
+
+    it("rejects invoice creation from an expired quote", async () => {
+      const q = await request(app)
+        .post("/api/quotes")
+        .set("Authorization", `Bearer ${token}`)
+        .send({
+          customer: customerId,
+          quoteNumber: `Q-${Date.now()}-${Math.random()}`,
+          issueDate: "2020-01-01",
+          expiryDate: "2020-06-01",
+          status: "sent",
+          items: [{ description: "Item", quantity: 1, unitPrice: 100, taxRate: 20 }],
+        });
+      const inv = await tryCreateInvoice(q.body._id);
+      expect(inv.statusCode).toBe(400);
+    });
+
+    it("rejects invoice creation from a converted quote", async () => {
+      const quoteId = await createQuote("accepted");
+      await tryCreateInvoice(quoteId);
+      const inv = await tryCreateInvoice(quoteId);
+      expect(inv.statusCode).toBe(400);
+    });
   });
 
-  it("rejects invoice creation from a declined quote", async () => {
-    const quoteId = await createQuote("declined");
-    const inv = await tryCreateInvoice(quoteId);
-    expect(inv.statusCode).toBe(400);
-  });
+  describe("Successful conversion", () => {
+    it("allows invoice creation from an accepted quote", async () => {
+      const quoteId = await createQuote("accepted");
+      const inv = await tryCreateInvoice(quoteId);
+      expect(inv.statusCode).toBe(201);
+    });
 
-  it("allows invoice creation from a sent quote", async () => {
-    const quoteId = await createQuote("sent");
-    const inv = await tryCreateInvoice(quoteId);
-    expect(inv.statusCode).toBe(201);
-  });
+    it("quote status becomes converted after invoice creation", async () => {
+      const quoteId = await createQuote("accepted");
+      await tryCreateInvoice(quoteId);
 
-  it("allows invoice creation from an accepted quote", async () => {
-    const quoteId = await createQuote("accepted");
-    const inv = await tryCreateInvoice(quoteId);
-    expect(inv.statusCode).toBe(201);
+      const quote = await request(app)
+        .get(`/api/quotes/${quoteId}`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(quote.body.status).toBe("converted");
+    });
+
+    it("rejects duplicate invoice creation from the same accepted quote", async () => {
+      const quoteId = await createQuote("accepted");
+      const first = await tryCreateInvoice(quoteId);
+      expect(first.statusCode).toBe(201);
+
+      const second = await tryCreateInvoice(quoteId);
+      expect(second.statusCode).toBe(400);
+    });
   });
 });

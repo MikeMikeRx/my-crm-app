@@ -21,6 +21,7 @@ const invoiceSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Quote",
             required: true,
+            unique: true,
         },
         invoiceNumber: {
             type: String,

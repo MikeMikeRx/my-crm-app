@@ -15,10 +15,10 @@ async function seed(token) {
     .set("Authorization", `Bearer ${token}`)
     .send({
       customer: customer.body._id,
-      quoteNumber: `Q-${Date.now()}`,
+      quoteNumber: `Q-${Date.now()}-${Math.random()}`,
       issueDate: new Date().toISOString().slice(0, 10),
       expiryDate: "2027-12-31",
-      status: "sent",
+      status: "accepted",
       items: [ITEM],
     });
 

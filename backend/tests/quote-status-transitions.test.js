@@ -131,7 +131,7 @@ describe("Quote status transitions", () => {
 
   describe("Converted quote edit lock", () => {
     it("converted quote cannot be edited", async () => {
-      const quote = await createQuote(token, customerId, { status: "sent" });
+      const quote = await createQuote(token, customerId, { status: "accepted" });
 
       await request(app)
         .post("/api/invoices")
@@ -160,7 +160,7 @@ describe("Quote status transitions", () => {
     });
 
     it("converted quote cannot be transitioned", async () => {
-      const quote = await createQuote(token, customerId, { status: "sent" });
+      const quote = await createQuote(token, customerId, { status: "accepted" });
 
       await request(app)
         .post("/api/invoices")
