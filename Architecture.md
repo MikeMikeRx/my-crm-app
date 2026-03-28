@@ -10,6 +10,8 @@
 - [Data Model](#data-model)
 - [API Design](#api-design)
 - [Authentication & Authorization](#authentication--authorization)
+- [Multi-Tenancy & RBAC](#multi-tenancy--rbac)
+- [Activity Tracking](#activity-tracking)
 - [Frontend Architecture](#frontend-architecture)
 - [Security](#security)
 - [Key Architectural Decisions](#key-architectural-decisions)
@@ -67,11 +69,18 @@ vitesse-crm/
 │   ├── src/
 │   │   ├── config/           # Database configuration
 │   │   ├── controllers/      # Request handlers
-│   │   │   └── dashboard/    # Dashboard-specific controllers
+│   │   │   ├── dashboard/    # Dashboard-specific controllers
+│   │   │   └── noteController.js  # Manual note creation
 │   │   ├── middleware/       # Auth, validation, error handling
+│   │   │   └── permissions.js     # RBAC permission matrix + requirePermission()
 │   │   ├── models/           # Mongoose schemas
+│   │   │   ├── Tenant.js     # Tenant (organisation) entity
+│   │   │   ├── Membership.js # User ↔ Tenant with role
+│   │   │   └── Activity.js   # Activity stream (events + notes)
 │   │   ├── routes/           # Express route definitions
+│   │   │   └── activity.js   # POST /api/activities/notes
 │   │   ├── services/         # Business logic and aggregation
+│   │   │   ├── activity/     # createActivity() — fire-and-forget event recorder
 │   │   │   └── dashboard/    # Dashboard aggregation services
 │   │   └── utils/            # Async handler, status helpers, financial calculations
 │   │       └── dashboard/    # Dashboard-specific utilities
@@ -151,28 +160,41 @@ vitesse-crm/
 └──────────┘      └──────────┘      └──────────┘      └──────────┘      └──────────┘
    creates           for a           converts to       receives
    customer         customer          invoice          payment
+
+All entities above belong to a Tenant. Users access a tenant via a Membership (with a role).
+Business events and user notes are recorded in Activity entries linked to any entity.
 ```
 
 ### Entity Relationship Diagram
 
 ```
-┌──────────────┐
-│     User     │
-│──────────────│
-│ _id          │
-│ name         │
-│ email        │
-│ password     │
-│ role         │
-└──────┬───────┘
+┌──────────────┐        ┌──────────────┐
+│     User     │        │    Tenant    │
+│──────────────│        │──────────────│
+│ _id          │        │ _id          │
+│ name         │        │ name         │
+│ email        │        │ slug (unique)│
+│ password     │        │ owner ───────┼──► User
+│ role         │        └──────────────┘
+└──────┬───────┘               │
+       │                       │ linked via
+       │ member of (N:M)       ▼
+       ├──────────────►┌──────────────┐
+       │               │  Membership  │
+       │               │──────────────│
+       │               │ user ────────┼──► User
+       │               │ tenant ──────┼──► Tenant
+       │               │ role         │  "owner"|"member"
+       │               └──────────────┘
        │
-       │ owns (1:N)
+       │ scoped to Tenant
        ▼
 ┌──────────────┐
 │   Customer   │
 │──────────────│
 │ _id          │
 │ user ────────┼──► User
+│ tenant ──────┼──► Tenant
 │ name         │
 │ email        │
 │ phone        │
@@ -187,6 +209,7 @@ vitesse-crm/
 │──────────────│
 │ _id          │
 │ user ────────┼──► User
+│ tenant ──────┼──► Tenant
 │ customer ────┼──► Customer
 │ quoteNumber  │
 │ items[]      │
@@ -201,6 +224,7 @@ vitesse-crm/
 │──────────────│
 │ _id          │
 │ user ────────┼──► User
+│ tenant ──────┼──► Tenant
 │ customer ────┼──► Customer
 │ quote ───────┼──► Quote (optional)
 │ invoiceNumber│
@@ -216,12 +240,28 @@ vitesse-crm/
 │──────────────│
 │ _id          │
 │ user ────────┼──► User
+│ tenant ──────┼──► Tenant
 │ invoice ─────┼──► Invoice
 │ paymentId    │
 │ amount       │
 │ paymentMethod│
 │ status       │
 └──────────────┘
+
+Activity entries are linked to any of the above business entities:
+
+┌──────────────────┐
+│     Activity     │
+│──────────────────│
+│ tenant ──────────┼──► Tenant
+│ user ────────────┼──► User
+│ entityType       │  "customer"|"quote"|"invoice"|"payment"
+│ entityId ────────┼──► (entity)
+│ type             │  "event" | "note"
+│ action           │  e.g. "quote_sent", "note_added"
+│ message          │
+│ metadata         │  (optional structured context)
+└──────────────────┘
 ```
 
 ### Collections
@@ -239,11 +279,37 @@ vitesse-crm/
 }
 ```
 
+**Tenant**
+```javascript
+{
+  _id: ObjectId,
+  name: String,
+  slug: String (unique, lowercase),   // URL-safe identifier
+  owner: ObjectId (ref: User),
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+**Membership**
+```javascript
+{
+  _id: ObjectId,
+  user: ObjectId (ref: User),
+  tenant: ObjectId (ref: Tenant),
+  role: "owner" | "member",           // Controls RBAC permissions
+  createdAt: Date,
+  updatedAt: Date
+  // Unique compound index: { user, tenant }
+}
+```
+
 **Customer**
 ```javascript
 {
   _id: ObjectId,
-  user: ObjectId (ref: User),      // Owner - tenant isolation
+  user: ObjectId (ref: User),
+  tenant: ObjectId (ref: Tenant),     // Tenant scope
   name: String,
   email: String,
   phone: String,
@@ -259,8 +325,9 @@ vitesse-crm/
 {
   _id: ObjectId,
   user: ObjectId (ref: User),
-  customer: ObjectId (ref: Customer),  // Quote belongs to a customer
-  quoteNumber: String (unique),
+  tenant: ObjectId (ref: Tenant),
+  customer: ObjectId (ref: Customer),
+  quoteNumber: String (unique, assigned — validated; uniqueness enforced),
   issueDate: Date,
   expiryDate: Date,
   items: [{
@@ -269,6 +336,7 @@ vitesse-crm/
     unitPrice: Number,
     taxRate: Number (percentage)
   }],
+  notes: String (optional),
   status: "draft" | "sent" | "accepted" | "declined" | "expired" | "converted",
   // Virtual: totals { subtotal, tax, total }
 }
@@ -279,16 +347,21 @@ vitesse-crm/
 {
   _id: ObjectId,
   user: ObjectId (ref: User),
+  tenant: ObjectId (ref: Tenant),
   customer: ObjectId (ref: Customer),
-  quote: ObjectId (ref: Quote, optional),  // Created from quote
-  invoiceNumber: String (unique),
+  quote: ObjectId (ref: Quote, required, unique),
+  invoiceNumber: String (unique, assigned — validated; uniqueness enforced),
   issueDate: Date,
   dueDate: Date,
   items: [{ description, quantity, unitPrice, taxRate }],
+  notes: String (optional),
   status: "draft" | "sent" | "partially_paid" | "paid",
   // "overdue" derived at read-time via resolveInvoiceStatus() — not stored
   // Virtual: totals { subtotal, tax, total }
 }
+// Constraints:
+// - Invoice must originate from an accepted quote (quote is required)
+// - One invoice per quote enforced by unique index on the quote field
 ```
 
 **Payment**
@@ -296,12 +369,33 @@ vitesse-crm/
 {
   _id: ObjectId,
   user: ObjectId (ref: User),
-  invoice: ObjectId (ref: Invoice),  // Payment against invoice
+  tenant: ObjectId (ref: Tenant),
+  invoice: ObjectId (ref: Invoice),
   paymentId: String (unique),
   amount: Number,
   paymentDate: Date,
   paymentMethod: "cash" | "card" | "bank_transfer" | "paypal",
   status: "pending" | "completed" | "failed"
+}
+// Immutability: payments have no update or delete routes.
+// Corrections are made by recording new entries, never by modifying existing ones.
+```
+
+**Activity**
+```javascript
+{
+  _id: ObjectId,
+  tenant: ObjectId (ref: Tenant),
+  user: ObjectId (ref: User),
+  entityType: "customer" | "quote" | "invoice" | "payment",
+  entityId: ObjectId,                // Ref to the entity above
+  type: "event" | "note",
+  action: String,                    // e.g. "quote_sent", "payment_recorded", "note_added"
+  message: String,
+  metadata: Mixed (optional),        // Structured context, e.g. { previousStatus, newStatus }
+  createdAt: Date,
+  updatedAt: Date
+  // Index: { tenant, entityType, entityId }
 }
 ```
 
@@ -310,10 +404,10 @@ vitesse-crm/
 - Avoids data duplication and sync issues
 - Calculated on JSON serialization via Mongoose virtuals
 
-**Decision: Tenant isolation via user field**
-- Every entity includes `user` reference
-- Controllers filter by `req.user.id` automatically
-- Enables future multi-tenant SaaS expansion
+**Decision: Tenant isolation via tenant field**
+- Every entity includes a `tenant` reference; controllers scope all queries by `{ tenant: req.tenant.id }`
+- `user` is kept only as actor/creator linkage, not for data scoping
+- Enables multi-tenant SaaS with strict cross-tenant data isolation
 
 ---
 
@@ -343,7 +437,8 @@ vitesse-crm/
 | GET | `/api/quotes/:id` | Get quote | Yes |
 | POST | `/api/quotes` | Create quote | Yes |
 | PUT | `/api/quotes/:id` | Update quote | Yes |
-| DELETE | `/api/quotes/:id` | Delete quote | Yes |
+| PATCH | `/api/quotes/:id/status` | Transition quote status (state machine) | Yes |
+| DELETE | `/api/quotes/:id` | Delete quote (blocked if converted) | Yes |
 | GET | `/api/invoices` | List invoices | Yes |
 | GET | `/api/invoices/:id` | Get invoice | Yes |
 | POST | `/api/invoices` | Create invoice | Yes |
@@ -355,23 +450,29 @@ vitesse-crm/
 | PUT/DELETE | `/api/payments/:id` | **Disabled** — payments are immutable for financial integrity | Yes |
 | GET | `/api/dashboard/summary` | Dashboard KPIs | Yes |
 | GET | `/api/admin/stats` | Admin statistics | Admin |
+| POST | `/api/activities/notes` | Add a note to any entity | Yes (write) |
 | GET | `/health` | Health check | No |
 
 ### Response Format
 
-```javascript
-// Success
-{
-  "data": { ... },
-  "message": "Optional success message"
-}
+There is no single enforced envelope. Responses vary by endpoint:
 
-// Error
+```javascript
+// Auth endpoints — direct shape
+{ token, user: { id, name, email, role }, tenant: { id, name, slug } }
+
+// Business entity endpoints — direct document or array
+// e.g. GET /api/quotes returns the array directly
+// e.g. POST /api/quotes returns the created document
+
+// Simple success acknowledgements
+{ message: "..." }
+
+// Error (consistent across all routes)
 {
-  "success": false,
   "message": "Error description",
-  "errors": { "field": ["validation error"] },
-  "stack": "..." // Development only
+  "errors": { "field": ["validation error"] },  // Validation errors only
+  "stack": "..."                                  // Development only
 }
 ```
 
@@ -411,9 +512,10 @@ vitesse-crm/
     │  Authorization: Bearer <token>         │                              │
     │───────────────────────────────────────►│                              │
     │                                        │  Verify JWT signature        │
-    │                                        │  Extract user from token     │
+    │                                        │  Extract user + tenant from  │
+    │                                        │  token; check tenant role    │
     │                                        │                              │
-    │                                        │  Query with user filter      │
+    │                                        │  Query with tenant filter    │
     │                                        │─────────────────────────────►│
     │                                        │◄─────────────────────────────│
     │  { data: [...] }                       │                              │
@@ -447,6 +549,94 @@ router.get('/admin/stats',
 Roles:
 - **user**: Standard access to own data
 - **admin**: Access to admin endpoints and all user management
+
+---
+
+## Multi-Tenancy & RBAC
+
+### Tenant Architecture
+
+Every business entity (Customer, Quote, Invoice, Payment, Activity) is scoped to a **Tenant**. Users access a tenant through a **Membership** record that carries a tenant-level role.
+
+The JWT encodes both user-level and tenant-level identity:
+
+```javascript
+// JWT payload
+{
+  id: "user_id",
+  email: "user@example.com",
+  role: "user" | "admin",         // System-level role
+  tenant: "tenant_id",            // Active tenant
+  membershipRole: "owner" | "member"  // Tenant-level role
+}
+```
+
+`authMiddleware` is stateless — it extracts tenant context from the token, requiring no database lookup per request:
+
+```javascript
+req.user   = { id, email, role }
+req.tenant = { id, role }        // role = membershipRole from JWT
+```
+
+### Permission Matrix
+
+`requirePermission(resource, action)` middleware enforces access per resource based on `req.tenant.role`:
+
+| Resource | owner | member |
+|----------|-------|--------|
+| customers | read, write | read, write |
+| quotes | read, write | read, write |
+| invoices | read, write | read only |
+| payments | read, write | read only |
+| dashboard | read | read |
+| activities | read, write | read, write |
+
+Members can fully manage customers and quotes but cannot create invoices, record payments, or modify financial data — those are restricted to owners.
+
+```javascript
+// Applied at route level:
+router.post("/", requirePermission("invoices", "write"), ...)
+router.get("/",  requirePermission("invoices", "read"),  ...)
+```
+
+---
+
+## Activity Tracking
+
+The `Activity` collection is an activity stream for business events and user notes. It records two types of entries:
+
+| Type | Source | Example |
+|------|--------|---------|
+| `event` | Auto-recorded by controllers on significant actions | quote sent, invoice paid, payment recorded |
+| `note` | Created by users via `POST /api/activities/notes` | "Client confirmed by email" |
+
+### Event Recording
+
+Business controllers call `createActivity()` (a fire-and-forget service) after significant state changes. Failures are logged but never bubble up to the HTTP response:
+
+```javascript
+// services/activity/createActivity.js
+export async function createActivity({ tenant, user, entityType, entityId, action, message, metadata }) {
+  try {
+    await Activity.create({ tenant, user, entityType, entityId, type: "event", action, message, metadata });
+  } catch (err) {
+    console.error("[activity] failed to record:", err.message);
+  }
+}
+```
+
+Events are recorded in: `quoteController`, `invoiceController`, `paymentController`.
+
+### Note Creation
+
+Users can attach free-text notes to any entity via `POST /api/activities/notes`:
+
+```javascript
+// Request body
+{ "entityType": "invoice", "entityId": "...", "message": "Client confirmed payment by email" }
+```
+
+The controller verifies the entity belongs to the user's tenant before writing.
 
 ---
 
@@ -664,6 +854,59 @@ Any other transition (e.g. `draft → paid`, `paid → sent`) is rejected with a
 - Matches production-like environment
 - Database data persisted in named volume
 - Easy onboarding for new developers
+
+### 9. Multi-Tenancy via Tenant Field + JWT Embedding
+
+**Context**: The system needs to support multiple users sharing an organisation's data without cross-tenant data leakage.
+
+**Decision**: Every business entity carries a `tenant` field. The active tenant and membership role are embedded in the JWT so every request is fully identified without a DB round-trip.
+
+**Rationale**:
+- Stateless auth middleware — no membership lookup on every request
+- All queries are scoped by `{ tenant: req.tenant.id }` — impossible to accidentally return cross-tenant data
+- Enables future multi-tenant SaaS expansion without architectural changes
+- Trade-off: Token must be re-issued if the user's membership role changes
+
+### 10. Tenant-Level RBAC via Permission Matrix
+
+**Context**: Different users within a tenant should have different capabilities (e.g. members can create quotes but not invoices).
+
+**Decision**: A static permission matrix in `permissions.js` maps `(resource, role) → [actions]`. `requirePermission()` is applied at the route level.
+
+**Rationale**:
+- Centralised, readable permission definition
+- Enforced at the HTTP boundary — no business logic needed inside controllers
+- Easy to extend: add a resource row or a new role column
+- Trade-off: Permissions are static per role, not per-user configurable
+
+### 11. Activity Tracking as a Fire-and-Forget Service
+
+**Context**: The application records business events (quote sent, payment recorded) and user notes for audit and context purposes.
+
+**Decision**: `createActivity()` wraps `Activity.create()` in a try/catch and swallows failures silently. Controllers call it after their own writes succeed.
+
+**Rationale**:
+- Activity recording is non-critical — a logging failure should never fail an invoice creation
+- Keeps controllers clean: one line call, no error propagation
+- Both event types (`event` auto-generated, `note` user-created) live in the same collection with a `type` discriminator, simplifying future feed/timeline queries
+- Trade-off: Failed event writes are invisible to the caller; errors are console-logged only
+
+### 12. Quote Status State Machine (Mirroring Invoice)
+
+**Context**: Like invoices, quotes move through a defined lifecycle and should not skip or regress states.
+
+**Decision**: A dedicated `PATCH /:id/status` endpoint validates transitions before applying them.
+
+```
+draft → sent ──────────────────────────► accepted → converted
+              ↘                        ↗
+               declined / expired
+```
+
+**Rationale**:
+- Prevents invalid state hops (e.g. `draft → converted`)
+- `transitionQuoteStatus` is the only path to change quote status — field edits use `PUT`
+- Converted quotes are locked: cannot be deleted or re-transitioned
 
 ---
 

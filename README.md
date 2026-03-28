@@ -1,6 +1,6 @@
 ![Logo](./frontend/src/assets/images/logo/Logo-Long.png)
 
-Vitesse is a full-stack CRM/ERP application built for self-employed professionals and small businesses.  
+Vitesse is a full-stack CRM/ERP application built for self-employed professionals and small businesses.
 It manages the complete business workflow from customers and quotes to invoices, payments, and real-time analytics.
 
 Built with Node.js and MongoDB on the backend, and React, TypeScript with Vite on the frontend.
@@ -18,17 +18,20 @@ Built with Node.js and MongoDB on the backend, and React, TypeScript with Vite o
 ###  📊 Features
 
 - Customer & company management
-- Quotes with automatic totals, expiry tracking, and status enforcement
-- Invoices with status enforcement (draft → sent → partially_paid → paid), quote conversion, and overdue detection
-- Payments (partial, multiple, multi-method) with overpayment prevention
+- Quotes with automatic totals, expiry tracking, and state machine enforcement
+- Invoices must originate from accepted quotes (one-to-one enforced), with status enforcement (draft → sent → partially_paid → paid) and overdue detection
+- Payments (partial, multiple, multi-method) with overpayment prevention — immutable once recorded
 - Revenue tracking and outstanding balances
 - Dashboard with KPIs and revenue overview
-- Secure authentication (JWT + bcrypt)
+- Multi-tenancy with tenant-scoped data isolation
+- Role-based access control (owner vs. member permission matrix per resource)
+- Activity stream — business events auto-recorded, notes attachable to any entity
+- Secure authentication (JWT with embedded tenant context, bcrypt)
 - Input sanitization, rate limiting, and error handling
 
 ---
 
-![Dashboard](./screenshots/0.Dashboard.png)  
+![Dashboard](./screenshots/0.Dashboard.png)
 More screenshots available in `./screenshots`.
 
 ---
@@ -60,14 +63,17 @@ Vitesse is built as a clear frontend / backend split with strict responsibility 
 ### Backend
 - REST API built with Express (ES Modules)
 - MongoDB with Mongoose models
-- Stateless authentication via JWT access tokens
-- Key domain rules enforced server-side (e.g. invoice creation constraints)
+- Multi-tenant data isolation — all queries scoped by tenant
+- Stateless authentication via JWT with embedded tenant context and membership role
+- RBAC enforced at the route level via permission middleware
+- All business queries are scoped by tenant — cross-tenant access is impossible by design
+- Domain rules enforced server-side (state machines, immutability guards, business constraints)
 
 Key backend responsibilities:
 - Sanitize all input
-- Enforce domain rules (e.g. invoice creation constraints)
-- Protect all resources with auth middleware
-- Return consistent API errors
+- Enforce domain rules (invoice origination, state machines, payment immutability)
+- Protect all resources with auth and permission middleware
+- Return generally consistent API errors
 
 ### Frontend
 - React + TypeScript SPA
@@ -76,7 +82,7 @@ Key backend responsibilities:
 - Forms validated with React Hook Form + Zod
 - Ant Design used for layout and components
 
-Critical domain rules (e.g. invoice creation, payment status) are enforced by the backend, not the UI.
+Critical domain rules (invoice creation, status transitions, payment immutability) are enforced by the backend, not the UI.
 
 ---
 
@@ -87,19 +93,21 @@ This project includes automated tests on both backend and frontend.
 ### Backend unit and integration tests
 - Jest + Supertest
 - mongodb-memory-server for isolated test database
-- Auth flow tested (register, login, protected routes)
-- CRUD endpoints tested with authorization
-- Business rules tested (e.g. preventing invoice creation from declined/expired quotes)
-- Tests drive fixes for discovered domain issues
-
+- Auth flow tested (register, login, protected routes, tenant membership role in JWT)
+- CRUD endpoints tested with tenant isolation
+- Business rules tested (state machines, immutability, invalid operations)
+- RBAC tested (owner vs. member permission boundaries)
+- Activity stream tested (event recording, note creation, tenant scoping)
 
 Backend tests cover:
-- Auth flow and protected routes
+- Auth flow, protected routes, and membership role embedding
 - Core CRUD with tenant isolation
-- Key business rules (e.g. invoice creation from declined/draft quotes)
-- Invoice state machine transitions
+- Quote and invoice state machine transitions
+- Invoice origination constraints (accepted quotes only, one-to-one)
 - Dashboard aggregation and edge cases
 - Tax-inclusive payment scenarios and overpayment prevention
+- RBAC permission boundaries between owner and member roles
+- Activity events and notes
 
 ### Frontend component tests
 - Vitest + React Testing Library
