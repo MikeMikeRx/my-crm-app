@@ -2,9 +2,10 @@ import Quote from "../models/Quote.js";
 import Customer from "../models/Customer.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { formatQuote } from "../utils/formatters/quoteFormatter.js";
+import { isValidQuoteTransition, resolveQuoteStatus } from "../utils/status/quoteStatus.js";
 import { CUSTOMER_POPULATE, DEFAULT_SORT } from "../utils/queries/queryDefaults.js";
 
-const ALLOWED_QUOTE_STATUSES = new Set(["draft", "sent", "accepted", "declined"]);
+const CREATE_ALLOWED_STATUSES = new Set(["draft", "sent", "accepted", "declined"]);
 
 export const getQuotes = asyncHandler(async (req, res) => {
   const quotes = await Quote.find({ tenant: req.tenant.id })
@@ -34,7 +35,7 @@ export const createQuote = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Invalid customer ID" });
   }
 
-  const safeStatus = status && ALLOWED_QUOTE_STATUSES.has(status) ? status : "draft";
+  const safeStatus = status && CREATE_ALLOWED_STATUSES.has(status) ? status : "draft";
 
   const newQuote = await Quote.create({
     user: req.user.id,
@@ -52,19 +53,48 @@ export const createQuote = asyncHandler(async (req, res) => {
 });
 
 export const updateQuote = asyncHandler(async (req, res) => {
-  const { customer, issueDate, expiryDate, items, notes, status } = req.body;
-  const update = { customer, issueDate, expiryDate, items, notes };
-  if (status && ALLOWED_QUOTE_STATUSES.has(status)) update.status = status;
+  const { customer, issueDate, expiryDate, items, notes } = req.body;
 
-  const quote = await Quote.findOneAndUpdate(
-    { _id: req.params.id, tenant: req.tenant.id },
-    update,
-    { new: true, runValidators: true }
-  );
-
+  const quote = await Quote.findOne({ _id: req.params.id, tenant: req.tenant.id });
   if (!quote) {
     return res.status(404).json({ message: "Quote not found" });
   }
+
+  if (quote.status === "converted") {
+    return res.status(400).json({ message: "Cannot edit a converted quote" });
+  }
+
+  const updated = await Quote.findOneAndUpdate(
+    { _id: req.params.id, tenant: req.tenant.id },
+    { customer, issueDate, expiryDate, items, notes },
+    { new: true, runValidators: true }
+  ).populate(...CUSTOMER_POPULATE);
+
+  res.json(formatQuote(updated));
+});
+
+export const transitionQuoteStatus = asyncHandler(async (req, res) => {
+  const { status } = req.body;
+
+  if (status === "converted") {
+    return res.status(400).json({ message: "Cannot manually transition to converted" });
+  }
+
+  const quote = await Quote.findOne({ _id: req.params.id, tenant: req.tenant.id });
+  if (!quote) {
+    return res.status(404).json({ message: "Quote not found" });
+  }
+
+  const effectiveStatus = resolveQuoteStatus(quote);
+
+  if (!isValidQuoteTransition(effectiveStatus, status)) {
+    return res.status(400).json({
+      message: `Invalid transition: "${effectiveStatus}" → "${status}"`,
+    });
+  }
+
+  quote.status = status;
+  await quote.save();
 
   res.json(formatQuote(quote));
 });

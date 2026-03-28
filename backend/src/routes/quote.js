@@ -9,6 +9,7 @@ import {
     getQuoteById,
     createQuote,
     updateQuote,
+    transitionQuoteStatus,
     deleteQuote,
 } from "../controllers/quoteController.js"
 
@@ -70,21 +71,25 @@ const quoteValidationRules = [
         .custom(value => value >= 0 && value <= 100)
         .withMessage("Tax rate must be between 0 and 100"),
 
-    body("status")
-        .optional()
-        .isIn(["draft", "sent", "accepted", "declined"])
-        .withMessage("Invalid status"),
-
     body("notes")
         .optional()
         .trim()
         .escape(),
 ]
 
+const statusTransitionRules = [
+    body("status")
+        .notEmpty()
+        .withMessage("Status is required")
+        .isIn(["sent", "accepted", "declined", "expired"])
+        .withMessage("Invalid status"),
+]
+
 router.post("/", requirePermission("quotes", "write"), quoteValidationRules, validateRequest, createQuote);
 router.get("/", requirePermission("quotes", "read"), getQuotes);
 router.get("/:id", requirePermission("quotes", "read"), getQuoteById);
 router.put("/:id", requirePermission("quotes", "write"), quoteValidationRules, validateRequest, updateQuote);
+router.patch("/:id/status", requirePermission("quotes", "write"), statusTransitionRules, validateRequest, transitionQuoteStatus);
 router.delete("/:id", requirePermission("quotes", "write"), deleteQuote);
 
 export default router;
