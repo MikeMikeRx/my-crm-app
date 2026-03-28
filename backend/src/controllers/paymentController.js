@@ -1,6 +1,7 @@
 import Payment from "../models/Payment.js"
 import Invoice from "../models/Invoice.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
+import { createActivity } from "../services/activity/createActivity.js"
 
 export const getPayments = asyncHandler(async (req, res) => {
     const payments = await Payment.find({ tenant: req.tenant.id })
@@ -77,15 +78,39 @@ export const createPayment = asyncHandler(async (req, res) => {
         notes,
     })
 
+    let invoiceBecamePaid = false;
+
     if (status === "completed") {
         const allCompleted = await Payment.find({ invoice, status: "completed" });
         const newTotalPaid = allCompleted.reduce((sum, p) => sum + p.amount, 0);
         if (newTotalPaid >= existingInvoice.totals.total) {
             existingInvoice.status = "paid";
+            invoiceBecamePaid = true;
         } else {
             existingInvoice.status = "partially_paid";
         }
         await existingInvoice.save();
+    }
+
+    await createActivity({
+        tenant: req.tenant.id,
+        user: req.user.id,
+        entityType: "payment",
+        entityId: payment._id,
+        action: "payment_created",
+        message: `Payment of ${payment.amount} recorded via ${payment.paymentMethod}`,
+        metadata: { invoiceId: invoice, status: payment.status },
+    });
+
+    if (invoiceBecamePaid) {
+        await createActivity({
+            tenant: req.tenant.id,
+            user: req.user.id,
+            entityType: "invoice",
+            entityId: existingInvoice._id,
+            action: "invoice_paid",
+            message: "Invoice marked as paid",
+        });
     }
 
     res.status(201).json(payment)

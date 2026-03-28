@@ -7,6 +7,7 @@ import { isValidTransition } from "../utils/status/invoiceStatus.js";
 import { resolveQuoteStatus } from "../utils/status/quoteStatus.js";
 import { formatInvoice } from "../utils/formatters/invoiceFormatter.js";
 import { CUSTOMER_POPULATE, DEFAULT_SORT } from "../utils/queries/queryDefaults.js";
+import { createActivity } from "../services/activity/createActivity.js";
 
 export const getInvoices = asyncHandler(async (req, res) => {
     const invoices = await Invoice.find({ tenant: req.tenant.id })
@@ -73,7 +74,27 @@ export const createInvoice = asyncHandler(async (req, res) => {
             { _id: quote, tenant: req.tenant.id },
             { status: "converted" }
         );
+
+        await createActivity({
+            tenant: req.tenant.id,
+            user: req.user.id,
+            entityType: "quote",
+            entityId: quoteDoc._id,
+            action: "quote_converted",
+            message: "Quote converted to invoice",
+            metadata: { invoiceId: newInvoice._id },
+        });
     }
+
+    await createActivity({
+        tenant: req.tenant.id,
+        user: req.user.id,
+        entityType: "invoice",
+        entityId: newInvoice._id,
+        action: "invoice_created",
+        message: `Invoice ${newInvoice.invoiceNumber} created`,
+        metadata: quote ? { fromQuote: quote } : undefined,
+    });
 
     res.status(201).json(formatInvoice(newInvoice));
 });

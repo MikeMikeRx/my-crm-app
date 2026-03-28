@@ -4,6 +4,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { formatQuote } from "../utils/formatters/quoteFormatter.js";
 import { isValidQuoteTransition, resolveQuoteStatus } from "../utils/status/quoteStatus.js";
 import { CUSTOMER_POPULATE, DEFAULT_SORT } from "../utils/queries/queryDefaults.js";
+import { createActivity } from "../services/activity/createActivity.js";
 
 const CREATE_ALLOWED_STATUSES = new Set(["draft", "sent", "accepted", "declined"]);
 
@@ -47,6 +48,15 @@ export const createQuote = asyncHandler(async (req, res) => {
     items,
     notes,
     status: safeStatus,
+  });
+
+  await createActivity({
+    tenant: req.tenant.id,
+    user: req.user.id,
+    entityType: "quote",
+    entityId: newQuote._id,
+    action: "quote_created",
+    message: `Quote ${newQuote.quoteNumber} created`,
   });
 
   res.status(201).json(formatQuote(newQuote));
@@ -95,6 +105,18 @@ export const transitionQuoteStatus = asyncHandler(async (req, res) => {
 
   quote.status = status;
   await quote.save();
+
+  const activityActions = { sent: "quote_sent", accepted: "quote_accepted" };
+  if (activityActions[status]) {
+    await createActivity({
+      tenant: req.tenant.id,
+      user: req.user.id,
+      entityType: "quote",
+      entityId: quote._id,
+      action: activityActions[status],
+      message: status === "sent" ? "Quote sent to customer" : "Quote accepted",
+    });
+  }
 
   res.json(formatQuote(quote));
 });
