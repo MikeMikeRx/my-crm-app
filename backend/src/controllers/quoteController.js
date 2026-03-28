@@ -100,14 +100,17 @@ export const transitionQuoteStatus = asyncHandler(async (req, res) => {
 });
 
 export const deleteQuote = asyncHandler(async (req, res) => {
-  const quote = await Quote.findOneAndDelete({
-    _id: req.params.id,
-    tenant: req.tenant.id,
-  });
+  const quote = await Quote.findOne({ _id: req.params.id, tenant: req.tenant.id });
 
   if (!quote) {
     return res.status(404).json({ message: "Quote not found" });
   }
+
+  if (quote.status === "converted") {
+    return res.status(409).json({ message: "Cannot delete a converted quote" });
+  }
+
+  await quote.deleteOne();
 
   res.json({ message: "Quote deleted successfully" });
 });

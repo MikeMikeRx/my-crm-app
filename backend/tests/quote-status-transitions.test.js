@@ -159,6 +159,28 @@ describe("Quote status transitions", () => {
       expect(res.statusCode).toBe(400);
     });
 
+    it("converted quote cannot be deleted", async () => {
+      const quote = await createQuote(token, customerId, { status: "accepted" });
+
+      await request(app)
+        .post("/api/invoices")
+        .set("Authorization", `Bearer ${token}`)
+        .send({
+          customer: customerId,
+          quote: quote._id,
+          invoiceNumber: `INV-${Date.now()}`,
+          issueDate: "2026-01-01",
+          dueDate: "2026-12-31",
+          items: [ITEM],
+        });
+
+      const res = await request(app)
+        .delete(`/api/quotes/${quote._id}`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(res.statusCode).toBe(409);
+    });
+
     it("converted quote cannot be transitioned", async () => {
       const quote = await createQuote(token, customerId, { status: "accepted" });
 

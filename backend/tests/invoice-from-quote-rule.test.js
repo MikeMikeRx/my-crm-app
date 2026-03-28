@@ -83,6 +83,22 @@ describe("Business rule: invoice from quote", () => {
       expect(inv.statusCode).toBe(400);
     });
 
+    it("rejects invoice creation from an accepted-but-expired quote", async () => {
+      const q = await request(app)
+        .post("/api/quotes")
+        .set("Authorization", `Bearer ${token}`)
+        .send({
+          customer: customerId,
+          quoteNumber: `Q-${Date.now()}-${Math.random()}`,
+          issueDate: "2020-01-01",
+          expiryDate: "2020-06-01",
+          status: "accepted",
+          items: [{ description: "Item", quantity: 1, unitPrice: 100, taxRate: 20 }],
+        });
+      const inv = await tryCreateInvoice(q.body._id);
+      expect(inv.statusCode).toBe(400);
+    });
+
     it("rejects invoice creation from a converted quote", async () => {
       const quoteId = await createQuote("accepted");
       await tryCreateInvoice(quoteId);

@@ -4,6 +4,7 @@ import Quote from "../models/Quote.js";
 import Payment from "../models/Payment.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { isValidTransition } from "../utils/status/invoiceStatus.js";
+import { resolveQuoteStatus } from "../utils/status/quoteStatus.js";
 import { formatInvoice } from "../utils/formatters/invoiceFormatter.js";
 import { CUSTOMER_POPULATE, DEFAULT_SORT } from "../utils/queries/queryDefaults.js";
 
@@ -45,7 +46,7 @@ export const createInvoice = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: "Invalid quote ID" });
         }
 
-        if (quoteDoc.status !== "accepted") {
+        if (resolveQuoteStatus(quoteDoc) !== "accepted") {
             return res.status(400).json({ message: "Only accepted quotes can be converted to an invoice" });
         }
 
@@ -122,6 +123,10 @@ export const deleteInvoice = asyncHandler(async (req, res) => {
     const invoice = await Invoice.findOne({ _id: req.params.id, tenant: req.tenant.id });
     if (!invoice) {
         return res.status(404).json({ message: "Invoice not found" });
+    }
+
+    if (invoice.status !== "draft") {
+        return res.status(409).json({ message: `Cannot delete an invoice with status "${invoice.status}". Only draft invoices can be deleted.` });
     }
 
     const hasPayments = await Payment.exists({ invoice: invoice._id });
