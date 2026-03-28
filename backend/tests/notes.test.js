@@ -82,6 +82,94 @@ describe("Notes — creation", () => {
   });
 });
 
+describe("Notes — entity coverage", () => {
+  let token;
+  let quoteId;
+  let invoiceId;
+  let paymentId;
+
+  beforeEach(async () => {
+    token = await registerAndLogin();
+
+    const customer = await createCustomer(token);
+
+    const quoteRes = await request(app)
+      .post("/api/quotes")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        customer: customer._id,
+        quoteNumber: `Q-${Date.now()}-${Math.random()}`,
+        issueDate: "2026-01-01",
+        expiryDate: "2027-12-31",
+        status: "accepted",
+        items: [{ description: "Item", quantity: 1, unitPrice: 100, taxRate: 20 }],
+      });
+    quoteId = quoteRes.body._id;
+
+    const invoiceRes = await request(app)
+      .post("/api/invoices")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        customer: customer._id,
+        quote: quoteId,
+        invoiceNumber: `INV-${Date.now()}-${Math.random()}`,
+        issueDate: "2026-01-01",
+        dueDate: "2027-12-31",
+        items: [{ description: "Item", quantity: 1, unitPrice: 100, taxRate: 20 }],
+      });
+    invoiceId = invoiceRes.body._id;
+
+    await request(app)
+      .patch(`/api/invoices/${invoiceId}/status`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ status: "sent" });
+
+    const paymentRes = await request(app)
+      .post("/api/payments")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        invoice: invoiceId,
+        amount: 50,
+        paymentMethod: "cash",
+        paymentId: `PAY-${Date.now()}`,
+      });
+    paymentId = paymentRes.body._id;
+  });
+
+  it("creates a note attached to a quote", async () => {
+    const res = await postNote(token, {
+      entityType: "quote",
+      entityId: quoteId,
+      message: "Customer confirmed receipt",
+    });
+    expect(res.status).toBe(201);
+    expect(res.body.entityType).toBe("quote");
+    expect(res.body.entityId).toBe(quoteId);
+  });
+
+  it("creates a note attached to an invoice", async () => {
+    const res = await postNote(token, {
+      entityType: "invoice",
+      entityId: invoiceId,
+      message: "Invoice sent via email",
+    });
+    expect(res.status).toBe(201);
+    expect(res.body.entityType).toBe("invoice");
+    expect(res.body.entityId).toBe(invoiceId);
+  });
+
+  it("creates a note attached to a payment", async () => {
+    const res = await postNote(token, {
+      entityType: "payment",
+      entityId: paymentId,
+      message: "Verified via bank statement",
+    });
+    expect(res.status).toBe(201);
+    expect(res.body.entityType).toBe("payment");
+    expect(res.body.entityId).toBe(paymentId);
+  });
+});
+
 describe("Notes — cross-tenant rejection", () => {
   it("returns 404 when attaching a note to another tenant's entity", async () => {
     const ownerToken = await registerAndLoginAs("Owner User");
