@@ -6,8 +6,8 @@ import Tenant from "../models/Tenant.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { seedDemoData } from "../../seed/index.js"
 
-const generateAuthToken = (user, tenantId) =>
-    jwt.sign({ id: user._id, email: user.email, role: user.role, tenant: tenantId }, process.env.JWT_SECRET, { expiresIn: "1d" })
+const generateAuthToken = (user, tenantId, membershipRole) =>
+    jwt.sign({ id: user._id, email: user.email, role: user.role, tenant: tenantId, membershipRole }, process.env.JWT_SECRET, { expiresIn: "1d" })
 
 export const registerUser = asyncHandler(async (req, res) => {
     const { name, email, password, role } = req.body
@@ -32,9 +32,9 @@ export const registerUser = asyncHandler(async (req, res) => {
 
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || email.split("@")[0]
     const tenant = await Tenant.create({ name, slug, owner: user._id })
-    await Membership.create({ user: user._id, tenant: tenant._id, role: "owner" })
+    const membership = await Membership.create({ user: user._id, tenant: tenant._id, role: "owner" })
 
-    const token = generateAuthToken(user, tenant._id)
+    const token = generateAuthToken(user, tenant._id, membership.role)
 
     res.status(201).json({
         message: "User registered successfully",
@@ -66,7 +66,7 @@ export const loginUser = asyncHandler(async (req, res) => {
         return res.status(403).json({ message: "No tenant membership found" })
     }
 
-    const token = generateAuthToken(user, membership.tenant._id)
+    const token = generateAuthToken(user, membership.tenant._id, membership.role)
 
     res.json({
         message: "Login successful",
@@ -95,7 +95,7 @@ export const loginDemo = asyncHandler(async (_req, res) => {
         console.error("Demo seed failed:", err.message)
     }
 
-    const token = generateAuthToken(user, membership.tenant._id)
+    const token = generateAuthToken(user, membership.tenant._id, membership.role)
 
     res.json({
         message: "Demo login successful",

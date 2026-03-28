@@ -24,8 +24,12 @@ export const authMiddleware = (req, res, next) => {
             return res.status(401).json({ message: "Token missing role" });
         }
 
+        if (!decoded?.membershipRole) {
+            return res.status(401).json({ message: "Token missing membershipRole" });
+        }
+
         req.user = { id: decoded.id, email: decoded.email, role: decoded.role };
-        req.tenant = { id: decoded.tenant };
+        req.tenant = { id: decoded.tenant, role: decoded.membershipRole };
 
         next();
     } catch (err) {
