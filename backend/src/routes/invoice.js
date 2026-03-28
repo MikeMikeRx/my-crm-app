@@ -3,6 +3,7 @@ import { body } from "express-validator"
 import { authMiddleware } from "../middleware/auth.js"
 import { demoGuard } from "../middleware/demoGuard.js"
 import { validateRequest } from "../middleware/validator.js"
+import { requirePermission } from "../middleware/permissions.js"
 import {
     getInvoices,
     getInvoiceById,
@@ -82,13 +83,13 @@ const invoiceValidationRules = [
         .escape(),
 ]
 
-router.post("/", invoiceValidationRules, validateRequest, createInvoice)
-router.get("/", getInvoices)
-router.get("/:id", getInvoiceById)
-router.put("/:id", invoiceValidationRules, validateRequest, updateInvoice)
-router.patch("/:id/status", transitionInvoiceStatus)
+router.post("/", requirePermission("invoices", "write"), invoiceValidationRules, validateRequest, createInvoice);
+router.get("/", requirePermission("invoices", "read"), getInvoices);
+router.get("/:id", requirePermission("invoices", "read"), getInvoiceById);
+router.put("/:id", requirePermission("invoices", "write"), invoiceValidationRules, validateRequest, updateInvoice);
+router.patch("/:id/status", requirePermission("invoices", "write"), transitionInvoiceStatus);
 
 // NOTE: Delete endpoint intentionally not exposed to maintain financial integrity
 // router.delete("/:id", deleteInvoice)
 
-export default router
+export default router;

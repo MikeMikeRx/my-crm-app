@@ -3,6 +3,7 @@ import { body } from "express-validator"
 import { authMiddleware } from "../middleware/auth.js"
 import { demoGuard } from "../middleware/demoGuard.js"
 import { validateRequest } from "../middleware/validator.js"
+import { requirePermission } from "../middleware/permissions.js"
 import {
     getPayments,
     getPaymentById,
@@ -51,11 +52,11 @@ const paymentValidationRules = [
         .escape()
 ]
 
-router.post("/", paymentValidationRules, validateRequest, createPayment)
-router.get("/", getPayments)
-router.get("/:id", getPaymentById)
+router.post("/", requirePermission("payments", "write"), paymentValidationRules, validateRequest, createPayment);
+router.get("/", requirePermission("payments", "read"), getPayments);
+router.get("/:id", requirePermission("payments", "read"), getPaymentById);
 
 // NOTE: Update and delete intentionally omitted to maintain financial integrity
 // Payments should not be modified or deleted after creation
 
-export default router
+export default router;

@@ -3,6 +3,7 @@ import { body } from "express-validator"
 import { authMiddleware } from "../middleware/auth.js"
 import { demoGuard } from "../middleware/demoGuard.js"
 import { validateRequest } from "../middleware/validator.js"
+import { requirePermission } from "../middleware/permissions.js"
 import {
     getQuotes,
     getQuoteById,
@@ -80,10 +81,10 @@ const quoteValidationRules = [
         .escape(),
 ]
 
-router.post("/", quoteValidationRules, validateRequest, createQuote)
-router.get("/", getQuotes)
-router.get("/:id", getQuoteById)
-router.put("/:id", quoteValidationRules, validateRequest, updateQuote)
-router.delete("/:id", deleteQuote)
+router.post("/", requirePermission("quotes", "write"), quoteValidationRules, validateRequest, createQuote);
+router.get("/", requirePermission("quotes", "read"), getQuotes);
+router.get("/:id", requirePermission("quotes", "read"), getQuoteById);
+router.put("/:id", requirePermission("quotes", "write"), quoteValidationRules, validateRequest, updateQuote);
+router.delete("/:id", requirePermission("quotes", "write"), deleteQuote);
 
-export default router
+export default router;

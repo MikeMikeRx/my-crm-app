@@ -3,6 +3,7 @@ import { body } from "express-validator"
 import { authMiddleware } from "../middleware/auth.js"
 import { demoGuard } from "../middleware/demoGuard.js"
 import { validateRequest } from "../middleware/validator.js"
+import { requirePermission } from "../middleware/permissions.js"
 import {
     getCustomers,
     getCustomerById,
@@ -52,10 +53,10 @@ const customerValidationRules = [
         .withMessage("Address must be a string")
 ]
 
-router.post("/", customerValidationRules, validateRequest, createCustomer)
-router.get("/", getCustomers)
-router.get("/:id", getCustomerById)
-router.put("/:id", customerValidationRules, validateRequest, updateCustomer)
-router.delete("/:id", deleteCustomer)
+router.post("/", requirePermission("customers", "write"), customerValidationRules, validateRequest, createCustomer);
+router.get("/", requirePermission("customers", "read"), getCustomers);
+router.get("/:id", requirePermission("customers", "read"), getCustomerById);
+router.put("/:id", requirePermission("customers", "write"), customerValidationRules, validateRequest, updateCustomer);
+router.delete("/:id", requirePermission("customers", "write"), deleteCustomer);
 
 export default router
