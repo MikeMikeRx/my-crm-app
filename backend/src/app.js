@@ -4,6 +4,7 @@ import helmet from "helmet";
 import compression from "compression";
 import mongoose from "mongoose";
 import morgan from "morgan";
+
 import authRoutes from "./routes/auth.js";
 import adminRoutes from "./routes/admin.js";
 import customerRoutes from "./routes/customer.js";
@@ -11,6 +12,8 @@ import invoiceRoutes from "./routes/invoice.js";
 import quoteRoutes from "./routes/quote.js";
 import paymentRoutes from "./routes/payment.js";
 import dashboardRoutes from "./routes/dashboard.js";
+import activityRoutes from "./routes/activity.js";
+
 import errorHandler from "./middleware/errorHandler.js";
 import { globalRateLimiter } from "./middleware/rateLimiter.js";
 import { sanitizeMiddleware } from "./middleware/sanitizer.js";
@@ -57,6 +60,7 @@ app.use("/api/customers", customerRoutes);
 app.use("/api/invoices", invoiceRoutes);
 app.use("/api/quotes", quoteRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/activities", activityRoutes);
 
 app.get("/health", async (req, res) => {
     const dbState = mongoose.connection.readyState;

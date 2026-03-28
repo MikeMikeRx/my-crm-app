@@ -1,9 +1,10 @@
 export const PERMISSIONS = {
-    customers: { owner: ["read", "write"], member: ["read", "write"] },
-    quotes:    { owner: ["read", "write"], member: ["read", "write"] },
-    invoices:  { owner: ["read", "write"], member: ["read"] },
-    payments:  { owner: ["read", "write"], member: ["read"] },
-    dashboard: { owner: ["read"],          member: ["read"] },
+    customers:  { owner: ["read", "write"], member: ["read", "write"] },
+    quotes:     { owner: ["read", "write"], member: ["read", "write"] },
+    invoices:   { owner: ["read", "write"], member: ["read"] },
+    payments:   { owner: ["read", "write"], member: ["read"] },
+    dashboard:  { owner: ["read"],          member: ["read"] },
+    activities: { owner: ["read", "write"], member: ["read", "write"] },
 }
 
 export const requirePermission = (resource, action) => (req, res, next) => {
