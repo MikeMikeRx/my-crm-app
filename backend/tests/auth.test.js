@@ -14,7 +14,7 @@ describe("Auth API", () => {
       .send(userPayload);
 
     expect(res.statusCode).toBe(201);
-    expect(res.body.user.email).toBe(userPayload.email);
+    expect(res.body.data.user.email).toBe(userPayload.email);
   });
 
   it("logs in a user and returns token", async () => {
@@ -30,7 +30,7 @@ describe("Auth API", () => {
       });
 
     expect(res.statusCode).toBe(200);
-    expect(res.body.token).toBeDefined();
+    expect(res.body.data.token).toBeDefined();
   });
 
   it("blocks protected route without token", async () => {

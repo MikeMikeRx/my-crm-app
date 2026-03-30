@@ -35,5 +35,5 @@ export const createNote = asyncHandler(async (req, res) => {
     message,
   });
 
-  res.status(201).json(note);
+  res.status(201).json({ data: note });
 });

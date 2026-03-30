@@ -14,18 +14,18 @@ export async function listCustomers(params?: CustomerListParams): Promise<Pagina
 }
 
 export async function getCustomer(id: ID): Promise<Customer> {
-  const { data } = await api.get<Customer>(`/customers/${id}`);
-  return data;
+  const { data } = await api.get<{ data: Customer }>(`/customers/${id}`);
+  return data.data;
 }
 
 export async function createCustomer(payload: CustomerCreate): Promise<Customer> {
-  const { data } = await api.post<Customer>("/customers", payload);
-  return data;
+  const { data } = await api.post<{ data: Customer }>("/customers", payload);
+  return data.data;
 }
 
 export async function updateCustomer(id: ID, payload: CustomerUpdate): Promise<Customer> {
-  const { data } = await api.put<Customer>(`/customers/${id}`, payload);
-  return data;
+  const { data } = await api.put<{ data: Customer }>(`/customers/${id}`, payload);
+  return data.data;
 }
 
 export async function deleteCustomer(id: ID): Promise<{ message: string }> {

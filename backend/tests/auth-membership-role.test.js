@@ -19,7 +19,7 @@ describe("Auth — membershipRole in JWT", () => {
     const res = await request(app).post("/api/auth/register").send(userPayload);
 
     expect(res.statusCode).toBe(201);
-    const payload = decodeToken(res.body.token);
+    const payload = decodeToken(res.body.data.token);
     expect(payload.membershipRole).toBe("owner");
   });
 
@@ -31,7 +31,7 @@ describe("Auth — membershipRole in JWT", () => {
       .send({ email: userPayload.email, password: userPayload.password });
 
     expect(res.statusCode).toBe(200);
-    const payload = decodeToken(res.body.token);
+    const payload = decodeToken(res.body.data.token);
     expect(payload.membershipRole).toBe("owner");
   });
 });
@@ -60,7 +60,7 @@ describe("Auth middleware — req.tenant.role populated", () => {
       .post("/api/auth/login")
       .send({ email: userPayload.email, password: userPayload.password });
 
-    const token = login.body.token;
+    const token = login.body.data.token;
 
     const res = await request(app)
       .get("/api/customers")
@@ -75,7 +75,7 @@ describe("Auth middleware — req.tenant.role populated", () => {
       .post("/api/auth/login")
       .send({ email: userPayload.email, password: userPayload.password });
 
-    const payload = decodeToken(login.body.token);
+    const payload = decodeToken(login.body.data.token);
 
     expect(payload.membershipRole).toBe("owner");
     expect(payload.tenant).toBeDefined();

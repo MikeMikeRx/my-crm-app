@@ -14,7 +14,7 @@ describe("Business rule: invoice from quote", () => {
       .set("Authorization", `Bearer ${token}`)
       .send({ name: "ACME" });
 
-    customerId = c.body._id;
+    customerId = c.body.data._id;
   });
 
   async function createQuote(status) {
@@ -30,7 +30,7 @@ describe("Business rule: invoice from quote", () => {
         items: [{ description: "Item", quantity: 1, unitPrice: 100, taxRate: 20 }],
         notes: "test",
       });
-    return q.body._id;
+    return q.body.data._id;
   }
 
   async function tryCreateInvoice(quoteId) {
@@ -122,7 +122,7 @@ describe("Business rule: invoice from quote", () => {
         .get(`/api/quotes/${quoteId}`)
         .set("Authorization", `Bearer ${token}`);
 
-      expect(quote.body.status).toBe("converted");
+      expect(quote.body.data.status).toBe("converted");
     });
 
     it("rejects duplicate invoice creation from the same accepted quote", async () => {

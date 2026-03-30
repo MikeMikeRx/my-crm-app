@@ -35,7 +35,7 @@ export const getQuoteById = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Quote not found" });
   }
 
-  res.json(formatQuote(quote));
+  res.json({ data: formatQuote(quote) });
 });
 
 export const createQuote = asyncHandler(async (req, res) => {
@@ -69,7 +69,7 @@ export const createQuote = asyncHandler(async (req, res) => {
     message: `Quote ${newQuote.quoteNumber} created`,
   });
 
-  res.status(201).json(formatQuote(newQuote));
+  res.status(201).json({ data: formatQuote(newQuote) });
 });
 
 export const updateQuote = asyncHandler(async (req, res) => {
@@ -90,7 +90,7 @@ export const updateQuote = asyncHandler(async (req, res) => {
     { new: true, runValidators: true }
   ).populate(...CUSTOMER_POPULATE);
 
-  res.json(formatQuote(updated));
+  res.json({ data: formatQuote(updated) });
 });
 
 export const transitionQuoteStatus = asyncHandler(async (req, res) => {
@@ -128,7 +128,7 @@ export const transitionQuoteStatus = asyncHandler(async (req, res) => {
     });
   }
 
-  res.json(formatQuote(quote));
+  res.json({ data: formatQuote(quote) });
 });
 
 export const deleteQuote = asyncHandler(async (req, res) => {

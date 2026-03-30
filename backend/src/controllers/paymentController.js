@@ -57,7 +57,7 @@ export const getPaymentById = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: "Payment not found" })
     }
 
-    res.json(payment)
+    res.json({ data: payment })
 })
 
 const PENDING_METHODS = ["bank_transfer", "card", "paypal"]
@@ -143,5 +143,5 @@ export const createPayment = asyncHandler(async (req, res) => {
         });
     }
 
-    res.status(201).json(payment)
+    res.status(201).json({ data: payment })
 })

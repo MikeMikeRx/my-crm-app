@@ -14,7 +14,7 @@ async function createInvoiceWithDeps(token) {
     .post("/api/quotes")
     .set("Authorization", `Bearer ${token}`)
     .send({
-      customer: customer.body._id,
+      customer: customer.body.data._id,
       quoteNumber: `Q-${Date.now()}-${Math.random()}`,
       issueDate: "2026-01-01",
       expiryDate: "2026-12-31",
@@ -26,8 +26,8 @@ async function createInvoiceWithDeps(token) {
     .post("/api/invoices")
     .set("Authorization", `Bearer ${token}`)
     .send({
-      customer: customer.body._id,
-      quote: quote.body._id,
+      customer: customer.body.data._id,
+      quote: quote.body.data._id,
       invoiceNumber: `INV-${Date.now()}`,
       issueDate: "2026-01-01",
       dueDate: "2026-12-31",
@@ -35,11 +35,11 @@ async function createInvoiceWithDeps(token) {
     });
 
   await request(app)
-    .patch(`/api/invoices/${invoice.body._id}/status`)
+    .patch(`/api/invoices/${invoice.body.data._id}/status`)
     .set("Authorization", `Bearer ${token}`)
     .send({ status: "sent" });
 
-  return invoice.body;
+  return invoice.body.data;
 }
 
 describe("Payments — tax-inclusive total", () => {
@@ -62,8 +62,8 @@ describe("Payments — tax-inclusive total", () => {
       .get(`/api/invoices/${invoice._id}`)
       .set("Authorization", `Bearer ${token}`);
 
-    expect(updated.body.status).not.toBe("paid");
-    expect(updated.body.status).toBe("partially_paid");
+    expect(updated.body.data.status).not.toBe("paid");
+    expect(updated.body.data.status).toBe("partially_paid");
   });
 
   it("marks invoice paid when full tax-inclusive total is covered", async () => {
@@ -78,7 +78,7 @@ describe("Payments — tax-inclusive total", () => {
       .get(`/api/invoices/${invoice._id}`)
       .set("Authorization", `Bearer ${token}`);
 
-    expect(updated.body.status).toBe("paid");
+    expect(updated.body.data.status).toBe("paid");
   });
 
   it("marks invoice paid when split payments together cover full total", async () => {
@@ -101,7 +101,7 @@ describe("Payments — tax-inclusive total", () => {
       .get(`/api/invoices/${invoice._id}`)
       .set("Authorization", `Bearer ${token}`);
 
-    expect(updated.body.status).toBe("paid");
+    expect(updated.body.data.status).toBe("paid");
   });
 
   it("rejects payment with amount 0", async () => {

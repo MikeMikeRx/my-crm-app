@@ -13,5 +13,5 @@ export async function registerAndLogin() {
 
   const login = await request(app).post("/api/auth/login").send({ email, password });
 
-  return login.body.token;
+  return login.body.data.token;
 }

@@ -14,7 +14,7 @@ async function setupTokens() {
 
   await request(app).post("/api/auth/register").send({ name: "RBAC Owner", email, password });
   const login = await request(app).post("/api/auth/login").send({ email, password });
-  const ownerToken = login.body.token;
+  const ownerToken = login.body.data.token;
   const { id: userId, tenant } = decodeToken(ownerToken);
 
   const memberToken = jwt.sign(

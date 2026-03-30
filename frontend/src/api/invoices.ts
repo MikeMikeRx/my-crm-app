@@ -16,23 +16,23 @@ export async function listInvoices(params?: InvoiceListParams): Promise<Paginate
 }
 
 export async function getInvoice(id: ID): Promise<Invoice> {
-  const { data } = await api.get<Invoice>(`/invoices/${id}`);
-  return data;
+  const { data } = await api.get<{ data: Invoice }>(`/invoices/${id}`);
+  return data.data;
 }
 
 export async function createInvoice(payload: InvoiceCreate): Promise<Invoice> {
-  const { data } = await api.post<Invoice>("/invoices", payload);
-  return data;
+  const { data } = await api.post<{ data: Invoice }>("/invoices", payload);
+  return data.data;
 }
 
 export async function updateInvoice(id: ID, payload: InvoiceUpdate): Promise<Invoice> {
-  const { data } = await api.put<Invoice>(`/invoices/${id}`, payload);
-  return data;
+  const { data } = await api.put<{ data: Invoice }>(`/invoices/${id}`, payload);
+  return data.data;
 }
 
 export async function transitionInvoiceStatus(id: ID, status: InvoiceStatus): Promise<Invoice> {
-  const { data } = await api.patch<Invoice>(`/invoices/${id}/status`, { status });
-  return data;
+  const { data } = await api.patch<{ data: Invoice }>(`/invoices/${id}/status`, { status });
+  return data.data;
 }
 
 // NOTE: Invoice deletion is intentionally not exposed in the frontend API.

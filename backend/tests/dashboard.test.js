@@ -14,7 +14,7 @@ async function seed(token) {
     .post("/api/quotes")
     .set("Authorization", `Bearer ${token}`)
     .send({
-      customer: customer.body._id,
+      customer: customer.body.data._id,
       quoteNumber: `Q-${Date.now()}-${Math.random()}`,
       issueDate: new Date().toISOString().slice(0, 10),
       expiryDate: "2027-12-31",
@@ -26,8 +26,8 @@ async function seed(token) {
     .post("/api/invoices")
     .set("Authorization", `Bearer ${token}`)
     .send({
-      customer: customer.body._id,
-      quote: quote.body._id,
+      customer: customer.body.data._id,
+      quote: quote.body.data._id,
       invoiceNumber: `INV-${Date.now()}`,
       issueDate: new Date().toISOString().slice(0, 10),
       dueDate: "2027-12-31",
@@ -35,7 +35,7 @@ async function seed(token) {
     });
 
   await request(app)
-    .patch(`/api/invoices/${invoice.body._id}/status`)
+    .patch(`/api/invoices/${invoice.body.data._id}/status`)
     .set("Authorization", `Bearer ${token}`)
     .send({ status: "sent" });
 
@@ -43,13 +43,13 @@ async function seed(token) {
     .post("/api/payments")
     .set("Authorization", `Bearer ${token}`)
     .send({
-      invoice: invoice.body._id,
+      invoice: invoice.body.data._id,
       amount: 110, // partial — total is 220 (2 * 100 + 10%)
       paymentMethod: "cash",
       paymentId: `PAY-${Date.now()}`,
     });
 
-  return { customer: customer.body, quote: quote.body, invoice: invoice.body, payment: payment.body };
+  return { customer: customer.body.data, quote: quote.body.data, invoice: invoice.body.data, payment: payment.body.data };
 }
 
 describe("GET /api/dashboard/summary", () => {

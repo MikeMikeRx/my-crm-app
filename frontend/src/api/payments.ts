@@ -16,13 +16,13 @@ export async function listPayments(params?: PaymentListParams): Promise<Paginate
 }
 
 export async function getPayment(id: ID): Promise<Payment> {
-  const { data } = await api.get<Payment>(`/payments/${id}`);
-  return data;
+  const { data } = await api.get<{ data: Payment }>(`/payments/${id}`);
+  return data.data;
 }
 
 export async function createPayment(payload: PaymentCreate): Promise<Payment> {
-  const { data } = await api.post<Payment>("/payments", payload);
-  return data;
+  const { data } = await api.post<{ data: Payment }>("/payments", payload);
+  return data.data;
 }
 
 export async function updatePayment(id: ID, payload: PaymentUpdate): Promise<Payment> {

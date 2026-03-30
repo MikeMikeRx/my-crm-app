@@ -38,9 +38,7 @@ export const registerUser = asyncHandler(async (req, res) => {
 
     res.status(201).json({
         message: "User registered successfully",
-        token,
-        user: { id: user._id, name: user.name, email: user.email, role: user.role },
-        tenant: { id: tenant._id, name: tenant.name, slug: tenant.slug },
+        data: { token, user: { id: user._id, name: user.name, email: user.email, role: user.role }, tenant: { id: tenant._id, name: tenant.name, slug: tenant.slug } },
     })
 })
 
@@ -70,9 +68,7 @@ export const loginUser = asyncHandler(async (req, res) => {
 
     res.json({
         message: "Login successful",
-        token,
-        user: { id: user._id, name: user.name, email: user.email, role: user.role },
-        tenant: { id: membership.tenant._id, name: membership.tenant.name, slug: membership.tenant.slug },
+        data: { token, user: { id: user._id, name: user.name, email: user.email, role: user.role }, tenant: { id: membership.tenant._id, name: membership.tenant.name, slug: membership.tenant.slug } },
     })
 })
 
@@ -99,9 +95,7 @@ export const loginDemo = asyncHandler(async (_req, res) => {
 
     res.json({
         message: "Demo login successful",
-        token,
-        user: { id: user._id, name: user.name, email: user.email, role: user.role },
-        tenant: { id: membership.tenant._id, name: membership.tenant.name, slug: membership.tenant.slug },
+        data: { token, user: { id: user._id, name: user.name, email: user.email, role: user.role }, tenant: { id: membership.tenant._id, name: membership.tenant.name, slug: membership.tenant.slug } },
     })
 })
 
@@ -112,5 +106,5 @@ export const getProfile = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: "User not found" })
     }
 
-    res.json(user)
+    res.json({ data: user })
 })

@@ -32,7 +32,7 @@ export const getCustomerById = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: "Customer not found" })
     }
 
-    res.json(customer)
+    res.json({ data: customer })
 })
 
 export const createCustomer = asyncHandler(async (req, res) => {
@@ -52,7 +52,7 @@ export const createCustomer = asyncHandler(async (req, res) => {
         address,
     })
 
-    res.status(201).json(newCustomer)
+    res.status(201).json({ data: newCustomer })
 })
 
 export const updateCustomer = asyncHandler(async (req, res) => {
@@ -67,7 +67,7 @@ export const updateCustomer = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: "Customer not found" })
     }
 
-    res.json(customer)
+    res.json({ data: customer })
 })
 
 export const deleteCustomer = asyncHandler(async (req, res) => {

@@ -38,7 +38,7 @@ export const getInvoiceById = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: "Invoice not found" });
     }
 
-    res.json(formatInvoice(invoice));
+    res.json({ data: formatInvoice(invoice) });
 });
 
 export const createInvoice = asyncHandler(async (req, res) => {
@@ -107,7 +107,7 @@ export const createInvoice = asyncHandler(async (req, res) => {
         metadata: quote ? { fromQuote: quote } : undefined,
     });
 
-    res.status(201).json(formatInvoice(newInvoice));
+    res.status(201).json({ data: formatInvoice(newInvoice) });
 });
 
 export const updateInvoice = asyncHandler(async (req, res) => {
@@ -128,7 +128,7 @@ export const updateInvoice = asyncHandler(async (req, res) => {
         { new: true, runValidators: true }
     );
 
-    res.json(formatInvoice(updated));
+    res.json({ data: formatInvoice(updated) });
 });
 
 export const transitionInvoiceStatus = asyncHandler(async (req, res) => {
@@ -148,7 +148,7 @@ export const transitionInvoiceStatus = asyncHandler(async (req, res) => {
     invoice.status = status;
     await invoice.save();
 
-    res.json(formatInvoice(invoice));
+    res.json({ data: formatInvoice(invoice) });
 });
 
 export const deleteInvoice = asyncHandler(async (req, res) => {

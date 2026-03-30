@@ -10,7 +10,7 @@ async function createCustomer(token) {
     .post("/api/customers")
     .set("Authorization", `Bearer ${token}`)
     .send({ name: "Test Co", email: `c${Date.now()}@test.com` });
-  return res.body._id;
+  return res.body.data._id;
 }
 
 async function createAcceptedQuote(token, customerId) {
@@ -25,7 +25,7 @@ async function createAcceptedQuote(token, customerId) {
       status: "accepted",
       items: [ITEM],
     });
-  return res.body._id;
+  return res.body.data._id;
 }
 
 async function createSentInvoice(token) {
@@ -43,10 +43,10 @@ async function createSentInvoice(token) {
       items: [ITEM],
     });
   await request(app)
-    .patch(`/api/invoices/${invoiceRes.body._id}/status`)
+    .patch(`/api/invoices/${invoiceRes.body.data._id}/status`)
     .set("Authorization", `Bearer ${token}`)
     .send({ status: "sent" });
-  return invoiceRes.body;
+  return invoiceRes.body.data;
 }
 
 describe("Invalid quote operations", () => {

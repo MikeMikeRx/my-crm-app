@@ -9,7 +9,7 @@ async function createCustomer(token) {
     .post("/api/customers")
     .set("Authorization", `Bearer ${token}`)
     .send({ name: "Test Co", email: "co@test.com", phone: "0", company: "TC", address: "1 St" });
-  return res.body._id;
+  return res.body.data._id;
 }
 
 async function createQuote(token, customerId, { status = "draft", expiryDate = "2027-12-31" } = {}) {
@@ -24,7 +24,7 @@ async function createQuote(token, customerId, { status = "draft", expiryDate = "
       status,
       items: [ITEM],
     });
-  return res.body;
+  return res.body.data;
 }
 
 async function transition(token, quoteId, status) {
@@ -48,28 +48,28 @@ describe("Quote status transitions", () => {
       const quote = await createQuote(token, customerId, { status: "draft" });
       const res = await transition(token, quote._id, "sent");
       expect(res.statusCode).toBe(200);
-      expect(res.body.status).toBe("sent");
+      expect(res.body.data.status).toBe("sent");
     });
 
     it("sent → accepted", async () => {
       const quote = await createQuote(token, customerId, { status: "sent" });
       const res = await transition(token, quote._id, "accepted");
       expect(res.statusCode).toBe(200);
-      expect(res.body.status).toBe("accepted");
+      expect(res.body.data.status).toBe("accepted");
     });
 
     it("sent → declined", async () => {
       const quote = await createQuote(token, customerId, { status: "sent" });
       const res = await transition(token, quote._id, "declined");
       expect(res.statusCode).toBe(200);
-      expect(res.body.status).toBe("declined");
+      expect(res.body.data.status).toBe("declined");
     });
 
     it("sent → expired", async () => {
       const quote = await createQuote(token, customerId, { status: "sent" });
       const res = await transition(token, quote._id, "expired");
       expect(res.statusCode).toBe(200);
-      expect(res.body.status).toBe("expired");
+      expect(res.body.data.status).toBe("expired");
     });
   });
 

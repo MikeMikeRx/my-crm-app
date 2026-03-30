@@ -10,7 +10,7 @@ async function createCustomer(token) {
     .post("/api/customers")
     .set("Authorization", `Bearer ${token}`)
     .send({ name: "Test Co", email: `c${Date.now()}@test.com`, phone: "0", company: "TC", address: "1 St" });
-  return res.body;
+  return res.body.data;
 }
 
 async function createQuote(token, customerId, status = "draft") {
@@ -25,7 +25,7 @@ async function createQuote(token, customerId, status = "draft") {
       status,
       items: [ITEM],
     });
-  return res.body;
+  return res.body.data;
 }
 
 async function createInvoice(token, customerId, quoteId = undefined) {
@@ -40,7 +40,7 @@ async function createInvoice(token, customerId, quoteId = undefined) {
       dueDate: "2026-12-31",
       items: [ITEM],
     });
-  return res.body;
+  return res.body.data;
 }
 
 describe("Activity — quote events", () => {
@@ -142,7 +142,7 @@ describe("Activity — payment events", () => {
       .set("Authorization", `Bearer ${token}`)
       .send({ invoice: invoice._id, amount: 50, paymentMethod: "cash", paymentId: `PAY-${Date.now()}` });
 
-    const activities = await Activity.find({ entityType: "payment", entityId: payment.body._id });
+    const activities = await Activity.find({ entityType: "payment", entityId: payment.body.data._id });
     expect(activities).toHaveLength(1);
     expect(activities[0].action).toBe("payment_created");
   });

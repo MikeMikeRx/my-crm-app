@@ -14,7 +14,7 @@ async function createInvoiceWithDeps(token) {
     .post("/api/quotes")
     .set("Authorization", `Bearer ${token}`)
     .send({
-      customer: customer.body._id,
+      customer: customer.body.data._id,
       quoteNumber: `Q-${Date.now()}-${Math.random()}`,
       issueDate: "2026-01-01",
       expiryDate: "2026-12-31",
@@ -26,15 +26,15 @@ async function createInvoiceWithDeps(token) {
     .post("/api/invoices")
     .set("Authorization", `Bearer ${token}`)
     .send({
-      customer: customer.body._id,
-      quote: quote.body._id,
+      customer: customer.body.data._id,
+      quote: quote.body.data._id,
       invoiceNumber: `INV-${Date.now()}`,
       issueDate: "2026-01-01",
       dueDate: "2026-12-31",
       items: [ITEM],
     });
 
-  return invoice.body;
+  return invoice.body.data;
 }
 
 describe("Invoice status transitions", () => {
@@ -61,7 +61,7 @@ describe("Invoice status transitions", () => {
         .send({ status: "sent" });
 
       expect(res.statusCode).toBe(200);
-      expect(res.body.status).toBe("sent");
+      expect(res.body.data.status).toBe("sent");
     });
 
     it("sent → paid (manual)", async () => {
@@ -78,7 +78,7 @@ describe("Invoice status transitions", () => {
         .send({ status: "paid" });
 
       expect(res.statusCode).toBe(200);
-      expect(res.body.status).toBe("paid");
+      expect(res.body.data.status).toBe("paid");
     });
 
     it("partially_paid → paid (manual)", async () => {
@@ -102,7 +102,7 @@ describe("Invoice status transitions", () => {
         .send({ status: "paid" });
 
       expect(res.statusCode).toBe(200);
-      expect(res.body.status).toBe("paid");
+      expect(res.body.data.status).toBe("paid");
     });
   });
 
@@ -292,7 +292,7 @@ describe("Invoice status transitions", () => {
         .get(`/api/invoices/${invoice._id}`)
         .set("Authorization", `Bearer ${token}`);
 
-      expect(updated.body.status).toBe("partially_paid");
+      expect(updated.body.data.status).toBe("partially_paid");
     });
 
     it("full payment transitions sent → paid", async () => {
@@ -312,7 +312,7 @@ describe("Invoice status transitions", () => {
         .get(`/api/invoices/${invoice._id}`)
         .set("Authorization", `Bearer ${token}`);
 
-      expect(updated.body.status).toBe("paid");
+      expect(updated.body.data.status).toBe("paid");
     });
 
     it("final payment transitions partially_paid → paid", async () => {
@@ -338,7 +338,7 @@ describe("Invoice status transitions", () => {
         .get(`/api/invoices/${invoice._id}`)
         .set("Authorization", `Bearer ${token}`);
 
-      expect(updated.body.status).toBe("paid");
+      expect(updated.body.data.status).toBe("paid");
     });
   });
 });

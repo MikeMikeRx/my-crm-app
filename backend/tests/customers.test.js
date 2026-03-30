@@ -22,7 +22,7 @@ describe("Customers API", () => {
       });
 
     expect(res.statusCode).toBe(201);
-    expect(res.body.name).toBe("ACME");
+    expect(res.body.data.name).toBe("ACME");
   });
 
   it("lists customers", async () => {

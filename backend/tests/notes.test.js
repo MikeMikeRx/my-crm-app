@@ -8,7 +8,7 @@ async function registerAndLoginAs(name) {
   const password = "password123";
   await request(app).post("/api/auth/register").send({ name, email, password });
   const login = await request(app).post("/api/auth/login").send({ email, password });
-  return login.body.token;
+  return login.body.data.token;
 }
 
 async function createCustomer(token) {
@@ -16,7 +16,7 @@ async function createCustomer(token) {
     .post("/api/customers")
     .set("Authorization", `Bearer ${token}`)
     .send({ name: "Note Test Co", email: `n${Date.now()}@test.com`, phone: "0", company: "NTC", address: "1 St" });
-  return res.body;
+  return res.body.data;
 }
 
 async function postNote(token, payload) {
@@ -43,13 +43,13 @@ describe("Notes — creation", () => {
     });
 
     expect(res.status).toBe(201);
-    expect(res.body.type).toBe("note");
-    expect(res.body.action).toBe("note_added");
-    expect(res.body.entityType).toBe("customer");
-    expect(res.body.entityId).toBe(customer._id);
-    expect(res.body.message).toBe("Called customer, left voicemail");
+    expect(res.body.data.type).toBe("note");
+    expect(res.body.data.action).toBe("note_added");
+    expect(res.body.data.entityType).toBe("customer");
+    expect(res.body.data.entityId).toBe(customer._id);
+    expect(res.body.data.message).toBe("Called customer, left voicemail");
 
-    const saved = await Activity.findById(res.body._id);
+    const saved = await Activity.findById(res.body.data._id);
     expect(saved).not.toBeNull();
     expect(saved.type).toBe("note");
   });
@@ -104,7 +104,7 @@ describe("Notes — entity coverage", () => {
         status: "accepted",
         items: [{ description: "Item", quantity: 1, unitPrice: 100, taxRate: 20 }],
       });
-    quoteId = quoteRes.body._id;
+    quoteId = quoteRes.body.data._id;
 
     const invoiceRes = await request(app)
       .post("/api/invoices")
@@ -117,7 +117,7 @@ describe("Notes — entity coverage", () => {
         dueDate: "2027-12-31",
         items: [{ description: "Item", quantity: 1, unitPrice: 100, taxRate: 20 }],
       });
-    invoiceId = invoiceRes.body._id;
+    invoiceId = invoiceRes.body.data._id;
 
     await request(app)
       .patch(`/api/invoices/${invoiceId}/status`)
@@ -133,7 +133,7 @@ describe("Notes — entity coverage", () => {
         paymentMethod: "cash",
         paymentId: `PAY-${Date.now()}`,
       });
-    paymentId = paymentRes.body._id;
+    paymentId = paymentRes.body.data._id;
   });
 
   it("creates a note attached to a quote", async () => {
@@ -143,8 +143,8 @@ describe("Notes — entity coverage", () => {
       message: "Customer confirmed receipt",
     });
     expect(res.status).toBe(201);
-    expect(res.body.entityType).toBe("quote");
-    expect(res.body.entityId).toBe(quoteId);
+    expect(res.body.data.entityType).toBe("quote");
+    expect(res.body.data.entityId).toBe(quoteId);
   });
 
   it("creates a note attached to an invoice", async () => {
@@ -154,8 +154,8 @@ describe("Notes — entity coverage", () => {
       message: "Invoice sent via email",
     });
     expect(res.status).toBe(201);
-    expect(res.body.entityType).toBe("invoice");
-    expect(res.body.entityId).toBe(invoiceId);
+    expect(res.body.data.entityType).toBe("invoice");
+    expect(res.body.data.entityId).toBe(invoiceId);
   });
 
   it("creates a note attached to a payment", async () => {
@@ -165,8 +165,8 @@ describe("Notes — entity coverage", () => {
       message: "Verified via bank statement",
     });
     expect(res.status).toBe(201);
-    expect(res.body.entityType).toBe("payment");
-    expect(res.body.entityId).toBe(paymentId);
+    expect(res.body.data.entityType).toBe("payment");
+    expect(res.body.data.entityId).toBe(paymentId);
   });
 });
 
