@@ -26,4 +26,9 @@ export async function deleteQuote(id: ID): Promise<{ message: string }> {
   return data;
 }
 
+export async function transitionQuoteStatus(id: ID, status: Quote["status"]): Promise<Quote> {
+  const { data } = await api.patch<Quote>(`/quotes/${id}/status`, { status });
+  return data;
+}
+
 // Note: derived fields (e.g., totals/status/expiry) are computed by the backend.

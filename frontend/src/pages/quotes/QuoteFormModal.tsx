@@ -22,10 +22,19 @@ import { dateString } from "@/utils/dateSchema";
 import { Controller, useFieldArray, useForm, type FieldArrayWithId } from "react-hook-form";
 import { z } from "zod";
 import { listCustomers } from "@/api/customers";
-import { createQuote, listQuotes, updateQuote } from "@/api/quotes";
-import type { Customer, Quote, QuoteCreate, QuoteUpdate } from "@/types/entities";
+import { createQuote, listQuotes, updateQuote, transitionQuoteStatus } from "@/api/quotes";
+import type { Customer, Quote, QuoteCreate, QuoteUpdate, QuoteStatus } from "@/types/entities";
 import { handleError } from "@/utils/handleError";
 import { formatAmount } from "@/utils/numberFormat";
+
+const QUOTE_TRANSITIONS: Record<QuoteStatus, QuoteStatus[]> = {
+    draft: ["sent"],
+    sent: ["accepted", "declined"],
+    accepted: [],
+    declined: [],
+    expired: [],
+    converted: [],
+};
 
 const itemSchema = z.object({
     description: z.string().min(1, "Description required"),
@@ -159,21 +168,33 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
 
     const submit = async (values: FormValues) => {
         try {
-            const payload: QuoteUpdate | QuoteCreate = {
-                customer: values.customer,
-                quoteNumber: values.quoteNumber,
-                items: values.items,
-                issueDate: values.issueDate,
-                expiryDate: values.expiryDate,
-                status: values.status,
-                notes: values.notes,
-            };
-
             if (editing) {
-                await updateQuote(editing._id, payload as QuoteUpdate);
+                const fieldPayload: QuoteUpdate = {
+                    customer: values.customer,
+                    quoteNumber: values.quoteNumber,
+                    items: values.items,
+                    issueDate: values.issueDate,
+                    expiryDate: values.expiryDate,
+                    notes: values.notes,
+                };
+                await updateQuote(editing._id, fieldPayload);
+
+                const isSystemStatus = editing.status === "expired" || editing.status === "converted";
+                if (!isSystemStatus && values.status !== editing.status) {
+                    await transitionQuoteStatus(editing._id, values.status);
+                }
+
                 message.success("Quote updated");
             } else {
-                await createQuote(payload as QuoteCreate);
+                await createQuote({
+                    customer: values.customer,
+                    quoteNumber: values.quoteNumber,
+                    items: values.items,
+                    issueDate: values.issueDate,
+                    expiryDate: values.expiryDate,
+                    status: values.status,
+                    notes: values.notes,
+                } as QuoteCreate);
                 message.success("Quote created");
             }
 
@@ -370,18 +391,28 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
                     <Controller
                         name="status"
                         control={control}
-                        render={({ field }) => (
-                            <Select
-                                {...field}
-                                options={[
+                        render={({ field }) => {
+                            const isSystemStatus = editing?.status === "expired" || editing?.status === "converted";
+                            const options = editing && !isSystemStatus
+                                ? [
+                                    { label: editing.status.charAt(0).toUpperCase() + editing.status.slice(1), value: editing.status },
+                                    ...QUOTE_TRANSITIONS[editing.status].map(s => ({ label: s.charAt(0).toUpperCase() + s.slice(1), value: s })),
+                                  ]
+                                : [
                                     { label: "Draft", value: "draft" },
                                     { label: "Sent", value: "sent" },
                                     { label: "Accepted", value: "accepted" },
                                     { label: "Declined", value: "declined" },
-                                ]}
-                            />
-                        )}
-                    /> 
+                                  ];
+                            return (
+                                <Select
+                                    {...field}
+                                    options={options}
+                                    disabled={isSystemStatus}
+                                />
+                            );
+                        }}
+                    />
                 </Form.Item>
                 
                 <Form.Item noStyle>
