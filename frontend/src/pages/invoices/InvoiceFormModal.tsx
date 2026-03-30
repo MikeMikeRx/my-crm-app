@@ -21,7 +21,7 @@ import { formatFormDate, todayForm, todayDoc, toDayjs, FORM_DATE_FMT } from "@/u
 import { dateString } from "@/utils/dateSchema";
 import { Controller, useFieldArray, useForm, type FieldArrayWithId } from "react-hook-form";
 import { z } from "zod";
-import { createInvoice, updateInvoice } from "@/api/invoices";
+import { createInvoice, updateInvoice, transitionInvoiceStatus } from "@/api/invoices";
 import { getQuote, listQuotes } from "@/api/quotes";
 import type { Invoice, InvoiceCreate, LineItem, Quote } from "@/types/entities";
 import { handleError } from "@/utils/handleError";
@@ -165,17 +165,46 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
         return "";
     }, [editing, watch("customer"), quotes]);
     
+    const INVOICE_TRANSITIONS: Record<string, string[]> = {
+        draft: ["sent"],
+        sent: [],
+        partially_paid: [],
+        paid: [],
+        overdue: [],
+    };
+
+    const [transitioning, setTransitioning] = useState(false);
+
+    const handleMarkAsSent = async () => {
+        if (!editing) return;
+        setTransitioning(true);
+        try {
+            await transitionInvoiceStatus(editing._id, "sent");
+            message.success("Invoice marked as sent");
+            onSuccess();
+            onClose();
+        } catch (e) {
+            handleError(e, "Failed to update invoice status");
+        } finally {
+            setTransitioning(false);
+        }
+    };
+
     const submit = async (values: FormValues) => {
         try {
-            const payload: InvoiceCreate = {
-                ...values,
-                issueDate: formatFormDate(values.issueDate),
-                dueDate: formatFormDate(values.dueDate),
-            };
             if (editing) {
-                await updateInvoice(editing._id, payload);
-                message.success("Invoices updated");
+                await updateInvoice(editing._id, {
+                    items: values.items,
+                    notes: values.notes,
+                    dueDate: formatFormDate(values.dueDate),
+                });
+                message.success("Invoice updated");
             } else {
+                const payload: InvoiceCreate = {
+                    ...values,
+                    issueDate: formatFormDate(values.issueDate),
+                    dueDate: formatFormDate(values.dueDate),
+                };
                 await createInvoice(payload);
                 message.success("Invoice created");
             }
@@ -380,9 +409,16 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
                     />
                 </Form.Item>
 
-                <Button type="primary" htmlType="submit" block>
-                    {editing ? "Update Invoice" : "Create Invoice"}
-                </Button>
+                <Space direction="vertical" style={{ width: "100%" }}>
+                    <Button type="primary" htmlType="submit" block>
+                        {editing ? "Update Invoice" : "Create Invoice"}
+                    </Button>
+                    {editing && INVOICE_TRANSITIONS[editing.status]?.includes("sent") && (
+                        <Button block loading={transitioning} onClick={handleMarkAsSent}>
+                            Mark as Sent
+                        </Button>
+                    )}
+                </Space>
             </Form>
         </Modal>
     );
