@@ -3,10 +3,28 @@ import Invoice from "../models/Invoice.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { createActivity } from "../services/activity/createActivity.js"
 import { parsePagination, paginatedResponse } from "../utils/pagination.js"
+import { buildFilter } from "../utils/filters.js"
+import mongoose from "mongoose"
+
+const PAYMENT_STATUSES = new Set(["pending", "completed", "failed"])
 
 export const getPayments = asyncHandler(async (req, res) => {
     const { page, limit, skip } = parsePagination(req.query)
-    const filter = { tenant: req.tenant.id }
+    const { filter, errors } = buildFilter(
+        { tenant: req.tenant.id },
+        req.query,
+        { validStatuses: PAYMENT_STATUSES, dateField: "paymentDate", allowCustomer: false }
+    )
+
+    if (errors.length) return res.status(400).json({ message: errors[0] })
+
+    if (req.query.customer !== undefined) {
+        if (!mongoose.isValidObjectId(req.query.customer)) {
+            return res.status(400).json({ message: `Invalid customer ID: "${req.query.customer}"` })
+        }
+        const invoiceIds = await Invoice.find({ customer: req.query.customer, tenant: req.tenant.id }).distinct("_id")
+        filter.invoice = { $in: invoiceIds }
+    }
 
     const [payments, total] = await Promise.all([
         Payment.find(filter)

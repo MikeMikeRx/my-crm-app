@@ -1,7 +1,16 @@
 import { api } from "./client";
 import type { Invoice, InvoiceCreate, InvoiceUpdate, InvoiceStatus, ID, PaginatedResponse } from "@/types/entities";
 
-export async function listInvoices(params?: { page?: number; limit?: number }): Promise<PaginatedResponse<Invoice>> {
+export type InvoiceListParams = {
+  page?: number;
+  limit?: number;
+  status?: string;
+  from?: string;
+  to?: string;
+  customer?: string;
+};
+
+export async function listInvoices(params?: InvoiceListParams): Promise<PaginatedResponse<Invoice>> {
   const { data } = await api.get<PaginatedResponse<Invoice>>("/invoices", { params });
   return data;
 }

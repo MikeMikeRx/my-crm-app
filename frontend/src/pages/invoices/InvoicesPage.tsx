@@ -1,7 +1,10 @@
-import { useEffect,useState } from "react";
-import { Table, Button, Space, Tag } from "antd";
+import { useEffect, useState } from "react";
+import { Table, Button, Space, Tag, Select, DatePicker } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import dayjs from "dayjs";
 import { listInvoices } from "@/api/invoices";
+import type { InvoiceListParams } from "@/api/invoices";
+import { listCustomers } from "@/api/customers";
 import type { Invoice, InvoiceStatus, LineItem } from "@/types/entities";
 import InvoiceFormModal from "./InvoiceFormModal"
 import { formatAmount } from "@/utils/numberFormat";
@@ -10,6 +13,7 @@ import { handleError } from "@/utils/handleError";
 import PageHeader from "@/components/PageHeader";
 import { useCrudModal } from "@/hooks/useCrudModal";
 
+type Filters = Pick<InvoiceListParams, "status" | "from" | "to" | "customer">;
 
 export default function InvoicesPage() {
     const modal = useCrudModal<Invoice>()
@@ -19,10 +23,14 @@ export default function InvoicesPage() {
     const [total, setTotal] = useState(0);
     const PAGE_SIZE = 20;
 
-    const load = async (p = page) => {
+    const [applied, setApplied] = useState<Filters>({});
+    const [draft, setDraft] = useState<Filters>({});
+    const [customerOptions, setCustomerOptions] = useState<{ value: string; label: string }[]>([]);
+
+    const load = async (p = page, f = applied) => {
         setLoading(true);
         try {
-            const res = await listInvoices({ page: p, limit: PAGE_SIZE });
+            const res = await listInvoices({ page: p, limit: PAGE_SIZE, ...f });
             setData(res.data);
             setTotal(res.pagination.total);
         } catch (e) {
@@ -33,8 +41,24 @@ export default function InvoicesPage() {
     };
 
     useEffect(() => {
-        load(1);
+        load(1, {});
+        listCustomers({ limit: 500 }).then(res =>
+            setCustomerOptions(res.data.map(c => ({ value: c._id, label: c.company || c.name })))
+        );
     }, []);
+
+    const handleApply = () => {
+        setApplied(draft);
+        setPage(1);
+        load(1, draft);
+    };
+
+    const handleClear = () => {
+        setDraft({});
+        setApplied({});
+        setPage(1);
+        load(1, {});
+    };
 
     const calcTotals = (items: LineItem[] = []) => {
         const subtotal = items.reduce((sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.unitPrice) || 0), 0);
@@ -54,7 +78,7 @@ export default function InvoicesPage() {
                 return customer.company || customer.name || "-";
             }
         },
-        { 
+        {
             title: "Issue Date",
             dataIndex: "issueDate",
             render: (v) => formatFormDate(v) || "-",
@@ -118,6 +142,50 @@ export default function InvoicesPage() {
                 onAdd={ modal.startCreate }
             />
 
+            <div style={{ marginBottom: 16 }}>
+                <Space wrap>
+                    <Select
+                        allowClear
+                        placeholder="Status"
+                        style={{ width: 160 }}
+                        value={draft.status}
+                        onChange={(v) => setDraft(d => ({ ...d, status: v }))}
+                        onClear={() => setDraft(d => ({ ...d, status: undefined }))}
+                        options={[
+                            { value: "draft", label: "Draft" },
+                            { value: "sent", label: "Sent" },
+                            { value: "partially_paid", label: "Partially Paid" },
+                            { value: "paid", label: "Paid" },
+                        ]}
+                    />
+                    <Select
+                        allowClear
+                        showSearch
+                        placeholder="Customer"
+                        style={{ width: 200 }}
+                        value={draft.customer}
+                        onChange={(v) => setDraft(d => ({ ...d, customer: v }))}
+                        onClear={() => setDraft(d => ({ ...d, customer: undefined }))}
+                        options={customerOptions}
+                        filterOption={(input, opt) =>
+                            (opt?.label as string ?? "").toLowerCase().includes(input.toLowerCase())
+                        }
+                    />
+                    <DatePicker
+                        placeholder="From"
+                        value={draft.from ? dayjs(draft.from) : null}
+                        onChange={(_, s) => setDraft(d => ({ ...d, from: (s as string) || undefined }))}
+                    />
+                    <DatePicker
+                        placeholder="To"
+                        value={draft.to ? dayjs(draft.to) : null}
+                        onChange={(_, s) => setDraft(d => ({ ...d, to: (s as string) || undefined }))}
+                    />
+                    <Button type="primary" onClick={handleApply}>Apply</Button>
+                    <Button onClick={handleClear}>Clear</Button>
+                </Space>
+            </div>
+
             <Table
                 columns={columns}
                 dataSource={data}
@@ -128,7 +196,7 @@ export default function InvoicesPage() {
                     pageSize: PAGE_SIZE,
                     total,
                     showSizeChanger: false,
-                    onChange: (p) => { setPage(p); load(p); },
+                    onChange: (p) => { setPage(p); load(p, applied); },
                 }}
                 onRow={(record) => ({
                     onClick: () => modal.startEdit(record),
@@ -139,7 +207,7 @@ export default function InvoicesPage() {
             <InvoiceFormModal
                 open={modal.open}
                 onClose={modal.close}
-                onSuccess={() => load(page)}
+                onSuccess={() => load(page, applied)}
                 editing={modal.editing}
             />
         </div>

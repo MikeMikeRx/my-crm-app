@@ -1,7 +1,16 @@
 import { api } from "./client";
 import type { Quote, QuoteCreate, QuoteUpdate, ID, PaginatedResponse } from "@/types/entities";
 
-export async function listQuotes(params?: { page?: number; limit?: number }): Promise<PaginatedResponse<Quote>> {
+export type QuoteListParams = {
+  page?: number;
+  limit?: number;
+  status?: string;
+  from?: string;
+  to?: string;
+  customer?: string;
+};
+
+export async function listQuotes(params?: QuoteListParams): Promise<PaginatedResponse<Quote>> {
   const { data } = await api.get<PaginatedResponse<Quote>>("/quotes", { params });
   return data;
 }

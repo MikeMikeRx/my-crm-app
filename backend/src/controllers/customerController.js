@@ -2,10 +2,17 @@ import Customer from "../models/Customer.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { DEFAULT_SORT } from "../utils/queries/queryDefaults.js"
 import { parsePagination, paginatedResponse } from "../utils/pagination.js"
+import { buildFilter } from "../utils/filters.js"
 
 export const getCustomers = asyncHandler(async (req, res) => {
     const { page, limit, skip } = parsePagination(req.query)
-    const filter = { tenant: req.tenant.id }
+    const { filter, errors } = buildFilter(
+        { tenant: req.tenant.id },
+        req.query,
+        { allowCustomer: false }
+    )
+
+    if (errors.length) return res.status(400).json({ message: errors[0] })
 
     const [customers, total] = await Promise.all([
         Customer.find(filter).sort(DEFAULT_SORT).skip(skip).limit(limit),
