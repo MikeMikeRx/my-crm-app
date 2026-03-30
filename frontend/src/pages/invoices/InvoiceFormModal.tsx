@@ -127,10 +127,6 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
             message.error("Quote not found");
             return;
         }
-        if (q.status === "declined" || q.status === "expired") {
-            message.error("You cannot create an invoice from this quote");
-            return;
-        }
         
         try {
             const quote = await getQuote(quoteId);
@@ -284,24 +280,15 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
                         placeholder="Select a quote"
                         onChange={handleQuoteSelect}
                         options={quotes
-                            .filter(q => q.status !== "converted" && q.status !== "draft")
-                            .map((q) => {
-                                const statusLabel =
-                                    q.status === "declined"
-                                        ? "(declined)"
-                                        : q.status === "expired"
-                                        ? "(expired)"
-                                        : "";
-                                return {
-                                    label: `${q.quoteNumber} ${
-                                        typeof q.customer === "object"
-                                        ? (q.customer.company || q.customer.name)
-                                        : ""
-                                    } ${statusLabel}`,
-                                    value: q._id,
-                                    disabled: q.status === "declined" || q.status === "expired",
-                                };
-                        })}
+                            .filter(q => q.status === "accepted")
+                            .map((q) => ({
+                                label: `${q.quoteNumber} ${
+                                    typeof q.customer === "object"
+                                    ? (q.customer.company || q.customer.name)
+                                    : ""
+                                }`,
+                                value: q._id,
+                            }))}
                     />
                 </Form.Item>}
 
