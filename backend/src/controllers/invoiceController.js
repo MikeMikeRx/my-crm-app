@@ -9,18 +9,21 @@ import { formatInvoice } from "../utils/formatters/invoiceFormatter.js";
 import { CUSTOMER_POPULATE, DEFAULT_SORT } from "../utils/queries/queryDefaults.js";
 import { createActivity } from "../services/activity/createActivity.js";
 import { parsePagination, paginatedResponse } from "../utils/pagination.js";
-import { buildFilter } from "../utils/filters.js";
+import { buildFilter, parseSort } from "../utils/filters.js";
 
 const INVOICE_STATUSES = new Set(["draft", "sent", "partially_paid", "paid"]);
+const INVOICE_SORT_FIELDS = ["createdAt", "updatedAt", "issueDate", "dueDate"];
 
 export const getInvoices = asyncHandler(async (req, res) => {
     const { page, limit, skip } = parsePagination(req.query);
     const { filter, errors } = buildFilter({ tenant: req.tenant.id }, req.query, { validStatuses: INVOICE_STATUSES });
+    const { sort, error: sortError } = parseSort(req.query, INVOICE_SORT_FIELDS);
 
     if (errors.length) return res.status(400).json({ message: errors[0] });
+    if (sortError) return res.status(400).json({ message: sortError });
 
     const [invoices, total] = await Promise.all([
-        Invoice.find(filter).populate(...CUSTOMER_POPULATE).sort(DEFAULT_SORT).skip(skip).limit(limit),
+        Invoice.find(filter).populate(...CUSTOMER_POPULATE).sort(sort).skip(skip).limit(limit),
         Invoice.countDocuments(filter),
     ]);
 

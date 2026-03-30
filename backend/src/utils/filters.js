@@ -50,3 +50,18 @@ export function buildFilter(base, query, { validStatuses, dateField = "createdAt
 
     return { filter, errors };
 }
+
+export function parseSort(query, allowedFields, defaultField = "createdAt") {
+    const field = query.sortBy ?? defaultField;
+
+    if (!allowedFields.includes(field)) {
+        return {
+            sort: null,
+            error: `Invalid sortBy "${field}". Allowed: ${allowedFields.join(", ")}`,
+        };
+    }
+
+    const order = query.order === "asc" ? 1 : -1;
+
+    return { sort: { [field]: order }, error: null };
+}

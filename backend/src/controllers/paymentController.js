@@ -3,10 +3,11 @@ import Invoice from "../models/Invoice.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { createActivity } from "../services/activity/createActivity.js"
 import { parsePagination, paginatedResponse } from "../utils/pagination.js"
-import { buildFilter } from "../utils/filters.js"
+import { buildFilter, parseSort } from "../utils/filters.js"
 import mongoose from "mongoose"
 
 const PAYMENT_STATUSES = new Set(["pending", "completed", "failed"])
+const PAYMENT_SORT_FIELDS = ["paymentDate", "createdAt", "amount"]
 
 export const getPayments = asyncHandler(async (req, res) => {
     const { page, limit, skip } = parsePagination(req.query)
@@ -15,8 +16,10 @@ export const getPayments = asyncHandler(async (req, res) => {
         req.query,
         { validStatuses: PAYMENT_STATUSES, dateField: "paymentDate", allowCustomer: false }
     )
+    const { sort, error: sortError } = parseSort(req.query, PAYMENT_SORT_FIELDS, "paymentDate")
 
     if (errors.length) return res.status(400).json({ message: errors[0] })
+    if (sortError) return res.status(400).json({ message: sortError })
 
     if (req.query.customer !== undefined) {
         if (!mongoose.isValidObjectId(req.query.customer)) {
@@ -33,7 +36,7 @@ export const getPayments = asyncHandler(async (req, res) => {
                 select: "invoiceNumber status customer",
                 populate: { path: "customer", select: "name company" },
             })
-            .sort({ paymentDate: -1 })
+            .sort(sort)
             .skip(skip)
             .limit(limit),
         Payment.countDocuments(filter),

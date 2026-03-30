@@ -6,19 +6,22 @@ import { isValidQuoteTransition, resolveQuoteStatus } from "../utils/status/quot
 import { CUSTOMER_POPULATE, DEFAULT_SORT } from "../utils/queries/queryDefaults.js";
 import { createActivity } from "../services/activity/createActivity.js";
 import { parsePagination, paginatedResponse } from "../utils/pagination.js";
-import { buildFilter } from "../utils/filters.js";
+import { buildFilter, parseSort } from "../utils/filters.js";
 
 const CREATE_ALLOWED_STATUSES = new Set(["draft", "sent", "accepted", "declined"]);
 const QUOTE_STATUSES = new Set(["draft", "sent", "accepted", "declined", "expired", "converted"]);
+const QUOTE_SORT_FIELDS = ["createdAt", "updatedAt", "issueDate", "expiryDate"];
 
 export const getQuotes = asyncHandler(async (req, res) => {
   const { page, limit, skip } = parsePagination(req.query);
   const { filter, errors } = buildFilter({ tenant: req.tenant.id }, req.query, { validStatuses: QUOTE_STATUSES });
+  const { sort, error: sortError } = parseSort(req.query, QUOTE_SORT_FIELDS);
 
   if (errors.length) return res.status(400).json({ message: errors[0] });
+  if (sortError) return res.status(400).json({ message: sortError });
 
   const [quotes, total] = await Promise.all([
-    Quote.find(filter).populate(...CUSTOMER_POPULATE).sort(DEFAULT_SORT).skip(skip).limit(limit),
+    Quote.find(filter).populate(...CUSTOMER_POPULATE).sort(sort).skip(skip).limit(limit),
     Quote.countDocuments(filter),
   ]);
 
