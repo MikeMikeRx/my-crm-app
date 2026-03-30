@@ -1,8 +1,8 @@
 import { api } from "./client";
-import type { Customer, CustomerCreate, CustomerUpdate, ID } from "@/types/entities";
+import type { Customer, CustomerCreate, CustomerUpdate, ID, PaginatedResponse } from "@/types/entities";
 
-export async function listCustomers(): Promise<Customer[]> {
-  const { data } = await api.get<Customer[]>("/customers");
+export async function listCustomers(params?: { page?: number; limit?: number }): Promise<PaginatedResponse<Customer>> {
+  const { data } = await api.get<PaginatedResponse<Customer>>("/customers", { params });
   return data;
 }
 

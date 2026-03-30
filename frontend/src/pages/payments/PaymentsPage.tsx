@@ -21,12 +21,16 @@ export default function PaymentsPage() {
     const modal = useCrudModal<Payment>();
     const [data, setData] = useState<Payment[]>([]);
     const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [total, setTotal] = useState(0);
+    const PAGE_SIZE = 20;
 
-    const load = async () => {
+    const load = async (p = page) => {
         setLoading(true);
         try {
-            const rows = await listPayments();
-            setData(rows);
+            const res = await listPayments({ page: p, limit: PAGE_SIZE });
+            setData(res.data);
+            setTotal(res.pagination.total);
         } catch (e) {
             handleError(e, "Failed to load payments");
         } finally {
@@ -35,7 +39,7 @@ export default function PaymentsPage() {
     };
 
     useEffect(() => {
-        load();
+        load(1);
     }, []);
 
     const columns: ColumnsType<Payment> = [
@@ -99,7 +103,13 @@ export default function PaymentsPage() {
                 dataSource={data}
                 rowKey="_id"
                 loading={loading}
-                pagination={{ pageSize: 10 }}
+                pagination={{
+                    current: page,
+                    pageSize: PAGE_SIZE,
+                    total,
+                    showSizeChanger: false,
+                    onChange: (p) => { setPage(p); load(p); },
+                }}
                 onRow={(record) => ({
                     onClick: () => modal.startEdit(record),
                     style: { cursor: "pointer" },
@@ -109,7 +119,7 @@ export default function PaymentsPage() {
             <PaymentFormModal
                 open={modal.open}
                 onClose={modal.close}
-                onSuccess={load}
+                onSuccess={() => load(page)}
                 editing={modal.editing}
             />
         </div>

@@ -5,17 +5,20 @@ import { formatQuote } from "../utils/formatters/quoteFormatter.js";
 import { isValidQuoteTransition, resolveQuoteStatus } from "../utils/status/quoteStatus.js";
 import { CUSTOMER_POPULATE, DEFAULT_SORT } from "../utils/queries/queryDefaults.js";
 import { createActivity } from "../services/activity/createActivity.js";
+import { parsePagination, paginatedResponse } from "../utils/pagination.js";
 
 const CREATE_ALLOWED_STATUSES = new Set(["draft", "sent", "accepted", "declined"]);
 
 export const getQuotes = asyncHandler(async (req, res) => {
-  const quotes = await Quote.find({ tenant: req.tenant.id })
-    .populate(...CUSTOMER_POPULATE)
-    .sort(DEFAULT_SORT);
+  const { page, limit, skip } = parsePagination(req.query);
+  const filter = { tenant: req.tenant.id };
 
-  const withTotals = quotes.map(q => formatQuote(q));
+  const [quotes, total] = await Promise.all([
+    Quote.find(filter).populate(...CUSTOMER_POPULATE).sort(DEFAULT_SORT).skip(skip).limit(limit),
+    Quote.countDocuments(filter),
+  ]);
 
-  res.json(withTotals);
+  res.json(paginatedResponse(quotes.map(q => formatQuote(q)), total, page, limit));
 });
 
 export const getQuoteById = asyncHandler(async (req, res) => {

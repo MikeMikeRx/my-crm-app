@@ -117,7 +117,7 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
 
     const [quotes, setQuotes] = useState<Quote[]>([]);
     useEffect(() => {
-        listQuotes().then(setQuotes).catch((e) => handleError(e, "Failed to load quotes"));
+        listQuotes({ limit: 100 }).then((res) => setQuotes(res.data)).catch((e) => handleError(e, "Failed to load quotes"));
     }, []);
 
     const handleQuoteSelect = async (quoteId: string) => {

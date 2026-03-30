@@ -1,5 +1,17 @@
 export type ID = string;
 
+export interface Pagination {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+}
+
+export interface PaginatedResponse<T> {
+    data: T[];
+    pagination: Pagination;
+}
+
 export interface Customer {
     _id: ID;
     user: ID;

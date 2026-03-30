@@ -53,10 +53,10 @@ export default function PaymentFormModal({ open, onClose, onSuccess, editing }: 
     useEffect(() => {
         if (!open || editing) return;
 
-        listPayments().then((all) => {
+        listPayments({ limit: 100 }).then(({ data }) => {
             const today = todayForm();
-            const count = all.filter(
-                p => p.paymentDate && formatFormDate(p.paymentDate) === today
+            const count = data.filter(
+                (p) => p.paymentDate && formatFormDate(p.paymentDate) === today
             ).length;
             setPaymentsToday(count);
         });
@@ -147,7 +147,7 @@ export default function PaymentFormModal({ open, onClose, onSuccess, editing }: 
 
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     useEffect(() => {
-        listInvoices().then(setInvoices).catch((e) => handleError(e, "Failed to load invoices"));
+        listInvoices({ limit: 100 }).then(({ data }) => setInvoices(data)).catch((e) => handleError(e, "Failed to load invoices"));
     }, []);
 
     const invoiceOptions = useMemo(() =>
@@ -170,15 +170,15 @@ export default function PaymentFormModal({ open, onClose, onSuccess, editing }: 
                             onChange={async (invId) => {
                                 field.onChange(invId);
 
-                                const all = await listPayments();
-                                const paid = all
-                                    .filter(p => p.invoice === invId ||
+                                const { data: allPayments } = await listPayments({ limit: 100 });
+                                const paid = allPayments
+                                    .filter((p) => p.invoice === invId ||
                                         (p.invoice
                                             && typeof p.invoice=== "object"
                                             && p.invoice._id === invId
                                         )
                                     )
-                                    .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+                                    .reduce((sum: number, p) => sum + Number(p.amount || 0), 0);
 
                                 const invoiceObj = invoices.find(i => i._id === invId);
                                 const invoiceTotal = invoiceObj?.totals?.total || 0;

@@ -12,12 +12,16 @@ export default function CustomersPage() {
     const modal = useCrudModal<Customer>();
     const [data, setData] = useState<Customer[]>([]);
     const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [total, setTotal] = useState(0);
+    const PAGE_SIZE = 20;
 
-    const load = async () => {
+    const load = async (p = page) => {
         setLoading(true);
         try {
-            const rows = await listCustomers();
-            setData(rows);
+            const res = await listCustomers({ page: p, limit: PAGE_SIZE });
+            setData(res.data);
+            setTotal(res.pagination.total);
         } catch (e) {
             handleError(e, "Failed to load customers");
         } finally {
@@ -25,12 +29,12 @@ export default function CustomersPage() {
         }
     };
 
-    useEffect(() => { load(); }, []);
+    useEffect(() => { load(1); }, []);
 
     const handleDelete = async (id: string) => {
         await deleteCustomer(id);
         message.success("Customer deleted");
-        load()
+        load(page);
     };
 
     const columns: ColumnsType<Customer> = [
@@ -72,7 +76,13 @@ export default function CustomersPage() {
                 dataSource={data}
                 rowKey="_id"
                 loading={loading}
-                pagination={{ pageSize: 10 }}
+                pagination={{
+                    current: page,
+                    pageSize: PAGE_SIZE,
+                    total,
+                    showSizeChanger: false,
+                    onChange: (p) => { setPage(p); load(p); },
+                }}
                 onRow={(record) => ({
                     onClick: () => modal.startEdit(record),
                     style: { cursor: "pointer" },
@@ -82,7 +92,7 @@ export default function CustomersPage() {
             <CustomerFormModal
                 open={modal.open}
                 onClose={modal.close}
-                onSuccess={load}
+                onSuccess={() => load(page)}
                 editing={modal.editing}
             />
         </div>

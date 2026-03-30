@@ -14,12 +14,16 @@ export default function QuotesPage() {
     const modal = useCrudModal<Quote>();
     const [data, setData] = useState<Quote[]>([]);
     const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [total, setTotal] = useState(0);
+    const PAGE_SIZE = 20;
 
-    const load = async () => {
+    const load = async (p = page) => {
         setLoading(true);
         try {
-            const rows = await listQuotes();
-            setData(rows);
+            const res = await listQuotes({ page: p, limit: PAGE_SIZE });
+            setData(res.data);
+            setTotal(res.pagination.total);
         } catch (e) {
             handleError(e, "Failed to load quotes");
         } finally {
@@ -27,12 +31,12 @@ export default function QuotesPage() {
         }
     };
 
-    useEffect(() => { load(); }, []);
+    useEffect(() => { load(1); }, []);
 
     const handleDelete = async (id: string) => {
         await deleteQuote(id);
         message.success("Quote deleted");
-        load();
+        load(page);
     };
 
     const calcTotal = (items: LineItem[] = [], globalTaxRate?: number) => {
@@ -114,7 +118,13 @@ export default function QuotesPage() {
                 columns={columns}
                 dataSource={data}
                 loading={loading}
-                pagination={{ pageSize: 10 }}
+                pagination={{
+                    current: page,
+                    pageSize: PAGE_SIZE,
+                    total,
+                    showSizeChanger: false,
+                    onChange: (p) => { setPage(p); load(p); },
+                }}
                 onRow={(record) => ({
                     onClick: () => modal.startEdit(record),
                     style: { cursor: "pointer" },
@@ -125,7 +135,7 @@ export default function QuotesPage() {
                 open={modal.open}
                 editing={modal.editing}
                 onClose={modal.close}
-                onSuccess={load}
+                onSuccess={() => load(page)}
             />
         </div>
     );

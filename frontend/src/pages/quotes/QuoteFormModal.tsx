@@ -60,16 +60,16 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
     const [quotes, setQuotes] = useState<Quote[]>([]);
 
     useEffect(() => {
-        listCustomers()
-            .then(setCustomers)
+        listCustomers({ limit: 100 })
+            .then((res) => setCustomers(res.data))
             .catch((e) => handleError(e, "Failed to load customers"));
     }, [])
 
     useEffect(() => {
         if(!open || editing) return;
 
-        listQuotes()
-            .then(setQuotes)
+        listQuotes({ limit: 100 })
+            .then((res) => setQuotes(res.data))
             .catch((e) => handleError(e, "Failed to load quotes"));
     },[open,editing]);
 

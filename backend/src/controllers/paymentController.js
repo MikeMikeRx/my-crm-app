@@ -2,17 +2,26 @@ import Payment from "../models/Payment.js"
 import Invoice from "../models/Invoice.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import { createActivity } from "../services/activity/createActivity.js"
+import { parsePagination, paginatedResponse } from "../utils/pagination.js"
 
 export const getPayments = asyncHandler(async (req, res) => {
-    const payments = await Payment.find({ tenant: req.tenant.id })
-        .populate({
-            path: "invoice",
-            select: "invoiceNumber status customer",
-            populate: { path: "customer", select: "name company" },
-        })
-        .sort({ paymentDate: -1 })
+    const { page, limit, skip } = parsePagination(req.query)
+    const filter = { tenant: req.tenant.id }
 
-    res.json(payments)
+    const [payments, total] = await Promise.all([
+        Payment.find(filter)
+            .populate({
+                path: "invoice",
+                select: "invoiceNumber status customer",
+                populate: { path: "customer", select: "name company" },
+            })
+            .sort({ paymentDate: -1 })
+            .skip(skip)
+            .limit(limit),
+        Payment.countDocuments(filter),
+    ])
+
+    res.json(paginatedResponse(payments, total, page, limit))
 })
 
 export const getPaymentById = asyncHandler(async (req, res) => {

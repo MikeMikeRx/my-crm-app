@@ -15,12 +15,16 @@ export default function InvoicesPage() {
     const modal = useCrudModal<Invoice>()
     const [data, setData] = useState<Invoice[]>([]);
     const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [total, setTotal] = useState(0);
+    const PAGE_SIZE = 20;
 
-    const load = async () => {
+    const load = async (p = page) => {
         setLoading(true);
         try {
-            const rows = await listInvoices();
-            setData(rows);
+            const res = await listInvoices({ page: p, limit: PAGE_SIZE });
+            setData(res.data);
+            setTotal(res.pagination.total);
         } catch (e) {
             handleError(e, "Failed to load invoices");
         } finally {
@@ -29,7 +33,7 @@ export default function InvoicesPage() {
     };
 
     useEffect(() => {
-        load();
+        load(1);
     }, []);
 
     const calcTotals = (items: LineItem[] = []) => {
@@ -119,7 +123,13 @@ export default function InvoicesPage() {
                 dataSource={data}
                 rowKey="_id"
                 loading={loading}
-                pagination={{ pageSize: 10 }}
+                pagination={{
+                    current: page,
+                    pageSize: PAGE_SIZE,
+                    total,
+                    showSizeChanger: false,
+                    onChange: (p) => { setPage(p); load(p); },
+                }}
                 onRow={(record) => ({
                     onClick: () => modal.startEdit(record),
                     style: { cursor: "pointer" },
@@ -129,7 +139,7 @@ export default function InvoicesPage() {
             <InvoiceFormModal
                 open={modal.open}
                 onClose={modal.close}
-                onSuccess={load}
+                onSuccess={() => load(page)}
                 editing={modal.editing}
             />
         </div>

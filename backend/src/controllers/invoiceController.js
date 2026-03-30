@@ -8,15 +8,18 @@ import { resolveQuoteStatus } from "../utils/status/quoteStatus.js";
 import { formatInvoice } from "../utils/formatters/invoiceFormatter.js";
 import { CUSTOMER_POPULATE, DEFAULT_SORT } from "../utils/queries/queryDefaults.js";
 import { createActivity } from "../services/activity/createActivity.js";
+import { parsePagination, paginatedResponse } from "../utils/pagination.js";
 
 export const getInvoices = asyncHandler(async (req, res) => {
-    const invoices = await Invoice.find({ tenant: req.tenant.id })
-        .populate(...CUSTOMER_POPULATE)
-        .sort(DEFAULT_SORT);
+    const { page, limit, skip } = parsePagination(req.query);
+    const filter = { tenant: req.tenant.id };
 
-    const result = invoices.map(inv => formatInvoice(inv));
+    const [invoices, total] = await Promise.all([
+        Invoice.find(filter).populate(...CUSTOMER_POPULATE).sort(DEFAULT_SORT).skip(skip).limit(limit),
+        Invoice.countDocuments(filter),
+    ]);
 
-    res.json(result);
+    res.json(paginatedResponse(invoices.map(inv => formatInvoice(inv)), total, page, limit));
 });
 
 export const getInvoiceById = asyncHandler(async (req, res) => {
