@@ -174,7 +174,7 @@ describe("Invalid payment operations", () => {
         paymentMethod: "cash",
         paymentId: `PAY-${Date.now()}`,
       });
-    expect(res.statusCode).toBe(400);
+    expect(res.statusCode).toBe(409);
     expect(res.body.message).toMatch(/exceed/i);
   });
 
@@ -192,7 +192,7 @@ describe("Invalid payment operations", () => {
       .post("/api/payments")
       .set("Authorization", `Bearer ${token}`)
       .send({ invoice: invoice._id, amount: 50, paymentMethod: "cash", paymentId: `PAY-${ts}-2` });
-    expect(res.statusCode).toBe(400);
+    expect(res.statusCode).toBe(409);
     expect(res.body.message).toMatch(/exceed/i);
   });
 

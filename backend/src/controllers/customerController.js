@@ -80,5 +80,5 @@ export const deleteCustomer = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: "Customer not found" })
     }
 
-    res.json({ message: "Customer deleted successfully" })
+    res.status(204).send()
 })

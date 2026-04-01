@@ -81,7 +81,7 @@ export const updateQuote = asyncHandler(async (req, res) => {
   }
 
   if (quote.status === "converted") {
-    return res.status(400).json({ message: "Cannot edit a converted quote" });
+    return res.status(409).json({ message: "Cannot edit a converted quote" });
   }
 
   const updated = await Quote.findOneAndUpdate(
@@ -97,7 +97,7 @@ export const transitionQuoteStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
 
   if (status === "converted") {
-    return res.status(400).json({ message: "Cannot manually transition to converted" });
+    return res.status(409).json({ message: "Cannot manually transition to converted" });
   }
 
   const quote = await Quote.findOne({ _id: req.params.id, tenant: req.tenant.id });
@@ -108,7 +108,7 @@ export const transitionQuoteStatus = asyncHandler(async (req, res) => {
   const effectiveStatus = resolveQuoteStatus(quote);
 
   if (!isValidQuoteTransition(effectiveStatus, status)) {
-    return res.status(400).json({
+    return res.status(409).json({
       message: `Invalid transition: "${effectiveStatus}" → "${status}"`,
     });
   }
@@ -144,5 +144,5 @@ export const deleteQuote = asyncHandler(async (req, res) => {
 
   await quote.deleteOne();
 
-  res.json({ message: "Quote deleted successfully" });
+  res.status(204).send();
 });

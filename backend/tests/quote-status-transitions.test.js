@@ -77,13 +77,13 @@ describe("Quote status transitions", () => {
     it("rejects draft → accepted", async () => {
       const quote = await createQuote(token, customerId, { status: "draft" });
       const res = await transition(token, quote._id, "accepted");
-      expect(res.statusCode).toBe(400);
+      expect(res.statusCode).toBe(409);
     });
 
     it("rejects draft → declined", async () => {
       const quote = await createQuote(token, customerId, { status: "draft" });
       const res = await transition(token, quote._id, "declined");
-      expect(res.statusCode).toBe(400);
+      expect(res.statusCode).toBe(409);
     });
 
     it("rejects sent → draft (no backward transitions)", async () => {
@@ -95,7 +95,7 @@ describe("Quote status transitions", () => {
     it("rejects accepted → declined", async () => {
       const quote = await createQuote(token, customerId, { status: "accepted" });
       const res = await transition(token, quote._id, "declined");
-      expect(res.statusCode).toBe(400);
+      expect(res.statusCode).toBe(409);
     });
 
     it("rejects manual transition to converted", async () => {
@@ -112,20 +112,20 @@ describe("Quote status transitions", () => {
     it("expired quote cannot be accepted", async () => {
       const quote = await createQuote(token, customerId, { status: "sent", expiryDate: "2020-01-01" });
       const res = await transition(token, quote._id, "accepted");
-      expect(res.statusCode).toBe(400);
+      expect(res.statusCode).toBe(409);
     });
 
     it("declined quote cannot be accepted later", async () => {
       const quote = await createQuote(token, customerId, { status: "sent" });
       await transition(token, quote._id, "declined");
       const res = await transition(token, quote._id, "accepted");
-      expect(res.statusCode).toBe(400);
+      expect(res.statusCode).toBe(409);
     });
 
     it("expired quote cannot be declined", async () => {
       const quote = await createQuote(token, customerId, { status: "sent", expiryDate: "2020-01-01" });
       const res = await transition(token, quote._id, "declined");
-      expect(res.statusCode).toBe(400);
+      expect(res.statusCode).toBe(409);
     });
   });
 
@@ -156,7 +156,7 @@ describe("Quote status transitions", () => {
           items: [ITEM],
         });
 
-      expect(res.statusCode).toBe(400);
+      expect(res.statusCode).toBe(409);
     });
 
     it("converted quote cannot be deleted", async () => {
@@ -197,7 +197,7 @@ describe("Quote status transitions", () => {
         });
 
       const res = await transition(token, quote._id, "accepted");
-      expect(res.statusCode).toBe(400);
+      expect(res.statusCode).toBe(409);
     });
   });
 });

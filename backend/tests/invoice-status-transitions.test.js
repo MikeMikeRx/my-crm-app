@@ -115,7 +115,7 @@ describe("Invoice status transitions", () => {
         .set("Authorization", `Bearer ${token}`)
         .send({ status: "paid" });
 
-      expect(res.statusCode).toBe(400);
+      expect(res.statusCode).toBe(409);
     });
 
     it("rejects draft → partially_paid", async () => {
@@ -126,7 +126,7 @@ describe("Invoice status transitions", () => {
         .set("Authorization", `Bearer ${token}`)
         .send({ status: "partially_paid" });
 
-      expect(res.statusCode).toBe(400);
+      expect(res.statusCode).toBe(409);
     });
 
     it("rejects sent → draft", async () => {
@@ -142,7 +142,7 @@ describe("Invoice status transitions", () => {
         .set("Authorization", `Bearer ${token}`)
         .send({ status: "draft" });
 
-      expect(res.statusCode).toBe(400);
+      expect(res.statusCode).toBe(409);
     });
 
     it("rejects paid → sent", async () => {
@@ -163,7 +163,7 @@ describe("Invoice status transitions", () => {
         .set("Authorization", `Bearer ${token}`)
         .send({ status: "sent" });
 
-      expect(res.statusCode).toBe(400);
+      expect(res.statusCode).toBe(409);
     });
   });
 
@@ -249,7 +249,7 @@ describe("Invoice status transitions", () => {
         .set("Authorization", `Bearer ${token}`)
         .send({ invoice: invoice._id, amount: 60, paymentMethod: "cash", paymentId: `PAY-${Date.now()}` });
 
-      expect(res.statusCode).toBe(400);
+      expect(res.statusCode).toBe(409);
     });
 
     it("blocks payment on a paid invoice", async () => {
@@ -270,7 +270,7 @@ describe("Invoice status transitions", () => {
         .set("Authorization", `Bearer ${token}`)
         .send({ invoice: invoice._id, amount: 60, paymentMethod: "cash", paymentId: `PAY-${Date.now()}` });
 
-      expect(res.statusCode).toBe(400);
+      expect(res.statusCode).toBe(409);
     });
   });
 

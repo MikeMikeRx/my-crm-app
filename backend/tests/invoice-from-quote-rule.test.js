@@ -52,19 +52,19 @@ describe("Business rule: invoice from quote", () => {
     it("rejects invoice creation from a draft quote", async () => {
       const quoteId = await createQuote("draft");
       const inv = await tryCreateInvoice(quoteId);
-      expect(inv.statusCode).toBe(400);
+      expect(inv.statusCode).toBe(409);
     });
 
     it("rejects invoice creation from a sent quote", async () => {
       const quoteId = await createQuote("sent");
       const inv = await tryCreateInvoice(quoteId);
-      expect(inv.statusCode).toBe(400);
+      expect(inv.statusCode).toBe(409);
     });
 
     it("rejects invoice creation from a declined quote", async () => {
       const quoteId = await createQuote("declined");
       const inv = await tryCreateInvoice(quoteId);
-      expect(inv.statusCode).toBe(400);
+      expect(inv.statusCode).toBe(409);
     });
 
     it("rejects invoice creation from an expired quote", async () => {
@@ -103,7 +103,7 @@ describe("Business rule: invoice from quote", () => {
       const quoteId = await createQuote("accepted");
       await tryCreateInvoice(quoteId);
       const inv = await tryCreateInvoice(quoteId);
-      expect(inv.statusCode).toBe(400);
+      expect(inv.statusCode).toBe(409);
     });
   });
 
@@ -131,7 +131,7 @@ describe("Business rule: invoice from quote", () => {
       expect(first.statusCode).toBe(201);
 
       const second = await tryCreateInvoice(quoteId);
-      expect(second.statusCode).toBe(400);
+      expect(second.statusCode).toBe(409);
     });
   });
 });

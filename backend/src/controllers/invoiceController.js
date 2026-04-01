@@ -59,12 +59,12 @@ export const createInvoice = asyncHandler(async (req, res) => {
         }
 
         if (resolveQuoteStatus(quoteDoc) !== "accepted") {
-            return res.status(400).json({ message: "Only accepted quotes can be converted to an invoice" });
+            return res.status(409).json({ message: "Only accepted quotes can be converted to an invoice" });
         }
 
         const existingInvoice = await Invoice.findOne({ quote: quoteDoc._id, tenant: req.tenant.id });
         if (existingInvoice) {
-            return res.status(400).json({ message: "An invoice already exists for this quote" });
+            return res.status(409).json({ message: "An invoice already exists for this quote" });
         }
     }
 
@@ -119,7 +119,7 @@ export const updateInvoice = asyncHandler(async (req, res) => {
     }
 
     if (invoice.status !== "draft") {
-        return res.status(400).json({ message: `Cannot edit an invoice with status "${invoice.status}". Only draft invoices can be modified.` });
+        return res.status(409).json({ message: `Cannot edit an invoice with status "${invoice.status}". Only draft invoices can be modified.` });
     }
 
     const updated = await Invoice.findOneAndUpdate(
@@ -140,7 +140,7 @@ export const transitionInvoiceStatus = asyncHandler(async (req, res) => {
     }
 
     if (!isValidTransition(invoice.status, status)) {
-        return res.status(400).json({
+        return res.status(409).json({
             message: `Invalid transition: "${invoice.status}" → "${status}"`,
         });
     }
@@ -163,10 +163,10 @@ export const deleteInvoice = asyncHandler(async (req, res) => {
 
     const hasPayments = await Payment.exists({ invoice: invoice._id });
     if (hasPayments) {
-        return res.status(400).json({ message: "Cannot delete an invoice that has associated payments" });
+        return res.status(409).json({ message: "Cannot delete an invoice that has associated payments" });
     }
 
     await invoice.deleteOne();
 
-    res.json({ message: "Invoice deleted successfully" });
+    res.status(204).send();
 })

@@ -79,7 +79,7 @@ export const createPayment = asyncHandler(async (req, res) => {
     }
 
     if (!["sent", "partially_paid"].includes(existingInvoice.status)) {
-        return res.status(400).json({
+        return res.status(409).json({
             message: `Cannot add payment to an invoice with status "${existingInvoice.status}". Only sent or partially paid invoices can receive payments.`
         })
     }
@@ -88,7 +88,7 @@ export const createPayment = asyncHandler(async (req, res) => {
     const totalPaid = completedPayments.reduce((sum, p) => sum + p.amount, 0);
     const invoiceTotal = existingInvoice.totals.total
     if (totalPaid + Number(amount) > invoiceTotal) {
-        return res.status(400).json({
+        return res.status(409).json({
             message: `Payment would exceed invoice total. Remaining balance: ${(invoiceTotal - totalPaid).toFixed(2)}`
         });
     }
