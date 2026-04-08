@@ -9,7 +9,7 @@ import {
 } from "@ant-design/icons";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/context/authStore";
-import Logo from "../../assets/images/logo/Logo-Dark-Long.png";
+import Logo from "../../assets/images/logo/dashboard-logo.png";
 
 const { Header, Sider, Content } = Layout;
 
@@ -28,7 +28,7 @@ export default function AppLayout(){
     return (
         <Layout style={{ minHeight: "100vh" }}>
             <Sider theme="dark">
-                <div style={{ marginTop: "20px", padding: "0 10px", marginBottom: "30px" }}>
+                <div style={{ marginTop: "40px", padding: "0 10px", marginBottom: "30px" }}>
                     <img src={Logo} alt="Vitesse Logo" style={{ width: "100%", height: "auto" }} />
                 </div>
                 <Menu theme="dark" mode="inline" selectedKeys={[pathname]} items={menuItems} />
