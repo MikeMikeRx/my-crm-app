@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
-import { Table, Tag, Space, Button, Select, DatePicker } from "antd";
+import { Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import dayjs from "dayjs";
 import { listPayments } from "@/api/payments";
-import type { PaymentListParams } from "@/api/payments";
 import { listCustomers } from "@/api/customers";
 import type { Payment } from "@/types/entities";
 import PaymentFormModal from "./PaymentFormModal";
@@ -11,6 +9,8 @@ import { formatAmount } from "@/utils/numberFormat";
 import { formatFormDate } from "@/utils/dateFormat";
 import { handleError } from "@/utils/handleError";
 import PageHeader from "@/components/PageHeader";
+import FilterBar from "@/components/FilterBar";
+import type { FilterValues } from "@/components/FilterBar";
 import { useCrudModal } from "@/hooks/useCrudModal";
 
 const METHOD_LABELS: Record<string, string> = {
@@ -20,7 +20,11 @@ const METHOD_LABELS: Record<string, string> = {
     paypal:"PayPal",
 }
 
-type Filters = Pick<PaymentListParams, "status" | "from" | "to" | "customer">;
+const PAYMENT_STATUS_OPTIONS = [
+    { value: "pending", label: "Pending" },
+    { value: "completed", label: "Completed" },
+    { value: "failed", label: "Failed" },
+];
 
 export default function PaymentsPage() {
     const modal = useCrudModal<Payment>();
@@ -30,8 +34,8 @@ export default function PaymentsPage() {
     const [total, setTotal] = useState(0);
     const PAGE_SIZE = 20;
 
-    const [applied, setApplied] = useState<Filters>({});
-    const [draft, setDraft] = useState<Filters>({});
+    const [applied, setApplied] = useState<FilterValues>({});
+    const [draft, setDraft] = useState<FilterValues>({});
     const [customerOptions, setCustomerOptions] = useState<{ value: string; label: string }[]>([]);
 
     const load = async (p = page, f = applied) => {
@@ -123,48 +127,14 @@ export default function PaymentsPage() {
                 onAdd={ modal.startCreate }
             />
 
-            <div style={{ marginBottom: 16 }}>
-                <Space wrap>
-                    <Select
-                        allowClear
-                        placeholder="Status"
-                        style={{ width: 150 }}
-                        value={draft.status}
-                        onChange={(v) => setDraft(d => ({ ...d, status: v }))}
-                        onClear={() => setDraft(d => ({ ...d, status: undefined }))}
-                        options={[
-                            { value: "pending", label: "Pending" },
-                            { value: "completed", label: "Completed" },
-                            { value: "failed", label: "Failed" },
-                        ]}
-                    />
-                    <Select
-                        allowClear
-                        showSearch
-                        placeholder="Customer"
-                        style={{ width: 200 }}
-                        value={draft.customer}
-                        onChange={(v) => setDraft(d => ({ ...d, customer: v }))}
-                        onClear={() => setDraft(d => ({ ...d, customer: undefined }))}
-                        options={customerOptions}
-                        filterOption={(input, opt) =>
-                            (opt?.label as string ?? "").toLowerCase().includes(input.toLowerCase())
-                        }
-                    />
-                    <DatePicker
-                        placeholder="From"
-                        value={draft.from ? dayjs(draft.from) : null}
-                        onChange={(_, s) => setDraft(d => ({ ...d, from: (s as string) || undefined }))}
-                    />
-                    <DatePicker
-                        placeholder="To"
-                        value={draft.to ? dayjs(draft.to) : null}
-                        onChange={(_, s) => setDraft(d => ({ ...d, to: (s as string) || undefined }))}
-                    />
-                    <Button type="primary" onClick={handleApply}>Apply</Button>
-                    <Button onClick={handleClear}>Clear</Button>
-                </Space>
-            </div>
+            <FilterBar
+                value={draft}
+                onChange={setDraft}
+                onApply={handleApply}
+                onClear={handleClear}
+                statusOptions={PAYMENT_STATUS_OPTIONS}
+                customerOptions={customerOptions}
+            />
 
             <Table
                 columns={columns}

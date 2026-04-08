@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
-import { Table, Button, Space, Popconfirm, Tag, Select, DatePicker, message } from "antd";
+import { Table, Button, Space, Popconfirm, Tag, message } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import dayjs from "dayjs";
 import { listQuotes } from "@/api/quotes";
-import type { QuoteListParams } from "@/api/quotes";
 import { listCustomers } from "@/api/customers";
 import type { Quote, LineItem, QuoteStatus } from "@/types/entities";
 import QuoteFormModal from "./QuoteFormModal";
@@ -12,9 +10,18 @@ import { formatAmount } from "@/utils/numberFormat";
 import { formatFormDate } from "@/utils/dateFormat";
 import { handleError } from "@/utils/handleError";
 import PageHeader from "@/components/PageHeader";
+import FilterBar from "@/components/FilterBar";
+import type { FilterValues } from "@/components/FilterBar";
 import { useCrudModal } from "@/hooks/useCrudModal";
 
-type Filters = Pick<QuoteListParams, "status" | "from" | "to" | "customer">;
+const QUOTE_STATUS_OPTIONS = [
+    { value: "draft", label: "Draft" },
+    { value: "sent", label: "Sent" },
+    { value: "accepted", label: "Accepted" },
+    { value: "declined", label: "Declined" },
+    { value: "expired", label: "Expired" },
+    { value: "converted", label: "Converted" },
+];
 
 export default function QuotesPage() {
     const modal = useCrudModal<Quote>();
@@ -24,8 +31,8 @@ export default function QuotesPage() {
     const [total, setTotal] = useState(0);
     const PAGE_SIZE = 20;
 
-    const [applied, setApplied] = useState<Filters>({});
-    const [draft, setDraft] = useState<Filters>({});
+    const [applied, setApplied] = useState<FilterValues>({});
+    const [draft, setDraft] = useState<FilterValues>({});
     const [customerOptions, setCustomerOptions] = useState<{ value: string; label: string }[]>([]);
 
     const load = async (p = page, f = applied) => {
@@ -141,51 +148,14 @@ export default function QuotesPage() {
                 onAdd={ modal.startCreate }
             />
 
-            <div style={{ marginBottom: 16 }}>
-                <Space wrap>
-                    <Select
-                        allowClear
-                        placeholder="Status"
-                        style={{ width: 150 }}
-                        value={draft.status}
-                        onChange={(v) => setDraft(d => ({ ...d, status: v }))}
-                        onClear={() => setDraft(d => ({ ...d, status: undefined }))}
-                        options={[
-                            { value: "draft", label: "Draft" },
-                            { value: "sent", label: "Sent" },
-                            { value: "accepted", label: "Accepted" },
-                            { value: "declined", label: "Declined" },
-                            { value: "expired", label: "Expired" },
-                            { value: "converted", label: "Converted" },
-                        ]}
-                    />
-                    <Select
-                        allowClear
-                        showSearch
-                        placeholder="Customer"
-                        style={{ width: 200 }}
-                        value={draft.customer}
-                        onChange={(v) => setDraft(d => ({ ...d, customer: v }))}
-                        onClear={() => setDraft(d => ({ ...d, customer: undefined }))}
-                        options={customerOptions}
-                        filterOption={(input, opt) =>
-                            (opt?.label as string ?? "").toLowerCase().includes(input.toLowerCase())
-                        }
-                    />
-                    <DatePicker
-                        placeholder="From"
-                        value={draft.from ? dayjs(draft.from) : null}
-                        onChange={(_, s) => setDraft(d => ({ ...d, from: (s as string) || undefined }))}
-                    />
-                    <DatePicker
-                        placeholder="To"
-                        value={draft.to ? dayjs(draft.to) : null}
-                        onChange={(_, s) => setDraft(d => ({ ...d, to: (s as string) || undefined }))}
-                    />
-                    <Button type="primary" onClick={handleApply}>Apply</Button>
-                    <Button onClick={handleClear}>Clear</Button>
-                </Space>
-            </div>
+            <FilterBar
+                value={draft}
+                onChange={setDraft}
+                onApply={handleApply}
+                onClear={handleClear}
+                statusOptions={QUOTE_STATUS_OPTIONS}
+                customerOptions={customerOptions}
+            />
 
             <Table
                 rowKey="_id"

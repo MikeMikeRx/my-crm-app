@@ -1,16 +1,14 @@
 import { useEffect, useState } from "react";
-import { Table, Button, Space, Popconfirm, DatePicker, message } from "antd";
+import { Table, Button, Space, Popconfirm, message } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import dayjs from "dayjs";
 import { listCustomers, deleteCustomer } from "@/api/customers";
-import type { CustomerListParams } from "@/api/customers";
 import type { Customer} from "@/types/entities";
 import CustomerFormModal from "./CustomerFormModal";
 import { handleError } from "@/utils/handleError";
 import PageHeader from "@/components/PageHeader";
+import FilterBar from "@/components/FilterBar";
+import type { FilterValues } from "@/components/FilterBar";
 import { useCrudModal } from "@/hooks/useCrudModal";
-
-type Filters = Pick<CustomerListParams, "from" | "to">;
 
 export default function CustomersPage() {
     const modal = useCrudModal<Customer>();
@@ -20,8 +18,8 @@ export default function CustomersPage() {
     const [total, setTotal] = useState(0);
     const PAGE_SIZE = 20;
 
-    const [applied, setApplied] = useState<Filters>({});
-    const [draft, setDraft] = useState<Filters>({});
+    const [applied, setApplied] = useState<FilterValues>({});
+    const [draft, setDraft] = useState<FilterValues>({});
 
     const load = async (p = page, f = applied) => {
         setLoading(true);
@@ -91,22 +89,12 @@ export default function CustomersPage() {
                 onAdd={modal.startCreate}
             />
 
-            <div style={{ marginBottom: 16 }}>
-                <Space wrap>
-                    <DatePicker
-                        placeholder="From"
-                        value={draft.from ? dayjs(draft.from) : null}
-                        onChange={(_, s) => setDraft(d => ({ ...d, from: (s as string) || undefined }))}
-                    />
-                    <DatePicker
-                        placeholder="To"
-                        value={draft.to ? dayjs(draft.to) : null}
-                        onChange={(_, s) => setDraft(d => ({ ...d, to: (s as string) || undefined }))}
-                    />
-                    <Button type="primary" onClick={handleApply}>Apply</Button>
-                    <Button onClick={handleClear}>Clear</Button>
-                </Space>
-            </div>
+            <FilterBar
+                value={draft}
+                onChange={setDraft}
+                onApply={handleApply}
+                onClear={handleClear}
+            />
 
             <Table
                 columns={columns}
