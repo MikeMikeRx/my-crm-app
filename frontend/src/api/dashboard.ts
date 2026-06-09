@@ -1,5 +1,5 @@
 import { api } from "./client";
-import type { ID } from "@/types/entities";
+import type { ID } from "@/shared/types/entities";
 
 type ISODateString = string;
 

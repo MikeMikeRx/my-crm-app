@@ -1,5 +1,5 @@
 import { api } from "./client";
-import type { Quote, QuoteCreate, QuoteUpdate, ID, PaginatedResponse } from "@/types/entities";
+import type { Quote, QuoteCreate, QuoteUpdate, ID, PaginatedResponse } from "@/shared/types/entities";
 
 export type QuoteListParams = {
   page?: number;
