@@ -1,21 +1,7 @@
-import { useEffect } from "react";
-import { Modal, Form, Input, Button, message } from "antd";
-import { useForm, Controller } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { createCustomer, updateCustomer } from "@/api/customers";
-import type { Customer, CustomerCreate } from "@/shared/types/entities";
-import { handleError } from "@/shared/utils/handleError";
-
-const schema = z.object({
-    name: z.string().min(2, "Name is required"),
-    email: z.string().email("Invalid email").optional().or(z.literal("")),
-    phone: z.string().optional(),
-    company: z.string().optional(),
-    address: z.string().optional(),
-});
-
-type FormValues = z.infer<typeof schema>;
+import { Modal, Form, Input, Button } from "antd";
+import { Controller } from "react-hook-form";
+import type { Customer } from "@/shared/types/entities";
+import { useCustomerForm } from "./useCustomerForm";
 
 interface Props {
     open: boolean;
@@ -27,31 +13,7 @@ interface Props {
 const CUSTOMER_FIELDS = ["name", "email", "phone", "company", "address"] as const;
 
 export default function CustomerFormModal({ open, onClose, onSuccess, editing }: Props) {
-    const { control, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
-        resolver: zodResolver(schema),
-        defaultValues: editing || { name: "", email: "", phone: "", company: "", address: ""},
-    });
-
-    useEffect(() => {
-        reset(editing || { name: "", email: "", phone: "", company: "", address: ""})
-    }, [editing, reset])
-
-    const submit = async (values: FormValues) => {
-        try {
-            if (editing) {
-                await updateCustomer(editing._id, values);
-                message.success("Customer updated");
-            } else {
-                await createCustomer(values as CustomerCreate);
-                message.success("Customer created");
-            }
-            onSuccess();
-            onClose();
-            reset();
-        } catch (e) {
-            handleError(e, editing ? "Failed to update customer" : "Failed to create customer");
-        }
-    };
+    const { control, errors, onSubmit } = useCustomerForm({ editing, onClose, onSuccess });
 
     return (
         <Modal
@@ -61,7 +23,7 @@ export default function CustomerFormModal({ open, onClose, onSuccess, editing }:
             footer={null}
             destroyOnHidden
         >
-            <Form layout="vertical" onFinish={handleSubmit(submit)}>
+            <Form layout="vertical" onFinish={onSubmit}>
                 {CUSTOMER_FIELDS.map((field) => (
                     <Form.Item
                         key={field}
@@ -76,7 +38,6 @@ export default function CustomerFormModal({ open, onClose, onSuccess, editing }:
                         />
                     </Form.Item>
                 ))}
-
                 <Button type="primary" htmlType="submit" block>
                     {editing ? "Update" : "Create"}
                 </Button>
