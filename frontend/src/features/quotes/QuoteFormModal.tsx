@@ -105,7 +105,7 @@ export default function QuoteFormModal({ open, onClose, onSuccess, editing }: Pr
             return `Q-${todayDoc()}-1001`;
         };
         return getNextQuoteNumber();
-    }, [quotes.length]);
+    }, [quotes.length]); // eslint-disable-line react-hooks/exhaustive-deps
     
     const { control, handleSubmit, reset, formState: { errors }, watch } = useForm<FormValues>({
         resolver: zodResolver(schema),

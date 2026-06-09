@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { message } from "antd";
 import { listQuotes, deleteQuote } from "@/api/quotes";
 import { listCustomers } from "@/api/customers";
@@ -19,7 +19,7 @@ export function useQuotes() {
     const [draft, setDraft] = useState<FilterValues>({});
     const [customerOptions, setCustomerOptions] = useState<{ value: string; label: string }[]>([]);
 
-    const load = async (p = page, f = applied) => {
+    const load = useCallback(async (p: number, f: FilterValues) => {
         setLoading(true);
         try {
             const res = await listQuotes({ page: p, limit: PAGE_SIZE, ...f });
@@ -30,14 +30,14 @@ export function useQuotes() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         load(1, {});
         listCustomers({ limit: 500 }).then(res =>
             setCustomerOptions(res.data.map(c => ({ value: c._id, label: c.company || c.name })))
         );
-    }, []);
+    }, [load]);
 
     const handleApply = () => {
         setApplied(draft);

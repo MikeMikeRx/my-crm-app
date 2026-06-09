@@ -149,21 +149,21 @@ export default function InvoiceFormModal({ open, onClose, onSuccess, editing}: P
         }
     };
 
+    const customerId = watch("customer");
     const customerName = useMemo(() => {
         if (editing && typeof editing.customer === "object") {
             return editing.customer.company ?? editing.customer.name ?? "";
         }
 
-        const customerId = watch("customer");
         const quote = quotes.find(
             q => q.customer && typeof q.customer === "object" && q.customer._id === customerId);
-        
+
         if(quote && typeof quote.customer ==="object") {
             return quote.customer.company ?? quote.customer.name ?? "";
         }
 
         return "";
-    }, [editing, watch("customer"), quotes]);
+    }, [editing, customerId, quotes]);
     
     const INVOICE_TRANSITIONS: Record<string, string[]> = {
         draft: ["sent"],

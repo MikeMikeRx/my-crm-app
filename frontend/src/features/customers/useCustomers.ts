@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { message } from "antd";
 import { listCustomers, deleteCustomer } from "@/api/customers";
 import type { Customer } from "@/types/entities";
@@ -17,7 +17,7 @@ export function useCustomers() {
     const [applied, setApplied] = useState<FilterValues>({});
     const [draft, setDraft] = useState<FilterValues>({});
 
-    const load = async (p = page, f = applied) => {
+    const load = useCallback(async (p: number, f: FilterValues) => {
         setLoading(true);
         try {
             const res = await listCustomers({ page: p, limit: PAGE_SIZE, ...f });
@@ -28,9 +28,9 @@ export function useCustomers() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    useEffect(() => { load(1, {}); }, []);
+    useEffect(() => { load(1, {}); }, [load]);
 
     const handleApply = () => {
         setApplied(draft);

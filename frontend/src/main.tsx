@@ -11,10 +11,12 @@ import "@/index.css";
 
 //Testing -----------------------------------
 if (import.meta.env.DEV) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).useAuthStore = useAuthStore;
 }
 //-------------------------------------------
 
+// eslint-disable-next-line react-refresh/only-export-components
 function Bootstrap() {
   const fetchProfile = useAuthStore((s) => s.fetchProfile);
   const { notification } = App.useApp();

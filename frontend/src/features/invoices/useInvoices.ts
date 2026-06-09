@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { listInvoices } from "@/api/invoices";
 import { listCustomers } from "@/api/customers";
 import type { Invoice } from "@/types/entities";
@@ -18,7 +18,7 @@ export function useInvoices() {
     const [draft, setDraft] = useState<FilterValues>({});
     const [customerOptions, setCustomerOptions] = useState<{ value: string; label: string }[]>([]);
 
-    const load = async (p = page, f = applied) => {
+    const load = useCallback(async (p: number, f: FilterValues) => {
         setLoading(true);
         try {
             const res = await listInvoices({ page: p, limit: PAGE_SIZE, ...f });
@@ -29,14 +29,14 @@ export function useInvoices() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         load(1, {});
         listCustomers({ limit: 500 }).then(res =>
             setCustomerOptions(res.data.map(c => ({ value: c._id, label: c.company || c.name })))
         );
-    }, []);
+    }, [load]);
 
     const handleApply = () => {
         setApplied(draft);
