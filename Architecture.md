@@ -55,13 +55,21 @@ This is a **monorepo** containing a React frontend and Node.js backend with clea
 vitesse-crm/
 ├── frontend/                 # React SPA
 │   ├── src/
-│   │   ├── api/              # API client and endpoint modules
-│   │   ├── components/       # Reusable UI components
-│   │   ├── context/          # Zustand auth store
-│   │   ├── pages/            # Page components
-│   │   ├── routes/           # React Router configuration
-│   │   ├── types/            # TypeScript interfaces
-│   │   └── utils/            # Helper functions
+│   │   ├── api/              # Axios client + one module per resource
+│   │   ├── features/         # Domain code — one folder per feature
+│   │   │   ├── auth/         # LoginPage, authStore, useLogin
+│   │   │   ├── customers/    # CustomersPage, CustomerFormModal, useCustomers, useCustomerForm
+│   │   │   ├── dashboard/    # DashboardPage, useDashboard, sub-components
+│   │   │   ├── invoices/     # InvoicesPage, InvoiceFormModal, useInvoices, useInvoiceForm
+│   │   │   ├── payments/     # PaymentsPage, PaymentFormModal, usePayments, usePaymentForm
+│   │   │   └── quotes/       # QuotesPage, QuoteFormModal, useQuotes, useQuoteForm
+│   │   ├── shared/           # Cross-cutting code used by multiple features
+│   │   │   ├── components/   # FilterBar, PageHeader, AppLayout, MobileBlock
+│   │   │   ├── hooks/        # useCrudModal, useLineItems
+│   │   │   ├── notifications/# globalNotification (Ant Design instance bridge)
+│   │   │   ├── types/        # entities.ts — domain TypeScript interfaces
+│   │   │   └── utils/        # dateFormat, handleError, calcTotals, numberFormat, etc.
+│   │   └── routes/           # React Router config, ProtectedRoute
 │   ├── vite.config.ts
 │   └── package.json
 │
@@ -648,33 +656,55 @@ The controller verifies the entity belongs to the user's tenant before writing.
 App
 ├── ConfigProvider (Ant Design theme)
 │   └── MobileBlock (desktop-only gate, ≥1024px)
-│       └── BrowserRouter
-│           └── Routes
-│               ├── /login → LoginPage
-│               ├── /register → RegisterPage
-│               └── /* → ProtectedRoute
-│                   └── MainLayout
-│                       ├── Sidebar (navigation)
-│                       └── Content
-│                           ├── /dashboard → DashboardPage
-│                           ├── /customers → CustomersPage
-│                           ├── /quotes → QuotesPage
-│                           ├── /invoices → InvoicesPage
-│                           └── /payments → PaymentsPage
+│       └── App (Ant Design App context — notification instance)
+│           └── Bootstrap (fetches auth profile on mount)
+│               └── RouterProvider
+│                   ├── /login → LoginPage
+│                   └── /* → ProtectedRoute
+│                       └── AppLayout
+│                           ├── Sidebar (navigation)
+│                           └── Content (Outlet)
+│                               ├── /           → DashboardPage
+│                               ├── /customers  → CustomersPage
+│                               ├── /quotes     → QuotesPage
+│                               ├── /invoices   → InvoicesPage
+│                               └── /payments   → PaymentsPage
 ```
+
+### Feature-Based Architecture
+
+Each domain lives in its own folder under `features/`. The folder boundary is the rule: if code is only used by one feature, it lives inside that feature. If two or more features use it, it moves up to `shared/`.
+
+```
+features/invoices/
+  InvoicesPage.tsx       ← rendering only; calls useInvoices()
+  InvoiceFormModal.tsx   ← rendering only; calls useInvoiceForm()
+  useInvoices.ts         ← list, pagination, filters, delete
+  useInvoiceForm.ts      ← form schema, defaults, submit, status transition
+```
+
+Pages are thin orchestrators — they render what the hooks return and dispatch events back. No data fetching or business logic in page components.
+
+### Shared Hooks
+
+| Hook | Purpose |
+|------|---------|
+| `useCrudModal<T>` | Generic modal open/edit/close state for any entity |
+| `useLineItems<T extends FormWithItems>` | Line-items field array + editable table columns + running total; typed to only accept forms that have `items: LineItemValue[]` |
 
 ### State Management Strategy
 
 | State Type | Solution | Example |
 |------------|----------|---------|
 | Auth/User | Zustand store | `useAuthStore()` |
-| Page data | Local useState | Customer list in CustomersPage |
-| Form state | React Hook Form | Create/Edit modals |
-| UI state | Local useState | Modal open, loading flags |
+| Page data + filters | Feature hook (`useInvoices`) | Pagination, list, delete |
+| Form state | Feature hook (`useInvoiceForm`) | Schema, defaults, submit |
+| Modal open/close | `useCrudModal<T>` | All CRUD modals |
+| Notifications | Global Ant Design instance | `setGlobalNotification()` in `main.tsx` |
 
 **Decision: No global data cache (e.g., React Query)**
-- Current data fetching pattern is sufficient for app scale
-- Each page fetches fresh data on mount
+- Each page fetches fresh data on mount via its feature hook
+- Sufficient for current scale; no stale-data UX issues observed
 - Future improvement: Add React Query for caching and optimistic updates
 
 ### API Layer Pattern
@@ -683,18 +713,18 @@ App
 src/api/
 ├── client.ts      # Axios instance with interceptors
 ├── auth.ts        # login(), register(), getProfile()
-├── customers.ts   # getCustomers(), createCustomer(), etc.
-├── quotes.ts
-├── invoices.ts
-├── payments.ts
-└── dashboard.ts
+├── customers.ts   # listCustomers(), createCustomer(), etc.
+├── quotes.ts      # CRUD + transitionQuoteStatus()
+├── invoices.ts    # CRUD + transitionInvoiceStatus()
+├── payments.ts    # listPayments(), createPayment(), updatePayment()
+└── dashboard.ts   # getDashboardSummary()
 ```
 
 **Decision: Centralized API layer**
 - Single Axios instance with auth interceptor
-- Components import from API modules, not axios directly
+- Feature hooks import from API modules, not axios directly
 - Easy to mock for testing
-- Consistent error handling
+- Consistent error handling via `handleError()` in `shared/utils/`
 
 ---
 
@@ -831,17 +861,18 @@ Any other transition (e.g. `draft → paid`, `paid → sent`) is rejected with a
 - Status utilities in `utils/status/` (`invoiceStatus.js`, `quoteStatus.js`, `paymentStatus.js`) used consistently by controllers and services
 - Trade-off: Slight computation on every read
 
-### 7. Component-Level Data Fetching
+### 7. Feature Hook Pattern
 
-**Context**: Pages need to display data from API.
+**Context**: Pages were mixing data fetching, form state, business logic, and rendering in a single component.
 
-**Decision**: Each page component fetches its own data.
+**Decision**: Extract all non-rendering logic into dedicated hooks per feature (`useInvoices`, `useInvoiceForm`, etc.). Page components only render and dispatch events.
 
 **Rationale**:
-- Simple mental model
-- No global state synchronization issues
-- Trade-off: No caching, refetches on navigation
-- Future improvement: Add React Query
+- Clear separation of concerns — pages are thin; hooks own the logic
+- Hooks are independently testable without rendering
+- Shared logic (line items, totals, CRUD modal state) extracted to `shared/hooks/` and `shared/utils/`
+- Trade-off: No caching, each mount refetches from API
+- Future improvement: Add React Query for caching and optimistic updates
 
 ### 8. Docker Compose for Development
 
@@ -987,4 +1018,4 @@ VITE_API_URL=http://localhost:8888
 
 ---
 
-*Last updated: March 2026*
+*Last updated: June 2026*
