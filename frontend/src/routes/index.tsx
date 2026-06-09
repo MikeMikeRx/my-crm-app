@@ -4,7 +4,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import LoginPage from "@/pages/login/LoginPage";
 import DashboardPage from "@/pages/dashboard/DashboardPage";
 import CustomersPage from "@/features/customers/CustomersPage";
-import QuotesPage from "@/pages/quotes/QuotesPage";
+import QuotesPage from "@/features/quotes/QuotesPage";
 import InvoicesPage from "@/pages/invoices/InvoicesPage";
 import PaymentsPage from "@/pages/payments/PaymentsPage";
 

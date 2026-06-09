@@ -1,18 +1,12 @@
-import { useEffect, useState } from "react";
-import { Table, Button, Space, Popconfirm, Tag, message } from "antd";
+import { Table, Button, Space, Popconfirm, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { listQuotes } from "@/api/quotes";
-import { listCustomers } from "@/api/customers";
 import type { Quote, LineItem, QuoteStatus } from "@/types/entities";
 import QuoteFormModal from "./QuoteFormModal";
-import { deleteQuote } from "@/api/quotes";
 import { formatAmount } from "@/utils/numberFormat";
 import { formatFormDate } from "@/utils/dateFormat";
-import { handleError } from "@/utils/handleError";
 import PageHeader from "@/components/PageHeader";
 import FilterBar from "@/components/FilterBar";
-import type { FilterValues } from "@/components/FilterBar";
-import { useCrudModal } from "@/hooks/useCrudModal";
+import { useQuotes } from "./useQuotes";
 
 const QUOTE_STATUS_OPTIONS = [
     { value: "draft", label: "Draft" },
@@ -23,75 +17,43 @@ const QUOTE_STATUS_OPTIONS = [
     { value: "converted", label: "Converted" },
 ];
 
+const calcTotal = (items: LineItem[] = [], globalTaxRate?: number) => {
+    return items.reduce((sum, i) => {
+        const qty = Number(i.quantity) || 0;
+        const price = Number(i.unitPrice) || 0;
+        const line = qty * price;
+        const taxPct = (i.taxRate ?? globalTaxRate ?? 0) / 100;
+        return sum + line * (1 + taxPct);
+    }, 0);
+};
+
 export default function QuotesPage() {
-    const modal = useCrudModal<Quote>();
-    const [data, setData] = useState<Quote[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [page, setPage] = useState(1);
-    const [total, setTotal] = useState(0);
-    const PAGE_SIZE = 20;
-
-    const [applied, setApplied] = useState<FilterValues>({});
-    const [draft, setDraft] = useState<FilterValues>({});
-    const [customerOptions, setCustomerOptions] = useState<{ value: string; label: string }[]>([]);
-
-    const load = async (p = page, f = applied) => {
-        setLoading(true);
-        try {
-            const res = await listQuotes({ page: p, limit: PAGE_SIZE, ...f });
-            setData(res.data);
-            setTotal(res.pagination.total);
-        } catch (e) {
-            handleError(e, "Failed to load quotes");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        load(1, {});
-        listCustomers({ limit: 500 }).then(res =>
-            setCustomerOptions(res.data.map(c => ({ value: c._id, label: c.company || c.name })))
-        );
-    }, []);
-
-    const handleApply = () => {
-        setApplied(draft);
-        setPage(1);
-        load(1, draft);
-    };
-
-    const handleClear = () => {
-        setDraft({});
-        setApplied({});
-        setPage(1);
-        load(1, {});
-    };
-
-    const handleDelete = async (id: string) => {
-        await deleteQuote(id);
-        message.success("Quote deleted");
-        load(page, applied);
-    };
-
-    const calcTotal = (items: LineItem[] = [], globalTaxRate?: number) => {
-        return items.reduce((sum, i) => {
-            const qty = Number(i.quantity) || 0;
-            const price = Number(i.unitPrice) || 0;
-            const line = qty * price;
-            const taxPct = (i.taxRate ?? globalTaxRate ?? 0) /100;
-            return sum + line * (1 + taxPct);
-        }, 0);
-    };
+    const {
+        modal,
+        data,
+        loading,
+        page,
+        total,
+        PAGE_SIZE,
+        draft,
+        setDraft,
+        customerOptions,
+        handleApply,
+        handleClear,
+        handleDelete,
+        handlePageChange,
+        reload,
+    } = useQuotes();
 
     const columns: ColumnsType<Quote> = [
         { title: "Quote #", dataIndex: "quoteNumber" },
-        {   title: "Customer",
+        {
+            title: "Customer",
             dataIndex: "customer",
             render: (customer) => {
                 if (!customer) return "-";
                 return customer.company || customer.name || "-";
-            }
+            },
         },
         {
             title: "Issue Date",
@@ -106,25 +68,23 @@ export default function QuotesPage() {
         {
             title: "Total",
             render: (_, record) => {
-                const total = record.total ?? calcTotal(record.items);
-                return `$${formatAmount(total)}`;
+                const rowTotal = record.total ?? calcTotal(record.items);
+                return `$${formatAmount(rowTotal)}`;
             },
-
         },
         {
             title: "Status",
             dataIndex: "status",
             render: (s: QuoteStatus) => {
                 const colors: Record<QuoteStatus, string> = {
-                    draft:"blue",
+                    draft: "blue",
                     sent: "orange",
                     accepted: "green",
                     declined: "red",
                     expired: "black",
                     converted: "purple",
                 };
-
-                return<Tag color={colors[s]}>{s}</Tag>
+                return <Tag color={colors[s]}>{s}</Tag>;
             },
         },
         {
@@ -145,7 +105,7 @@ export default function QuotesPage() {
             <PageHeader
                 title="Quotes"
                 addLabel="+ New Quote"
-                onAdd={ modal.startCreate }
+                onAdd={modal.startCreate}
             />
 
             <FilterBar
@@ -167,7 +127,7 @@ export default function QuotesPage() {
                     pageSize: PAGE_SIZE,
                     total,
                     showSizeChanger: false,
-                    onChange: (p) => { setPage(p); load(p, applied); },
+                    onChange: handlePageChange,
                 }}
                 onRow={(record) => ({
                     onClick: () => modal.startEdit(record),
@@ -179,7 +139,7 @@ export default function QuotesPage() {
                 open={modal.open}
                 editing={modal.editing}
                 onClose={modal.close}
-                onSuccess={() => load(page, applied)}
+                onSuccess={reload}
             />
         </div>
     );
