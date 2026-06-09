@@ -1013,7 +1013,8 @@ GLOBAL_RATE_LIMIT_MAX=100
 
 **Frontend** (`.env`):
 ```
-VITE_API_URL=http://localhost:8888
+VITE_API_URL=http://localhost:8888/api
+VITE_DEMO_MODE=false
 ```
 
 ---

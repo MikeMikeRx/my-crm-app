@@ -88,7 +88,7 @@ Create a new file named `.env` in the `backend/` directory.
 **For MongoDB Atlas (Cloud):**
 
 ```env
-PORT=5000
+PORT=8888
 DATABASE=mongodb+srv://<username>:<password>@<cluster-url>/<database-name>?retryWrites=true&w=majority
 JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
 ```
@@ -96,53 +96,52 @@ JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
 **For Local MongoDB:**
 
 ```env
-PORT=5000
-DATABASE=mongodb://localhost:27017/crm-db
+PORT=8888
+DATABASE=mongodb://localhost:27017/crm
 JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
 ```
 
 ### 4. Configure Environment Variables
 
 #### PORT
-- Default: `5000`
+- Default: `8888`
 - The port number where the backend API server will run
-- Change only if port 5000 is already in use
+- Change only if port 8888 is already in use
 
 #### DATABASE
 - Your MongoDB connection string
 
 **MongoDB Atlas format:**
 ```
-mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/crm-db?retryWrites=true&w=majority
+mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/crm?retryWrites=true&w=majority
 ```
 
 Replace:
 - `<username>`: Your MongoDB Atlas username
 - `<password>`: Your MongoDB Atlas password
 - `cluster0.xxxxx.mongodb.net`: Your cluster URL (found in Atlas dashboard)
-- `crm-db`: Your database name (can be any name you choose)
+- `crm`: Your database name (can be any name you choose)
 
 **Local MongoDB format:**
 ```
-mongodb://localhost:27017/crm-db
+mongodb://localhost:27017/crm
 ```
 
 Where:
 - `localhost:27017`: Default MongoDB local address
-- `crm-db`: Your database name
+- `crm`: Your database name
 
 #### JWT_SECRET
 - A secret key used to sign authentication tokens
 - **Important**: Use a strong, random string
 - **Never** commit this to version control
 - Generate a secure secret:
-  - Use a password generator
   - Or run: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
 
 ### 5. Example .env File
 
 ```env
-PORT=5000
+PORT=8888
 DATABASE=mongodb+srv://myuser:mypassword123@cluster0.abc12.mongodb.net/vitesse-crm?retryWrites=true&w=majority
 JWT_SECRET=a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6
 ```
@@ -174,16 +173,20 @@ This will install React, Vite, Ant Design, and all other frontend dependencies.
 Create a new file named `.env` in the `frontend/` directory.
 
 ```env
-VITE_API_URL=http://localhost:5000
+VITE_API_URL=http://localhost:8888/api
+VITE_DEMO_MODE=false
 ```
 
 ### 4. Configure Environment Variables
 
 #### VITE_API_URL
 - The URL where your backend API is running
-- Default: `http://localhost:5000`
+- Default: `http://localhost:8888/api`
 - Must match the PORT in your backend `.env` file
-- If backend runs on a different port, update accordingly
+
+#### VITE_DEMO_MODE
+- Set to `true` to enable auto-login with a demo account when no session is found
+- Default: `false` — use your own credentials
 
 ---
 
@@ -259,7 +262,7 @@ npm run dev
 **Expected output:**
 ```
 [nodemon] starting `node src/server.js`
-Server running on port 5000
+Server running on port 8888
 MongoDB connected successfully
 ```
 
@@ -282,7 +285,7 @@ VITE v7.x.x ready in xxx ms
 ➜  press h + enter to show help
 ```
 
-The application will automatically open in your default browser at `http://localhost:5173`
+Open `http://localhost:5173` in your browser.
 
 ---
 
@@ -291,8 +294,8 @@ The application will automatically open in your default browser at `http://local
 ### Check if Everything is Working
 
 1. **Backend API**
-   - Open browser and go to: `http://localhost:5000`
-   - You should see a response (might be an error message, that's ok)
+   - Open browser and go to: `http://localhost:8888/health`
+   - You should see a health check response
 
 2. **Frontend Application**
    - Go to: `http://localhost:5173`
@@ -305,9 +308,8 @@ The application will automatically open in your default browser at `http://local
 ### Test the Application
 
 1. **Create First User Account**
-   - Click on "Sign Up" or "Register" on the login page
+   - Click "Sign Up" on the login page
    - Fill in the registration form
-   - Create your admin account
 
 2. **Log In**
    - Use your newly created credentials to log in
@@ -354,25 +356,27 @@ vitesse-crm/
 ├── backend/
 │   ├── src/
 │   │   ├── server.js          # Entry point
-│   │   ├── config/            # Configuration files
-│   │   ├── controllers/       # Route controllers
-│   │   ├── models/            # Mongoose models
-│   │   ├── routes/            # API routes
-│   │   └── middleware/        # Custom middleware
+│   │   ├── config/            # Database configuration
+│   │   ├── controllers/       # Request handlers
+│   │   ├── middleware/        # Auth, validation, RBAC
+│   │   ├── models/            # Mongoose schemas
+│   │   ├── routes/            # Express route definitions
+│   │   ├── services/          # Business logic and aggregation
+│   │   └── utils/             # Status helpers, async handler
+│   ├── tests/                 # Jest + Supertest integration tests
 │   ├── .env                   # Environment variables (create this)
 │   └── package.json
 │
 ├── frontend/
 │   ├── src/
-│   │   ├── components/        # React components
-│   │   ├── pages/             # Page components
-│   │   ├── services/          # API services
-│   │   ├── store/             # Zustand state management
-│   │   ├── utils/             # Utility functions
-│   │   └── App.tsx            # Main app component
+│   │   ├── api/               # Axios client + one module per resource
+│   │   ├── features/          # Domain code (customers, invoices, quotes, payments, dashboard, auth)
+│   │   ├── shared/            # Cross-cutting code (components, hooks, types, utils)
+│   │   └── routes/            # React Router config
 │   ├── .env                   # Environment variables (create this)
 │   └── package.json
 │
+├── docs/                      # Architecture, setup, and author notes
 └── README.md
 ```
 
@@ -390,9 +394,15 @@ cd frontend
 npm install package-name
 ```
 
-**View backend logs:**
-- Check the terminal where backend is running
-- Logs show API requests, errors, and MongoDB queries
+**Run backend tests:**
+```bash
+cd backend && npm test
+```
+
+**Run frontend tests:**
+```bash
+cd frontend && npm test
+```
 
 **Clear frontend cache:**
 ```bash
@@ -417,11 +427,10 @@ npm run dev
 
 If you encounter any issues during setup:
 
-1. Check the [TROUBLESHOOTING.md](TROUBLESHOOTING.md) guide (if available)
-2. Verify all prerequisites are installed correctly
-3. Ensure environment variables are configured properly
-4. Check that MongoDB is running and accessible
-5. Review terminal output for specific error messages
+1. Verify all prerequisites are installed correctly
+2. Ensure environment variables are configured properly
+3. Check that MongoDB is running and accessible
+4. Review terminal output for specific error messages
 
 ---
 
