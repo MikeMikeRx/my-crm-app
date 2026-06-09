@@ -1,6 +1,4 @@
-import { useState, useEffect } from "react";
 import { Row, Col, Card } from "antd";
-import { getDashboardSummary, type DashboardSummary } from "@/api/dashboard";
 import SummaryCard from "./components/SummaryCard";
 import QuotePreviewCard from "./components/QuotePreviewCard";
 import InvoicePreviewCard from "./components/InvoicePreviewCard";
@@ -9,27 +7,19 @@ import CustomerPreviewCard from "./components/CustomerPreviewCard";
 import CustomerListCard from "./components/CustomerListCard";
 import SectionHeader from "./components/SectionHeader";
 import { formatAmount } from "@/utils/numberFormat";
-import { handleError } from "@/utils/handleError";
+import { useDashboard } from "./useDashboard";
 
 const colFirst = { paddingRight: 32, borderRight: "1px solid #f0f0f0", display: "flex", flexDirection: "column" } as const;
 const colMiddle = { paddingLeft: 32, paddingRight: 32, borderRight: "1px solid #f0f0f0", display: "flex", flexDirection: "column" } as const;
 const colLast = { paddingLeft: 32, display: "flex", flexDirection: "column" } as const;
 
 export default function DashboardPage() {
-    const [loading, setLoading] = useState(true);
-    const [data, setData] = useState<DashboardSummary | null>(null);
-
-    useEffect(() => {
-        getDashboardSummary()
-            .then((res) => setData(res))
-            .catch((e) => handleError(e, "Failed to load dashboard"))
-            .finally(() => setLoading(false));
-    }, []);
+    const { loading, data } = useDashboard();
 
     const summaryItems = [
-        { title: "Quotes",      subtitle: "This Month",  value: data?.quotes?.monthSum,        color: "#3b82f6" },
-        { title: "Invoices",    subtitle: "This Month",  value: data?.invoices?.monthSum,       color: "#8b5cf6" },
-        { title: "Payments",    subtitle: "This Month",  value: data?.payments?.monthSum,       color: "#10b981" },
+        { title: "Quotes",      subtitle: "This Month",  value: data?.quotes?.monthSum,         color: "#3b82f6" },
+        { title: "Invoices",    subtitle: "This Month",  value: data?.invoices?.monthSum,        color: "#8b5cf6" },
+        { title: "Payments",    subtitle: "This Month",  value: data?.payments?.monthSum,        color: "#10b981" },
         { title: "Due Balance", subtitle: "Outstanding", value: data?.payments?.dueBalance ?? 0, color: "#ef4444" },
     ];
 

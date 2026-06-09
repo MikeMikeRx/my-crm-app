@@ -2,7 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
 import LoginPage from "@/pages/login/LoginPage";
-import DashboardPage from "@/pages/dashboard/DashboardPage";
+import DashboardPage from "@/features/dashboard/DashboardPage";
 import CustomersPage from "@/features/customers/CustomersPage";
 import QuotesPage from "@/features/quotes/QuotesPage";
 import InvoicesPage from "@/features/invoices/InvoicesPage";
