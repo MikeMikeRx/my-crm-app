@@ -54,10 +54,15 @@ export const useAuthStore = create<AuthState>()(
                 const profile = await authApi.getProfile();
                 set({ user: profile, initialized: true });
             } catch {
-                try {
-                    const data = await authApi.loginDemo();
-                    set({ user: data.user, initialized: true });
-                } catch {
+                const demoMode = import.meta.env.VITE_DEMO_MODE === "true";
+                if (demoMode) {
+                    try {
+                        const data = await authApi.loginDemo();
+                        set({ user: data.user, initialized: true });
+                    } catch {
+                        set({ user: null, initialized: true });
+                    }
+                } else {
                     set({ user: null, initialized: true });
                 }
             } finally {
