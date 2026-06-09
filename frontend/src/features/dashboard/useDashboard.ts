@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { getDashboardSummary, type DashboardSummary } from "@/api/dashboard";
-import { handleError } from "@/utils/handleError";
+import { handleError } from "@/shared/utils/handleError";
 
 export function useDashboard() {
     const [loading, setLoading] = useState(true);

@@ -1,11 +1,11 @@
 import { Table, Button, Space, Popconfirm, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import type { Quote, LineItem, QuoteStatus } from "@/types/entities";
+import type { Quote, LineItem, QuoteStatus } from "@/shared/types/entities";
 import QuoteFormModal from "./QuoteFormModal";
-import { formatAmount } from "@/utils/numberFormat";
-import { formatFormDate } from "@/utils/dateFormat";
-import PageHeader from "@/components/PageHeader";
-import FilterBar from "@/components/FilterBar";
+import { formatAmount } from "@/shared/utils/numberFormat";
+import { formatFormDate } from "@/shared/utils/dateFormat";
+import PageHeader from "@/shared/components/PageHeader";
+import FilterBar from "@/shared/components/FilterBar";
 import { useQuotes } from "./useQuotes";
 
 const QUOTE_STATUS_OPTIONS = [

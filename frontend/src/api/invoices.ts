@@ -1,5 +1,5 @@
 import { api } from "./client";
-import type { Invoice, InvoiceCreate, InvoiceUpdate, InvoiceStatus, ID, PaginatedResponse } from "@/types/entities";
+import type { Invoice, InvoiceCreate, InvoiceUpdate, InvoiceStatus, ID, PaginatedResponse } from "@/shared/types/entities";
 
 export type InvoiceListParams = {
   page?: number;

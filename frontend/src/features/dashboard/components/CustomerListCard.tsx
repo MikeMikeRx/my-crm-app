@@ -1,5 +1,5 @@
 import { Progress, Tag } from "antd";
-import { formatAmount } from "@/utils/numberFormat";
+import { formatAmount } from "@/shared/utils/numberFormat";
 import type { CustomerDetail } from "@/api/dashboard";
 
 interface Props {

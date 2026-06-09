@@ -1,5 +1,5 @@
 import {Card, Progress, Skeleton } from "antd";
-import type { StatPrevCardProps } from "@/types/entities";
+import type { StatPrevCardProps } from "@/shared/types/entities";
 
 const StatusPreviewCard = ({ title, preview = [], loading}: StatPrevCardProps) => {
   return (

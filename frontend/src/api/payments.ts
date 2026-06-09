@@ -1,5 +1,5 @@
 import { api } from "./client";
-import type { Payment, PaymentCreate, PaymentUpdate, ID, PaginatedResponse } from "@/types/entities";
+import type { Payment, PaymentCreate, PaymentUpdate, ID, PaginatedResponse } from "@/shared/types/entities";
 
 export type PaymentListParams = {
   page?: number;

@@ -4,8 +4,8 @@ import { RouterProvider } from "react-router-dom";
 import { router } from "@/routes";
 import { App, ConfigProvider } from "antd";
 import { useAuthStore } from "@/features/auth/authStore";
-import { setGlobalNotification } from "./utils/globalNotification";
-import MobileBlock from "./components/mobile-block/MobileBlock.tsx";
+import { setGlobalNotification } from "@/shared/notifications/globalNotification";
+import MobileBlock from "@/shared/components/mobile-block/MobileBlock";
 import "antd/dist/reset.css";
 import "@/index.css";
 

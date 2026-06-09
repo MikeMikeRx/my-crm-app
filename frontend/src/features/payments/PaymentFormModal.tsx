@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
-import { formatFormDate, todayForm, todayDoc, toDayjs, FORM_DATE_FMT } from "@/utils/dateFormat";
-import { dateString, optionalDateString } from "@/utils/dateSchema";
+import { formatFormDate, todayForm, todayDoc, toDayjs, FORM_DATE_FMT } from "@/shared/utils/dateFormat";
+import { dateString, optionalDateString } from "@/shared/utils/dateSchema";
 import { Modal, Form, Input, InputNumber, DatePicker, Button, Select, message } from "antd";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createPayment, listPayments, updatePayment } from "@/api/payments";
 import { listInvoices } from "@/api/invoices";
-import type { Payment, PaymentCreate, PaymentUpdate, Invoice } from "@/types/entities";
-import { handleError } from "@/utils/handleError";
-import { formatAmount } from "@/utils/numberFormat";
+import type { Payment, PaymentCreate, PaymentUpdate, Invoice } from "@/shared/types/entities";
+import { handleError } from "@/shared/utils/handleError";
+import { formatAmount } from "@/shared/utils/numberFormat";
 
 const PENDING_METHODS = ["bank_transfer", "card", "paypal"] as const;
 

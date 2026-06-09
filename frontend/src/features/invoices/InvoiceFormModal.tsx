@@ -17,15 +17,15 @@ import {
     type TableColumnsType,
 } from "antd";
 import dayjs from "dayjs";
-import { formatFormDate, todayForm, todayDoc, toDayjs, FORM_DATE_FMT } from "@/utils/dateFormat";
-import { dateString } from "@/utils/dateSchema";
+import { formatFormDate, todayForm, todayDoc, toDayjs, FORM_DATE_FMT } from "@/shared/utils/dateFormat";
+import { dateString } from "@/shared/utils/dateSchema";
 import { Controller, useFieldArray, useForm, type FieldArrayWithId } from "react-hook-form";
 import { z } from "zod";
 import { createInvoice, updateInvoice, transitionInvoiceStatus } from "@/api/invoices";
 import { getQuote, listQuotes } from "@/api/quotes";
-import type { Invoice, InvoiceCreate, LineItem, Quote } from "@/types/entities";
-import { handleError } from "@/utils/handleError";
-import { formatAmount } from "@/utils/numberFormat";
+import type { Invoice, InvoiceCreate, LineItem, Quote } from "@/shared/types/entities";
+import { handleError } from "@/shared/utils/handleError";
+import { formatAmount } from "@/shared/utils/numberFormat";
 
 const itemSchema = z.object({
     description: z.string().min(1),

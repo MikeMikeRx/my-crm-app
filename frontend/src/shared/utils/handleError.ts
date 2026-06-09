@@ -1,6 +1,6 @@
 import { notification as staticNotification } from "antd";
 import { getApiError } from "@/api/client";
-import { getGlobalNotification } from "@/utils/globalNotification";
+import { getGlobalNotification } from "@/shared/notifications/globalNotification";
 
 const recentMessages = new Map<string, number>();
 const MESSAGE_DEDUPE_WINDOW = 2000;

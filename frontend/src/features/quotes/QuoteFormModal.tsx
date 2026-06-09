@@ -17,15 +17,15 @@ import {
     type TableColumnsType,
 } from "antd";
 import dayjs from "dayjs";
-import { formatFormDate, todayForm, todayDoc, toDayjs, FORM_DATE_FMT } from "@/utils/dateFormat";
-import { dateString } from "@/utils/dateSchema";
+import { formatFormDate, todayForm, todayDoc, toDayjs, FORM_DATE_FMT } from "@/shared/utils/dateFormat";
+import { dateString } from "@/shared/utils/dateSchema";
 import { Controller, useFieldArray, useForm, type FieldArrayWithId } from "react-hook-form";
 import { z } from "zod";
 import { listCustomers } from "@/api/customers";
 import { createQuote, listQuotes, updateQuote, transitionQuoteStatus } from "@/api/quotes";
-import type { Customer, Quote, QuoteCreate, QuoteUpdate, QuoteStatus } from "@/types/entities";
-import { handleError } from "@/utils/handleError";
-import { formatAmount } from "@/utils/numberFormat";
+import type { Customer, Quote, QuoteCreate, QuoteUpdate, QuoteStatus } from "@/shared/types/entities";
+import { handleError } from "@/shared/utils/handleError";
+import { formatAmount } from "@/shared/utils/numberFormat";
 
 const QUOTE_TRANSITIONS: Record<QuoteStatus, QuoteStatus[]> = {
     draft: ["sent"],

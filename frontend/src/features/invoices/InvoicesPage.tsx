@@ -1,11 +1,11 @@
 import { Table, Button, Space, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import type { Invoice, InvoiceStatus, LineItem } from "@/types/entities";
+import type { Invoice, InvoiceStatus, LineItem } from "@/shared/types/entities";
 import InvoiceFormModal from "./InvoiceFormModal";
-import { formatAmount } from "@/utils/numberFormat";
-import { formatFormDate } from "@/utils/dateFormat";
-import PageHeader from "@/components/PageHeader";
-import FilterBar from "@/components/FilterBar";
+import { formatAmount } from "@/shared/utils/numberFormat";
+import { formatFormDate } from "@/shared/utils/dateFormat";
+import PageHeader from "@/shared/components/PageHeader";
+import FilterBar from "@/shared/components/FilterBar";
 import { useInvoices } from "./useInvoices";
 
 const INVOICE_STATUS_OPTIONS = [

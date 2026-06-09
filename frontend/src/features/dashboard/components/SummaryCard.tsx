@@ -1,5 +1,5 @@
 import { Card, Skeleton, Tag } from "antd"
-import type { SummaryCardProps } from "@/types/entities"
+import type { SummaryCardProps } from "@/shared/types/entities"
 
 export default function SummaryCard({ title, subtitle, value, loading, color }: SummaryCardProps) {
     return (

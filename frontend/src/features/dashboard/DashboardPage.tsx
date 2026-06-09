@@ -6,7 +6,7 @@ import PaymentPreviewCard from "./components/PaymentPreviewCard";
 import CustomerPreviewCard from "./components/CustomerPreviewCard";
 import CustomerListCard from "./components/CustomerListCard";
 import SectionHeader from "./components/SectionHeader";
-import { formatAmount } from "@/utils/numberFormat";
+import { formatAmount } from "@/shared/utils/numberFormat";
 import { useDashboard } from "./useDashboard";
 
 const colFirst = { paddingRight: 32, borderRight: "1px solid #f0f0f0", display: "flex", flexDirection: "column" } as const;

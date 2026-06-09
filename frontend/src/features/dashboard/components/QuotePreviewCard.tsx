@@ -1,6 +1,6 @@
 import { Progress } from "antd";
-import type { StatPrevCardItem, QuoteStatus } from "@/types/entities";
-import { capitalize } from "@/utils/capitalize";
+import type { StatPrevCardItem, QuoteStatus } from "@/shared/types/entities";
+import { capitalize } from "@/shared/utils/capitalize";
 
 interface Props {
     preview: StatPrevCardItem[];
