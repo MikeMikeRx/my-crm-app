@@ -5,7 +5,7 @@ import LoginPage from "@/pages/login/LoginPage";
 import DashboardPage from "@/pages/dashboard/DashboardPage";
 import CustomersPage from "@/features/customers/CustomersPage";
 import QuotesPage from "@/features/quotes/QuotesPage";
-import InvoicesPage from "@/pages/invoices/InvoicesPage";
+import InvoicesPage from "@/features/invoices/InvoicesPage";
 import PaymentsPage from "@/pages/payments/PaymentsPage";
 
 export const router = createBrowserRouter([
