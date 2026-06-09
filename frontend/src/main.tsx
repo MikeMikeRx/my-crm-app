@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
 import { router } from "@/routes";
 import { App, ConfigProvider } from "antd";
-import { useAuthStore } from "./context/authStore.ts";
+import { useAuthStore } from "@/features/auth/authStore";
 import { setGlobalNotification } from "./utils/globalNotification";
 import MobileBlock from "./components/mobile-block/MobileBlock.tsx";
 import "antd/dist/reset.css";

@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuthStore } from "@/context/authStore";
+import { useAuthStore } from "@/features/auth/authStore";
 import { Spin } from "antd";
 
 export default function ProtectedRoute() {
