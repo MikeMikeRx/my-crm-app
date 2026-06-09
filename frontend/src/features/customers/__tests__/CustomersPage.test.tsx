@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
-import CustomersPage from "@/pages/customers/CustomersPage";
+import CustomersPage from "@/features/customers/CustomersPage";
 
 vi.mock("@/api/customers", () => ({
   listCustomers: () =>
