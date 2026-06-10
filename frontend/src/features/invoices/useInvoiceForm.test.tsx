@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Controller } from "react-hook-form";
+import { message } from "antd";
 import { useInvoiceForm } from "./useInvoiceForm";
 import * as invoicesApi from "@/api/invoices";
 import * as quotesApi from "@/api/quotes";
@@ -220,6 +221,35 @@ describe("useInvoiceForm", () => {
 
         await waitFor(() =>
             expect(invoicesApi.updateInvoice).toHaveBeenCalledWith("inv-2", expect.anything())
+        );
+    });
+
+    it("handleQuoteSelect calls message.error and skips getQuote when quote id is not in loaded list", async () => {
+        // beforeEach mocks listQuotes to return empty data, so no quotes are loaded
+        render(<FormUnderTest editing={null} onClose={vi.fn()} onSuccess={vi.fn()} />);
+        await waitFor(() => expect(quotesApi.listQuotes).toHaveBeenCalled());
+
+        await userEvent.click(screen.getByTestId("select-quote"));
+
+        await waitFor(() => expect(vi.mocked(message.error)).toHaveBeenCalledWith("Quote not found"));
+        expect(quotesApi.getQuote).not.toHaveBeenCalled();
+    });
+
+    it("getQuote rejection calls handleError with 'Failed to load quote'", async () => {
+        const err = new Error("getQuote failed");
+        vi.mocked(quotesApi.listQuotes).mockResolvedValue({
+            data: [BASE_QUOTE],
+            pagination: { ...EMPTY_PAGINATION, total: 1 },
+        });
+        vi.mocked(quotesApi.getQuote).mockRejectedValue(err);
+
+        render(<FormUnderTest editing={null} onClose={vi.fn()} onSuccess={vi.fn()} />);
+        await waitFor(() => expect(quotesApi.listQuotes).toHaveBeenCalled());
+
+        await userEvent.click(screen.getByTestId("select-quote"));
+
+        await waitFor(() =>
+            expect(handleErrorModule.handleError).toHaveBeenCalledWith(err, "Failed to load quote")
         );
     });
 

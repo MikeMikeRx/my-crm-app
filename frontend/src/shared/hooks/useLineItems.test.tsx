@@ -57,6 +57,30 @@ describe("useLineItems", () => {
         expect(result.current.fields[0].description).toBe("Gadget");
     });
 
+    it("total recalculates correctly after append", () => {
+        // ITEM_A: 2 × 50 = 100, tax 10% → 110
+        const { result } = setup([ITEM_A]);
+        expect(result.current.total).toBe(110);
+
+        // ITEM_B: 1 × 100 = 100, tax 0% → 100; new total 210
+        act(() => {
+            result.current.append(ITEM_B);
+        });
+        expect(result.current.total).toBe(210);
+    });
+
+    it("total recalculates correctly after remove", () => {
+        // ITEM_A: 110, ITEM_B: 100 → 210
+        const { result } = setup([ITEM_A, ITEM_B]);
+        expect(result.current.total).toBe(210);
+
+        // remove ITEM_A → only ITEM_B remains: 100
+        act(() => {
+            result.current.remove(0);
+        });
+        expect(result.current.total).toBe(100);
+    });
+
     it("columns are created with expected titles", () => {
         const { result } = setup([]);
         const titles = result.current.columns.map((c) => c.title);

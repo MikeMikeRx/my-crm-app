@@ -115,6 +115,19 @@ describe("useCustomerForm", () => {
         expect(onClose).not.toHaveBeenCalled();
     });
 
+    it("createCustomer rejection calls handleError with 'Failed to create customer'", async () => {
+        const err = new Error("Create failed");
+        vi.mocked(customersApi.createCustomer).mockRejectedValue(err);
+
+        render(<FormUnderTest editing={null} onClose={vi.fn()} onSuccess={vi.fn()} />);
+        await userEvent.type(screen.getByTestId("name"), "Acme Corp");
+        await userEvent.click(screen.getByRole("button", { name: "submit" }));
+
+        await waitFor(() =>
+            expect(handleErrorModule.handleError).toHaveBeenCalledWith(err, "Failed to create customer")
+        );
+    });
+
     it("resets form values when editing customer changes", async () => {
         const customerB: Customer = { ...BASE_CUSTOMER, _id: "cust-2", name: "Beta Inc" };
 

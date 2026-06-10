@@ -188,6 +188,37 @@ describe("useQuoteForm", () => {
         );
     });
 
+    it("system status suppresses transitionQuoteStatus even when form status differs", async () => {
+        vi.mocked(quotesApi.updateQuote).mockResolvedValue({ ...BASE_QUOTE, status: "expired" });
+        render(
+            <FormUnderTest
+                open
+                editing={{ ...BASE_QUOTE, status: "expired" }}
+                onClose={vi.fn()}
+                onSuccess={vi.fn()}
+            />
+        );
+        await userEvent.click(screen.getByRole("button", { name: "submit" }));
+
+        await waitFor(() => expect(quotesApi.updateQuote).toHaveBeenCalled());
+        expect(quotesApi.transitionQuoteStatus).not.toHaveBeenCalled();
+    });
+
+    it("transitionQuoteStatus rejection calls handleError with 'Failed to update quote'", async () => {
+        const err = new Error("Transition failed");
+        vi.mocked(quotesApi.updateQuote).mockResolvedValue(BASE_QUOTE);
+        vi.mocked(quotesApi.transitionQuoteStatus).mockRejectedValue(err);
+        render(<FormUnderTest open editing={BASE_QUOTE} onClose={vi.fn()} onSuccess={vi.fn()} />);
+
+        await userEvent.clear(screen.getByTestId("status"));
+        await userEvent.type(screen.getByTestId("status"), "sent");
+        await userEvent.click(screen.getByRole("button", { name: "submit" }));
+
+        await waitFor(() =>
+            expect(handleErrorModule.handleError).toHaveBeenCalledWith(err, "Failed to update quote")
+        );
+    });
+
     it("isSystemStatus is true for expired and converted, false for draft", async () => {
         const { rerender } = render(
             <FormUnderTest
