@@ -108,15 +108,18 @@ Backend tests cover:
 - RBAC permission boundaries between owner and member roles
 - Activity events and notes
 
-### Frontend component tests
+### Frontend tests
 - Vitest + React Testing Library
-- User-focused tests (not implementation details)
-- Login form validation tested
-- Customer list rendering tested with mocked API
+- Hook-level tests with mocked API and store layers
 
-Frontend tests ensure:
-- Critical user flows work as expected
-- UI logic is stable during refactors
+Frontend tests cover:
+- Auth store actions (login, logout, fetchProfile — including demo mode fallback)
+- useLogin hook (successful login, failure handling, navigation)
+- useCustomerForm hook (create, edit, API error handling, form reset on editing change)
+- useInvoiceForm hook (create, edit, mark-as-sent transition, quote import, error handling)
+- useQuoteForm hook (create, edit, status transitions, system-status guard, error handling)
+- useLineItems hook (append, remove, total recalculation)
+- calcTotals utility (tax and subtotal calculations)
 
 ---
 
