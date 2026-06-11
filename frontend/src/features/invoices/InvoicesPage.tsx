@@ -15,6 +15,7 @@ const INVOICE_STATUS_OPTIONS = [
     { value: "sent", label: "Sent" },
     { value: "partially_paid", label: "Partially Paid" },
     { value: "paid", label: "Paid" },
+    { value: "overdue", label: "Overdue" },
 ];
 
 export default function InvoicesPage() {
