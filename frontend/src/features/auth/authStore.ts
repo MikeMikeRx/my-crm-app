@@ -2,23 +2,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import * as authApi from "@/api/auth";
 import { setAccessToken } from "@/api/client";
-
-type User ={
-    id: string;
-    name: string;
-    email: string;
-    role?: string;
-} | null;
-
-interface AuthState {
-    user: User;
-    loading: boolean;
-    initialized: boolean;
-    login: (email: string, password: string) => Promise<void>;
-    register: (name: string, email: string, password: string, role?: string) => Promise<void>;
-    fetchProfile: () => Promise<void>;
-    logout: () => void;
-}
+import type { AuthUser, AuthState } from "./auth.types";
 
 export const useAuthStore = create<AuthState>()(
     devtools((set) => ({
@@ -31,7 +15,7 @@ export const useAuthStore = create<AuthState>()(
             try {
                 const data = await authApi.login({ email, password });
                 setAccessToken(data.token);
-                set({ user: data.user });
+                set({ user: data.user as AuthUser });
             } finally {
                 set({ loading: false });
             }
@@ -42,7 +26,7 @@ export const useAuthStore = create<AuthState>()(
             try {
                 const data = await authApi.register({ name, email, password, role });
                 setAccessToken(data.token);
-                set({ user: data.user });
+                set({ user: data.user as AuthUser });
             } finally {
                 set({ loading: false });
             }
@@ -58,7 +42,7 @@ export const useAuthStore = create<AuthState>()(
                 if (demoMode) {
                     try {
                         const data = await authApi.loginDemo();
-                        set({ user: data.user, initialized: true });
+                        set({ user: data.user as AuthUser, initialized: true });
                     } catch {
                         set({ user: null, initialized: true });
                     }

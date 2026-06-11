@@ -3,7 +3,8 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Card, Checkbox, Form, Input } from "antd";
 import Logo from "@/assets/images/logo/Logo.png";
-import { useLogin, loginSchema, registerSchema, type FormValues } from "./useLogin";
+import { useLogin, loginSchema, registerSchema } from "./useLogin";
+import type { FormValues } from "./auth.types";
 
 export default function LoginPage() {
     const { isRegisterMode, loading, onSubmit, toggleMode } = useLogin();
