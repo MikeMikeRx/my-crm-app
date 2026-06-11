@@ -1,14 +1,9 @@
 import { useMemo } from "react";
-import {
-    Controller,
-    useFieldArray,
-    useWatch,
-    type Control,
-    type FieldValues,
-    type FieldArrayPath,
-    type Path,
-} from "react-hook-form";
-import { Button, Input, InputNumber, type TableColumnsType } from "antd";
+
+import { Controller, useFieldArray, useWatch } from "react-hook-form";
+import type { Control, FieldArrayPath, FieldValues, Path } from "react-hook-form";
+import { Button, Input, InputNumber } from "antd";
+import type { TableColumnsType } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import { calcTotals } from "@/shared/utils/calcTotals";
 

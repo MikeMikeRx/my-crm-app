@@ -1,7 +1,7 @@
 import { Modal, Form, Input, InputNumber, DatePicker, Button, Select } from "antd";
 import { Controller } from "react-hook-form";
 import { toDayjs, formatFormDate } from "@/shared/utils/dateFormat";
-import type { Payment } from "@/shared/types/entities";
+import type { Payment } from "@/features/payments/payment.types";
 import { usePaymentForm, PAYMENT_METHOD_OPTIONS } from "./usePaymentForm";
 
 interface Props {

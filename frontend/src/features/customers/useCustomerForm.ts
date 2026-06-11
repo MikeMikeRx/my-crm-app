@@ -1,11 +1,13 @@
 import { useEffect } from "react";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { message } from "antd";
+
 import { createCustomer, updateCustomer } from "@/api/customers";
-import type { Customer, CustomerCreate } from "@/shared/types/entities";
 import { handleError } from "@/shared/utils/handleError";
+import type { Customer, CustomerCreate } from "@/features/customers/customer.types";
 
 const schema = z.object({
     name: z.string().min(2, "Name is required"),

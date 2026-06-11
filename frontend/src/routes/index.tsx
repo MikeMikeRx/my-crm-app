@@ -1,4 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
+
 import ProtectedRoute from "./ProtectedRoute";
 import AppLayout from "@/shared/components/layout/AppLayout";
 import LoginPage from "@/features/auth/LoginPage";

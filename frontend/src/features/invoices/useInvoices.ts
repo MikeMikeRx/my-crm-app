@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
+
 import { listInvoices } from "@/api/invoices";
 import { listCustomers } from "@/api/customers";
-import type { Invoice } from "@/shared/types/entities";
 import { handleError } from "@/shared/utils/handleError";
 import { useCrudModal } from "@/shared/hooks/useCrudModal";
+import type { Invoice } from "@/features/invoices/invoice.types";
 import type { FilterValues } from "@/shared/components/FilterBar";
 
 const PAGE_SIZE = 20;

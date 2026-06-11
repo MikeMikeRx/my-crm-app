@@ -1,10 +1,11 @@
 import { Button, Card, DatePicker, Form, Input, Modal, Select, Space, Table, Typography } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { Controller } from "react-hook-form";
+
 import { toDayjs, formatFormDate } from "@/shared/utils/dateFormat";
 import { formatAmount } from "@/shared/utils/numberFormat";
-import type { Invoice } from "@/shared/types/entities";
 import { useInvoiceForm } from "./useInvoiceForm";
+import type { Invoice } from "@/features/invoices/invoice.types";
 
 const { Text } = Typography;
 

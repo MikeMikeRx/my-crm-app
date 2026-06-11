@@ -1,13 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+
 import { Controller } from "react-hook-form";
 import { message } from "antd";
+
 import { useInvoiceForm } from "./useInvoiceForm";
 import * as invoicesApi from "@/api/invoices";
 import * as quotesApi from "@/api/quotes";
 import * as handleErrorModule from "@/shared/utils/handleError";
-import type { Invoice, Quote } from "@/shared/types/entities";
+import type { Invoice } from "@/features/invoices/invoice.types";
+import type { Quote } from "@/features/quotes/quote.types";
 
 vi.mock("@/api/invoices", () => ({
     createInvoice: vi.fn(),

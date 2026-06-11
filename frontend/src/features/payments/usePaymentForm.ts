@@ -1,16 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
+
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import dayjs from "dayjs";
+import { message } from "antd";
+
 import { formatFormDate, todayForm, todayDoc, FORM_DATE_FMT } from "@/shared/utils/dateFormat";
 import { dateString, optionalDateString } from "@/shared/utils/dateSchema";
-import { createPayment, listPayments, updatePayment } from "@/api/payments";
-import { listInvoices } from "@/api/invoices";
-import type { Invoice, Payment, PaymentCreate, PaymentUpdate } from "@/shared/types/entities";
 import { handleError } from "@/shared/utils/handleError";
 import { formatAmount } from "@/shared/utils/numberFormat";
-import { message } from "antd";
+import { createPayment, listPayments, updatePayment } from "@/api/payments";
+import { listInvoices } from "@/api/invoices";
+import type { Invoice } from "@/features/invoices/invoice.types";
+import type { Payment, PaymentCreate, PaymentUpdate } from "@/features/payments/payment.types";
 
 const PENDING_METHODS = ["bank_transfer", "card", "paypal"] as const;
 

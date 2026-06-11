@@ -1,9 +1,10 @@
 import { Progress } from "antd";
-import type { StatPrevCardItem, QuoteStatus } from "@/shared/types/entities";
+import type { StatusPreview } from "@/api/dashboard";
+import type { QuoteStatus } from "@/features/quotes/quote.types";
 import { capitalize } from "@/shared/utils/capitalize";
 
 interface Props {
-    preview: StatPrevCardItem[];
+    preview: StatusPreview[];
     loading: boolean;
 }
 
@@ -30,7 +31,7 @@ export default function QuotePreviewCard({ preview = [], loading }: Props) {
                                 display: "flex",
                                 justifyContent: "space-between",
                                 alignItems: "center",
-                                marginBottom: 6 
+                                marginBottom: 6
                             }}
                         >
                             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>

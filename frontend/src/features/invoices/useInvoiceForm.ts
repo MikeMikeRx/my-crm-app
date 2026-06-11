@@ -1,16 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import dayjs from "dayjs";
 import { message } from "antd";
+
 import { formatFormDate, todayForm, todayDoc, FORM_DATE_FMT } from "@/shared/utils/dateFormat";
 import { dateString } from "@/shared/utils/dateSchema";
+import { handleError } from "@/shared/utils/handleError";
 import { createInvoice, transitionInvoiceStatus, updateInvoice } from "@/api/invoices";
 import { getQuote, listQuotes } from "@/api/quotes";
-import type { Invoice, InvoiceCreate, LineItem, Quote } from "@/shared/types/entities";
-import { handleError } from "@/shared/utils/handleError";
 import { useLineItems } from "@/shared/hooks/useLineItems";
+import type { LineItem } from "@/shared/types/entities.types";
+import type { Quote } from "@/features/quotes/quote.types";
+import type { Invoice, InvoiceCreate } from "@/features/invoices/invoice.types";
 
 const itemSchema = z.object({
     description: z.string().min(1),

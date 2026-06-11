@@ -1,7 +1,13 @@
-import {Card, Progress, Skeleton } from "antd";
-import type { StatPrevCardProps } from "@/shared/types/entities";
+import { Card, Progress, Skeleton } from "antd";
+import type { StatusPreview } from "@/api/dashboard";
 
-const StatusPreviewCard = ({ title, preview = [], loading}: StatPrevCardProps) => {
+interface Props {
+    title: string;
+    preview?: StatusPreview[];
+    loading: boolean;
+}
+
+const StatusPreviewCard = ({ title, preview = [], loading }: Props) => {
   return (
     <Card style={{ height: "100%" }}>
         <h3 className="text-gray-600 text-sm mb-3">{title}</h3>

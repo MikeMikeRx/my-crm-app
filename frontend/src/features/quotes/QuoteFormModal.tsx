@@ -1,10 +1,11 @@
 import { Button, Card, DatePicker, Form, Input, Modal, Select, Space, Table, Typography } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { Controller } from "react-hook-form";
+
 import { toDayjs, formatFormDate } from "@/shared/utils/dateFormat";
 import { formatAmount } from "@/shared/utils/numberFormat";
-import type { Quote } from "@/shared/types/entities";
 import { useQuoteForm } from "./useQuoteForm";
+import type { Quote } from "@/features/quotes/quote.types";
 
 const { Text } = Typography;
 

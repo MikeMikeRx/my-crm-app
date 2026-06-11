@@ -1,8 +1,8 @@
 import { Progress } from "antd";
-import type { StatPrevCardItem } from "@/shared/types/entities"
+import type { StatusPreview } from "@/api/dashboard";
 
 interface Props {
-    preview: StatPrevCardItem[];
+    preview: StatusPreview[];
     loading: boolean;
 }
 

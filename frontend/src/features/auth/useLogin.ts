@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
+
 import { useNavigate } from "react-router-dom";
 import { message } from "antd";
 import { z } from "zod";
+
 import { useAuthStore } from "./authStore";
 import { handleError } from "@/shared/utils/handleError";
+import type { FormValues } from "./auth.types";
 
 export const loginSchema = z.object({
     email: z.string().email("Invalid email"),
@@ -16,13 +19,6 @@ export const registerSchema = z.object({
     password: z.string().min(6, "Password must be at least 6 characters"),
     isAdmin: z.boolean().optional(),
 });
-
-export type FormValues = {
-    name?: string;
-    email: string;
-    password: string;
-    isAdmin?: boolean;
-};
 
 export function useLogin() {
     const [mode, setMode] = useState<"login" | "register">("login");

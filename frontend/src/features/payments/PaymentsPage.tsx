@@ -1,12 +1,13 @@
 import { Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import type { Payment } from "@/shared/types/entities";
+
 import PaymentFormModal from "./PaymentFormModal";
 import { formatAmount } from "@/shared/utils/numberFormat";
 import { formatFormDate } from "@/shared/utils/dateFormat";
 import PageHeader from "@/shared/components/PageHeader";
 import FilterBar from "@/shared/components/FilterBar";
 import { usePayments } from "./usePayments";
+import type { Payment } from "@/features/payments/payment.types";
 
 const METHOD_LABELS: Record<string, string> = {
     bank_transfer: "Bank Transfer",

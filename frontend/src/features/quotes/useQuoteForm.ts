@@ -1,16 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import dayjs from "dayjs";
 import { message } from "antd";
+
 import { formatFormDate, todayForm, todayDoc, FORM_DATE_FMT } from "@/shared/utils/dateFormat";
 import { dateString } from "@/shared/utils/dateSchema";
+import { handleError } from "@/shared/utils/handleError";
 import { createQuote, listQuotes, transitionQuoteStatus, updateQuote } from "@/api/quotes";
 import { listCustomers } from "@/api/customers";
-import type { Customer, Quote, QuoteCreate, QuoteStatus, QuoteUpdate } from "@/shared/types/entities";
-import { handleError } from "@/shared/utils/handleError";
 import { useLineItems } from "@/shared/hooks/useLineItems";
+import type { Customer } from "@/features/customers/customer.types";
+import type { Quote, QuoteCreate, QuoteStatus, QuoteUpdate } from "@/features/quotes/quote.types";
 
 const QUOTE_TRANSITIONS: Record<QuoteStatus, QuoteStatus[]> = {
     draft: ["sent"],
