@@ -1,7 +1,5 @@
 import { api } from "./client";
-import type { ID } from "@/shared/types/entities";
-
-type ISODateString = string;
+import type { ID } from "@/shared/types/common.types";
 
 export interface StatusPreview {
   status: string;
@@ -14,7 +12,7 @@ export interface RecentItem {
   customer: ID;
   total: number;
   status: string;
-  createdAt: ISODateString;
+  createdAt: string;
 }
 
 export interface InvoiceSummary {

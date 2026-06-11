@@ -1,5 +1,7 @@
 import { api } from "./client";
-import type { Invoice, InvoiceCreate, InvoiceUpdate, InvoiceStatus, ID, PaginatedResponse } from "@/shared/types/entities";
+import type { ID } from "@/shared/types/common.types";
+import type { PaginatedResponse } from "@/shared/types/api.types";
+import type { Invoice, InvoiceCreate, InvoiceUpdate, InvoiceStatus } from "@/features/invoices/invoice.types";
 
 export type InvoiceListParams = {
   page?: number;
@@ -34,5 +36,3 @@ export async function transitionInvoiceStatus(id: ID, status: InvoiceStatus): Pr
   const { data } = await api.patch<{ data: Invoice }>(`/invoices/${id}/status`, { status });
   return data.data;
 }
-
-// NOTE: Invoice deletion is intentionally not exposed in the frontend API.

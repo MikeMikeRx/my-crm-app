@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
+
 import { message } from "antd";
+
 import { listCustomers, deleteCustomer } from "@/api/customers";
-import type { Customer } from "@/features/customers/customer.types";
 import { handleError } from "@/shared/utils/handleError";
 import { useCrudModal } from "@/shared/hooks/useCrudModal";
+import type { Customer } from "@/features/customers/customer.types";
 import type { FilterValues } from "@/shared/components/FilterBar";
 
 const PAGE_SIZE = 20;

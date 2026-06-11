@@ -1,12 +1,14 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+
 import { RouterProvider } from "react-router-dom";
-import { router } from "@/routes";
 import { App, ConfigProvider } from "antd";
+import "antd/dist/reset.css";
+
+import { router } from "@/routes";
 import { useAuthStore } from "@/features/auth/authStore";
 import { setGlobalNotification } from "@/shared/notifications/globalNotification";
 import MobileBlock from "@/shared/components/mobile-block/MobileBlock";
-import "antd/dist/reset.css";
 import "@/index.css";
 
 //Testing -----------------------------------

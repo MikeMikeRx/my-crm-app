@@ -1,10 +1,11 @@
 import { Table, Button, Space, Popconfirm } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import type { Customer } from "@/features/customers/customer.types";
+
 import CustomerFormModal from "./CustomerFormModal";
 import PageHeader from "@/shared/components/PageHeader";
 import FilterBar from "@/shared/components/FilterBar";
 import { useCustomers } from "./useCustomers";
+import type { Customer } from "@/features/customers/customer.types";
 
 export default function CustomersPage() {
     const {

@@ -1,5 +1,7 @@
 import { api } from "./client";
-import type { Quote, QuoteCreate, QuoteUpdate, ID, PaginatedResponse } from "@/shared/types/entities";
+import type { ID } from "@/shared/types/common.types";
+import type { PaginatedResponse } from "@/shared/types/api.types";
+import type { Quote, QuoteCreate, QuoteUpdate } from "@/features/quotes/quote.types";
 
 export type QuoteListParams = {
   page?: number;
@@ -39,5 +41,3 @@ export async function transitionQuoteStatus(id: ID, status: Quote["status"]): Pr
   const { data } = await api.patch<{ data: Quote }>(`/quotes/${id}/status`, { status });
   return data.data;
 }
-
-// Note: derived fields (e.g., totals/status/expiry) are computed by the backend.

@@ -1,7 +1,14 @@
 import { Card, Skeleton, Tag } from "antd"
-import type { SummaryCardProps } from "@/shared/types/entities"
 
-export default function SummaryCard({ title, subtitle, value, loading, color }: SummaryCardProps) {
+interface Props {
+    title: string;
+    subtitle: string;
+    value: number | string;
+    loading: boolean;
+    color: string;
+}
+
+export default function SummaryCard({ title, subtitle, value, loading, color }: Props) {
     return (
         <Card style={{ height: 120 }}>
             <h3
@@ -25,7 +32,7 @@ export default function SummaryCard({ title, subtitle, value, loading, color }: 
                 }}
             ></div>
 
-            <div 
+            <div
                 className="text-gray-500 text-xs mt-1 flex items-center gap-2"
                 style={{
                     display: "flex",
@@ -36,7 +43,7 @@ export default function SummaryCard({ title, subtitle, value, loading, color }: 
                 }}
             >
                 {subtitle}
-            
+
                 {loading ? (
                     <Skeleton.Input active size="small" style={{ width: 80 }} />
                 ) : (

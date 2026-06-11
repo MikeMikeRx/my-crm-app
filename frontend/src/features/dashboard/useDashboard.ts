@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { getDashboardSummary, type DashboardSummary } from "@/api/dashboard";
+import { getDashboardSummary } from "@/api/dashboard";
+import type { DashboardSummary } from "@/api/dashboard";
 import { handleError } from "@/shared/utils/handleError";
 
 export function useDashboard() {

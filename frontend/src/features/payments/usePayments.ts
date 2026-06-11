@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
+
 import { listPayments } from "@/api/payments";
 import { listCustomers } from "@/api/customers";
-import type { Payment } from "@/features/payments/payment.types";
 import { handleError } from "@/shared/utils/handleError";
 import { useCrudModal } from "@/shared/hooks/useCrudModal";
+import type { Payment } from "@/features/payments/payment.types";
 import type { FilterValues } from "@/shared/components/FilterBar";
 
 const PAGE_SIZE = 20;

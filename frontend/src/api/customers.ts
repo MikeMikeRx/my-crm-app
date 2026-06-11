@@ -1,5 +1,7 @@
 import { api } from "./client";
-import type { Customer, CustomerCreate, CustomerUpdate, ID, PaginatedResponse } from "@/shared/types/entities";
+import type { ID } from "@/shared/types/common.types";
+import type { PaginatedResponse } from "@/shared/types/api.types";
+import type { Customer, CustomerCreate, CustomerUpdate } from "@/features/customers/customer.types";
 
 export type CustomerListParams = {
   page?: number;
