@@ -5,7 +5,7 @@ import { Controller } from "react-hook-form";
 import { useCustomerForm } from "./useCustomerForm";
 import * as customersApi from "@/api/customers";
 import * as handleErrorModule from "@/shared/utils/handleError";
-import type { Customer } from "@/shared/types/entities";
+import type { Customer } from "@/features/customers/customer.types";
 
 vi.mock("@/api/customers", () => ({
     createCustomer: vi.fn(),

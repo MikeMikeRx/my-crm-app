@@ -1,6 +1,6 @@
 import { Modal, Form, Input, Button } from "antd";
 import { Controller } from "react-hook-form";
-import type { Customer } from "@/shared/types/entities";
+import type { Customer } from "@/features/customers/customer.types";
 import { useCustomerForm } from "./useCustomerForm";
 
 interface Props {

@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { message } from "antd";
 import { createCustomer, updateCustomer } from "@/api/customers";
-import type { Customer, CustomerCreate } from "@/shared/types/entities";
+import type { Customer, CustomerCreate } from "@/features/customers/customer.types";
 import { handleError } from "@/shared/utils/handleError";
 
 const schema = z.object({
