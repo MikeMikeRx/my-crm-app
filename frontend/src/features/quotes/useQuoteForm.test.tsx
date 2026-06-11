@@ -6,7 +6,7 @@ import { useQuoteForm } from "./useQuoteForm";
 import * as quotesApi from "@/api/quotes";
 import * as customersApi from "@/api/customers";
 import * as handleErrorModule from "@/shared/utils/handleError";
-import type { Quote } from "@/shared/types/entities";
+import type { Quote } from "@/features/quotes/quote.types";
 
 vi.mock("@/api/quotes", () => ({
     listQuotes: vi.fn(),

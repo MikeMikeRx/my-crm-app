@@ -1,6 +1,7 @@
 import { Table, Button, Space, Popconfirm, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import type { Quote, LineItem, QuoteStatus } from "@/shared/types/entities";
+import type { Quote, QuoteStatus } from "@/features/quotes/quote.types";
+import type { LineItem } from "@/shared/types/entities.types";
 import QuoteFormModal from "./QuoteFormModal";
 import { formatAmount } from "@/shared/utils/numberFormat";
 import { formatFormDate } from "@/shared/utils/dateFormat";

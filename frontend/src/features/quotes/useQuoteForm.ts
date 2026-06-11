@@ -8,7 +8,8 @@ import { formatFormDate, todayForm, todayDoc, FORM_DATE_FMT } from "@/shared/uti
 import { dateString } from "@/shared/utils/dateSchema";
 import { createQuote, listQuotes, transitionQuoteStatus, updateQuote } from "@/api/quotes";
 import { listCustomers } from "@/api/customers";
-import type { Customer, Quote, QuoteCreate, QuoteStatus, QuoteUpdate } from "@/shared/types/entities";
+import type { Customer } from "@/features/customers/customer.types";
+import type { Quote, QuoteCreate, QuoteStatus, QuoteUpdate } from "@/features/quotes/quote.types";
 import { handleError } from "@/shared/utils/handleError";
 import { useLineItems } from "@/shared/hooks/useLineItems";
 

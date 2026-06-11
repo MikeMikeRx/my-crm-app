@@ -3,7 +3,7 @@ import { PlusOutlined } from "@ant-design/icons";
 import { Controller } from "react-hook-form";
 import { toDayjs, formatFormDate } from "@/shared/utils/dateFormat";
 import { formatAmount } from "@/shared/utils/numberFormat";
-import type { Quote } from "@/shared/types/entities";
+import type { Quote } from "@/features/quotes/quote.types";
 import { useQuoteForm } from "./useQuoteForm";
 
 const { Text } = Typography;

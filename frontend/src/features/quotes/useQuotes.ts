@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { message } from "antd";
 import { listQuotes, deleteQuote } from "@/api/quotes";
 import { listCustomers } from "@/api/customers";
-import type { Quote } from "@/shared/types/entities";
+import type { Quote } from "@/features/quotes/quote.types";
 import { handleError } from "@/shared/utils/handleError";
 import { useCrudModal } from "@/shared/hooks/useCrudModal";
 import type { FilterValues } from "@/shared/components/FilterBar";
