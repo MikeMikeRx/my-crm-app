@@ -7,7 +7,8 @@ import { formatFormDate, todayForm, todayDoc, FORM_DATE_FMT } from "@/shared/uti
 import { dateString, optionalDateString } from "@/shared/utils/dateSchema";
 import { createPayment, listPayments, updatePayment } from "@/api/payments";
 import { listInvoices } from "@/api/invoices";
-import type { Invoice, Payment, PaymentCreate, PaymentUpdate } from "@/shared/types/entities";
+import type { Invoice } from "@/features/invoices/invoice.types";
+import type { Payment, PaymentCreate, PaymentUpdate } from "@/features/payments/payment.types";
 import { handleError } from "@/shared/utils/handleError";
 import { formatAmount } from "@/shared/utils/numberFormat";
 import { message } from "antd";

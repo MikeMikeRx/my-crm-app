@@ -1,6 +1,6 @@
 import { Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import type { Payment } from "@/shared/types/entities";
+import type { Payment } from "@/features/payments/payment.types";
 import PaymentFormModal from "./PaymentFormModal";
 import { formatAmount } from "@/shared/utils/numberFormat";
 import { formatFormDate } from "@/shared/utils/dateFormat";
