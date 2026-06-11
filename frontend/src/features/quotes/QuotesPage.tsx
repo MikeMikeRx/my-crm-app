@@ -8,7 +8,7 @@ import PageHeader from "@/shared/components/PageHeader";
 import FilterBar from "@/shared/components/FilterBar";
 import { useQuotes } from "./useQuotes";
 import type { Quote, QuoteStatus } from "@/features/quotes/quote.types";
-import type { LineItem } from "@/shared/types/entities.types";
+import { calcTotals } from "@/shared/utils/calcTotals";
 
 const QUOTE_STATUS_OPTIONS = [
     { value: "draft", label: "Draft" },
@@ -18,16 +18,6 @@ const QUOTE_STATUS_OPTIONS = [
     { value: "expired", label: "Expired" },
     { value: "converted", label: "Converted" },
 ];
-
-const calcTotal = (items: LineItem[] = [], globalTaxRate?: number) => {
-    return items.reduce((sum, i) => {
-        const qty = Number(i.quantity) || 0;
-        const price = Number(i.unitPrice) || 0;
-        const line = qty * price;
-        const taxPct = (i.taxRate ?? globalTaxRate ?? 0) / 100;
-        return sum + line * (1 + taxPct);
-    }, 0);
-};
 
 export default function QuotesPage() {
     const {
@@ -70,7 +60,7 @@ export default function QuotesPage() {
         {
             title: "Total",
             render: (_, record) => {
-                const rowTotal = record.total ?? calcTotal(record.items);
+                const rowTotal = record.total ?? calcTotals(record.items).total;
                 return `$${formatAmount(rowTotal)}`;
             },
         },

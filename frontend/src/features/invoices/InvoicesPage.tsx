@@ -7,8 +7,8 @@ import { formatFormDate } from "@/shared/utils/dateFormat";
 import PageHeader from "@/shared/components/PageHeader";
 import FilterBar from "@/shared/components/FilterBar";
 import { useInvoices } from "./useInvoices";
-import type { LineItem } from "@/shared/types/entities.types";
 import type { Invoice, InvoiceStatus } from "@/features/invoices/invoice.types";
+import { calcTotals } from "@/shared/utils/calcTotals";
 
 const INVOICE_STATUS_OPTIONS = [
     { value: "draft", label: "Draft" },
@@ -16,15 +16,6 @@ const INVOICE_STATUS_OPTIONS = [
     { value: "partially_paid", label: "Partially Paid" },
     { value: "paid", label: "Paid" },
 ];
-
-const calcTotals = (items: LineItem[] = []) => {
-    const subtotal = items.reduce((sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.unitPrice) || 0), 0);
-    const taxTotal = items.reduce((sum, i) => {
-        const rate = Number(i.taxRate) || 0;
-        return sum + ((Number(i.quantity) || 0) * (Number(i.unitPrice) || 0) * rate) / 100;
-    }, 0);
-    return { subtotal, taxTotal, total: subtotal + taxTotal };
-};
 
 export default function InvoicesPage() {
     const {
