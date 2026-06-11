@@ -8,7 +8,9 @@ import { formatFormDate, todayForm, todayDoc, FORM_DATE_FMT } from "@/shared/uti
 import { dateString } from "@/shared/utils/dateSchema";
 import { createInvoice, transitionInvoiceStatus, updateInvoice } from "@/api/invoices";
 import { getQuote, listQuotes } from "@/api/quotes";
-import type { Invoice, InvoiceCreate, LineItem, Quote } from "@/shared/types/entities";
+import type { LineItem } from "@/shared/types/entities.types";
+import type { Quote } from "@/features/quotes/quote.types";
+import type { Invoice, InvoiceCreate } from "@/features/invoices/invoice.types";
 import { handleError } from "@/shared/utils/handleError";
 import { useLineItems } from "@/shared/hooks/useLineItems";
 

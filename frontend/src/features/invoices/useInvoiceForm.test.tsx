@@ -7,7 +7,8 @@ import { useInvoiceForm } from "./useInvoiceForm";
 import * as invoicesApi from "@/api/invoices";
 import * as quotesApi from "@/api/quotes";
 import * as handleErrorModule from "@/shared/utils/handleError";
-import type { Invoice, Quote } from "@/shared/types/entities";
+import type { Invoice } from "@/features/invoices/invoice.types";
+import type { Quote } from "@/features/quotes/quote.types";
 
 vi.mock("@/api/invoices", () => ({
     createInvoice: vi.fn(),

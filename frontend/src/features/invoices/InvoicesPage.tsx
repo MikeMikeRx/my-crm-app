@@ -1,6 +1,7 @@
 import { Table, Button, Space, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import type { Invoice, InvoiceStatus, LineItem } from "@/shared/types/entities";
+import type { LineItem } from "@/shared/types/entities.types";
+import type { Invoice, InvoiceStatus } from "@/features/invoices/invoice.types";
 import InvoiceFormModal from "./InvoiceFormModal";
 import { formatAmount } from "@/shared/utils/numberFormat";
 import { formatFormDate } from "@/shared/utils/dateFormat";
